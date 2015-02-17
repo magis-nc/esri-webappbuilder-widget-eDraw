@@ -141,6 +141,9 @@ define([
             this._addPolygonMeasure(geometry);
           }
         }
+		
+		this.viewStack.switchView(false);
+		this._setMeasureVisibility();
       },
 
       _initUnitSelect:function(){
