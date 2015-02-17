@@ -49,7 +49,7 @@ define([
     Color,Query,array,Select,NumberSpinner,ViewStack,SymbolChooser,
     DrawBox, jimuUtils) {/*jshint unused: false*/
     return declare([BaseWidget, _WidgetsInTemplateMixin], {
-      name: 'Draw',
+      name: 'eDraw',
       baseClass: 'jimu-widget-draw',
 
       postMixInProperties: function(){
