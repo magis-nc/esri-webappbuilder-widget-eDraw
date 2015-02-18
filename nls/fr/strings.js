@@ -14,6 +14,7 @@
     polygon: "Polygone",
     freehandPolygon: "Polygone à main levée",
     text: "Texte",
+	textWarningMessage:"Le texte doit être saisi avant de placer le point sur la carte.",
     style: "Style",
     alpha: "Transparence",
     width: "Largeur",
@@ -37,6 +38,9 @@
     hectares: "Hectares",
     squareMeters: "Mètres carrés",
     squareFeet: "Pieds carrés",
-    squareYards: "Yards carrés"
+    squareYards: "Yards carrés",
+	confirmDrawDelete:"This draw will be deleted",
+	all:"All",
+	draws:'draws',
   })
 );

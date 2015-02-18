@@ -36,18 +36,22 @@ define([
     'dojo/_base/Color',
     'dojo/_base/query',
     'dojo/_base/array',
+	'dojo/dom-construct',
+	'dojo/dom',
     'dijit/form/Select',
     'dijit/form/NumberSpinner',
     'jimu/dijit/ViewStack',
     'jimu/dijit/SymbolChooser',
     'jimu/dijit/DrawBox',
-    'jimu/utils'
+    'jimu/dijit/Message',
+    'jimu/utils',
+	'jimu/symbolUtils'
   ],
   function(declare,_WidgetsInTemplateMixin,BaseWidget,Graphic,Point,
     SimpleMarkerSymbol,Polyline,SimpleLineSymbol,Polygon,SimpleFillSymbol,
-    TextSymbol,Font,esriUnits,webMercatorUtils,geodesicUtils,lang,on,html,
-    Color,Query,array,Select,NumberSpinner,ViewStack,SymbolChooser,
-    DrawBox, jimuUtils) {/*jshint unused: false*/
+    TextSymbol,Font, esriUnits,webMercatorUtils,geodesicUtils,lang,on,html,
+    Color,Query,array, domConstruct, dom, Select,NumberSpinner,ViewStack,SymbolChooser,
+    DrawBox, Message, jimuUtils, jimuSymbolUtils) {/*jshint unused: false*/
     return declare([BaseWidget, _WidgetsInTemplateMixin], {
       name: 'eDraw',
       baseClass: 'jimu-widget-draw',
@@ -67,10 +71,171 @@ define([
           views: [this.pointSection, this.lineSection, this.polygonSection, this.textSection]
         });
         html.place(this.viewStack.domNode, this.settingContent);
-
+		
+		//Global view (add/list)
+		this.globalViewStack = new ViewStack({
+          viewType: 'dom',
+          views: [this.addSection, this.listSection]
+        });
+		html.place(this.globalViewStack.domNode, this.settingAllContent);
+		this.globalViewStack.switchView(this.addSection);
+		
+		
+		
         this._initUnitSelect();
         this._bindEvents();
       },
+	  
+	  _clickAddButon:function(){
+		this.showList(false);
+	  },
+	  _clickListButon:function(){
+		this.showList(true);
+	  },
+	  
+	  
+	  _generateDrawTable:function(){
+		//Generate draw features table
+		var graphics = this.drawBox.drawLayer.graphics;
+		var nb_graphics = graphics.length;
+		
+		//Table
+		this.drawsTableBody.innerHTML = "";
+		
+		for(var i = nb_graphics-1; i>=0;i--){
+		  var graphic = graphics[i];
+		  var num = i+1;
+		  var symbol = graphic.symbol;
+		  
+		  if(symbol.type=="textsymbol"){
+			var json = symbol.toJson();
+			var font = (json.font.size < 14) ? 'font-size:'+json.font.size+'px;' : 'font-size:14px; font-weight:bold;';
+			var color = (json.color.lenght==4) ? 'rgba('+json.color.join(",")+')' : 'rgba('+json.color.join(",")+')';
+			var symbolHtml = '<span style="text-align:center; color:'+color+';'+font+'">'+json.text+'</span>';
+		  }else{	
+			var symbolNode = jimuSymbolUtils.createSymbolNode(symbol, {width:50, height:50});
+			var symbolHtml = symbolNode.innerHTML;
+		  }
+		  
+		  var html = '<td id="draw-symbol--'+i+'">'+symbolHtml+'</td>'
+			+ '<td class="list-draw-actions">'
+			+		'<span class="clear" id="draw-action-delete--'+i+'">&nbsp;</span>'
+			+		'&nbsp;&nbsp;'
+			+		'<span class="up" id="draw-action-up--'+i+'">&nbsp;</span>'
+			+		'<span class="down" id="draw-action-down--'+i+'">&nbsp;</span>'
+			+		'&nbsp;&nbsp;'
+			+		'<span class="zoom" id="draw-action-zoom--'+i+'">&nbsp;</span>'
+			+ '</td>';
+		  
+		  
+		  var tr = domConstruct.create(
+			"tr",
+			{
+				id : 'draw-tr--'+i,
+				innerHTML : html
+			},
+			this.drawsTableBody
+		  );
+		  
+		  //Bind actions
+		  on(dom.byId('draw-action-up--'+i), "click", this.onActionClick);
+		  on(dom.byId('draw-action-down--'+i), "click", this.onActionClick);
+		  on(dom.byId('draw-action-delete--'+i), "click", this.onActionClick);
+		  on(dom.byId('draw-action-zoom--'+i), "click", this.onActionClick);
+		}
+	  },
+	  
+	  showList:function(bool=true){	
+		if(!bool){
+			this.globalViewStack.switchView(this.addSection);
+			return;
+		}
+		
+		this._generateDrawTable();
+		
+		var nb_draws = this.drawBox.drawLayer.graphics.length;
+		var display = (nb_draws>0) ? 'block' : 'none';
+		html.setStyle(this.allActionsNode,'display',display);
+		this.tableTH.innerHTML = nb_draws + ' ' + this.nls.draws;
+		
+		//Show
+		this.globalViewStack.switchView(this.listSection);
+	  
+	  },
+	  
+	  clear:function(){
+		if(confirm(this.nls.clear)){
+			this.drawBox.drawLayer.clear();
+			this.showList();
+		}
+	  },
+	  
+	  _switchGraphics:function(i1, i2){
+		var g1 = this.drawBox.drawLayer.graphics[i1];
+		var g2 = this.drawBox.drawLayer.graphics[i2];
+		
+		if(!g1 || !g2)
+			return false;
+		
+		//Switch graphics
+		this.drawBox.drawLayer.graphics[i1] = g2;
+		this.drawBox.drawLayer.graphics[i2] = g1;
+		
+		//Redraw in good order
+		for(var i in this.drawBox.drawLayer.graphics){
+			if(i>=i1 || i >=i2)
+				this.drawBox.drawLayer.graphics[i].getShape().moveToFront();		
+		}
+		return true;		
+	  },
+	  
+	  
+	  onActionClick:function(evt){
+		if(!evt.target || !evt.target.id)
+			return;
+		
+		var tab = evt.target.id.split('--');
+		var type = tab[0];
+		var i = parseInt(tab[1]);
+		
+		var g = this.drawBox.drawLayer.graphics[i];
+		
+		switch(type){
+			case 'draw-action-up':
+				this._switchGraphics(i, i+1);
+				this._generateDrawTable();
+				
+				break;
+			case 'draw-action-down':
+				this._switchGraphics(i, i-1);
+				// var i_switch = i-1;
+				// var g_switch = this.drawBox.drawLayer.graphics[i_switch];
+				// if(!g_switch)
+					// return;
+				// this.drawBox.drawLayer.graphics[i_switch] = g;
+				// this.drawBox.drawLayer.graphics[i]=g_switch;
+				// for(var k in this.drawBox.drawLayer.graphics)
+					// if(k>=i-1)
+						// this.drawBox.drawLayer.graphics[k].getShape().moveToFront();
+				this._generateDrawTable();
+				break;
+			case 'draw-action-delete':
+				if(confirm(this.nls.confirmDrawDelete + ".")){
+					g.getLayer().remove(g);
+					this.showList();
+				}
+				break;
+			case 'draw-action-zoom':
+				if(g.geometry.x){
+					this.map.centerAt(g.geometry);
+				}
+				else if(g.geometry.getExtent){
+					var extent = g.geometry.getExtent().expand(1.5);
+					this.map.setExtent(extent);
+				}
+				break;
+		}
+	  },
 
       _resetUnitsArrays: function(){
         this.defaultDistanceUnits = [];
@@ -97,11 +262,15 @@ define([
           this._setDrawDefaultSymbols();
         })));
         this.own(on(this.textSymChooser,'change',lang.hitch(this,function(symbol){
-          this.drawBox.setTextSymbol(symbol);
+			this.drawBox.setTextSymbol(symbol);
+			this._controlTextIsWritten();
         })));
 
         //bind unit events
         this.own(on(this.showMeasure,'click',lang.hitch(this,this._setMeasureVisibility)));
+		
+		//list event
+		this.onActionClick = lang.hitch(this, this.onActionClick);
       },
 
       _onIconSelected:function(target,geotype,commontype){
@@ -117,9 +286,21 @@ define([
         }
         else if(commontype === 'text'){
           this.viewStack.switchView(this.textSection);
+		  this._controlTextIsWritten(); 
         }
         this._setMeasureVisibility();
       },
+	  
+	  _controlTextIsWritten : function(){
+		var value = this.textSymChooser.inputText.value.trim();
+		if(value==""){
+			html.setStyle(this.textSymChooser.inputText,'box-shadow','3px 3px 1px 1px rgba(200, 0, 0, 0.7)');
+			this.textSymChooser.inputText.focus();
+		}
+		else{
+			html.setStyle(this.textSymChooser.inputText,'box-shadow','none');
+		}
+	  },
 
       _onDrawEnd:function(graphic,geotype,commontype){
         var geometry = graphic.geometry;
@@ -141,6 +322,15 @@ define([
             this._addPolygonMeasure(geometry);
           }
         }
+		else if(commontype == 'text' && this.textSymChooser.inputText.value.trim() == ""){
+			//Message
+			new Message({
+				type:'question',
+				message:this.nls.textWarningMessage
+			});
+			//Remove empty feature (text symbol without text)
+			graphic.getLayer().remove(graphic);
+		}
 		
 		this.viewStack.switchView(false);
 		this._setMeasureVisibility();
