@@ -1,7 +1,9 @@
 <div>
-  <div class="jimu-btn" style="font-size:2em; padding:3px;" data-dojo-attach-event="ondijitclick:_clickAddButon">+</div>
-  <div class="jimu-btn" style="font-size:2em; padding:3px;" data-dojo-attach-event="ondijitclick:_clickListButon">≡</div>
-  <hr />
+  <div class="menu">
+	<img data-dojo-attach-point="addSectionButton" class="menu-item-active" src="${folderUrl}images/add.png" data-dojo-attach-event="ondijitclick:_clickAddButon"/>
+	<img data-dojo-attach-point="listSectionButton" class="menu-item" src="${folderUrl}images/list.png" data-dojo-attach-event="ondijitclick:_clickListButon"/>
+	<img data-dojo-attach-point="importExportSectionButton" class="menu-item" src="${folderUrl}images/swap_vert.png" data-dojo-attach-event="ondijitclick:_clickImportExportButon"/>
+  </div>
   <div data-dojo-attach-point="settingAllContent">
 	
 	  <div data-dojo-attach-point="addSection">
