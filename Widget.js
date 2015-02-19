@@ -75,24 +75,30 @@ define([
 		//Global view (add/list)
 		this.globalViewStack = new ViewStack({
           viewType: 'dom',
-          views: [this.addSection, this.listSection]
+          views: [this.addSection, this.listSection, this.importExportSection]
         });
 		html.place(this.globalViewStack.domNode, this.settingAllContent);
 		this.globalViewStack.switchView(this.addSection);
-		
-		
 		
         this._initUnitSelect();
         this._bindEvents();
       },
 	  
 	  _clickAddButon:function(){
-		this.showList(false);
+		this.globalViewStack.switchView(this.addSection);
+		this.addSectionButton.className='menu-item-active';
+		this.listSectionButton.className='menu-item';
+		this.importExportSectionButton.className='menu-item';
 	  },
 	  _clickListButon:function(){
-		this.showList(true);
+		this.showList();
 	  },
-	  
+	  _clickImportExportButon:function(){
+	    this.globalViewStack.switchView(this.importExportSection);
+		this.addSectionButton.className='menu-item';
+		this.listSectionButton.className='menu-item';
+		this.importExportSectionButton.className='menu-item-active';
+	  },	  
 	  
 	  _generateDrawTable:function(){
 		//Generate draw features table
@@ -145,12 +151,7 @@ define([
 		}
 	  },
 	  
-	  showList:function(bool=true){	
-		if(!bool){
-			this.globalViewStack.switchView(this.addSection);
-			return;
-		}
-		
+	  showList:function(){		
 		this._generateDrawTable();
 		
 		var nb_draws = this.drawBox.drawLayer.graphics.length;
@@ -160,7 +161,9 @@ define([
 		
 		//Show
 		this.globalViewStack.switchView(this.listSection);
-	  
+	    this.addSectionButton.className='menu-item';
+		this.listSectionButton.className='menu-item-active';
+		this.importExportSectionButton.className='menu-item';
 	  },
 	  
 	  clear:function(){
@@ -168,6 +171,86 @@ define([
 			this.drawBox.drawLayer.clear();
 			this.showList();
 		}
+	  },
+	  
+	  import:function(){
+		if (!window.FileReader) {
+			this.setImportExportMessage("Your navigator doesn't support this functionnality.", 'error');
+			return false;
+		}
+		
+		var input = this.importFile.files[0];
+		
+		if(!input){
+			this.setImportExportMessage("Please select a file.", 'warning');
+			return false;		
+		}
+		var reader = new FileReader();
+		reader.onload= this._importOnFileLoad;
+		var txt = reader.readAsText(input);
+	  },
+	  
+	  _importOnFileLoad:function(evt){
+			var contents = evt.target.result;
+			
+			try{
+				var json = JSON.parse(contents);
+				if(!json.features){
+					this.setImportExportMessage("The file structure doesn't match.", 'error');
+					return false;
+				}
+				for(var i in json.features){
+					var json_feat = json.features[i];
+					
+					var g = new Graphic(json_feat);
+					
+					if(g)
+						 this.drawBox.drawLayer.add(g);
+				}
+				this.showList();
+				this.importFile.files[0]="";
+			}
+			catch(e){
+				this.setImportExportMessage("The file structure doesn't match.", 'error');
+				return false;
+			}	
+	  },
+	  
+	  export:function(){
+		if(this.drawBox.drawLayer.graphics.length < 1){
+			this.setImportExportMessage('No draws', 'warning');
+			return false;
+		}
+		
+		
+		var content = {
+			"features":[],
+			"displayFieldName" : "",
+			"fieldAliases" : {},
+			"spatialReference" : this.map.spatialReference.toJson(),
+			"fields" : []
+		};
+		for(var i in this.drawBox.drawLayer.graphics)
+			content["features"].push(this.drawBox.drawLayer.graphics[i].toJson());
+		
+		this.exportButton.href = 'data:application/json;charset=utf-8,'+JSON.stringify(content);
+		
+		return true;
+	  },
+	  
+	  setImportExportMessage:function(msg, type){
+		var p = this.importExportMessage;
+		if(!msg || msg==""){
+			p.innerHTML = "";
+			p.className = "no";
+			return;
+		}
+		var className = 'info';
+		if(['error', 'warning'].indexOf(type)!=-1){
+			className = type;
+		}
+		p.innerHTML = msg;
+		p.className = className;
 	  },
 	  
 	  _switchGraphics:function(i1, i2){
@@ -208,15 +291,6 @@ define([
 				break;
 			case 'draw-action-down':
 				this._switchGraphics(i, i-1);
-				// var i_switch = i-1;
-				// var g_switch = this.drawBox.drawLayer.graphics[i_switch];
-				// if(!g_switch)
-					// return;
-				// this.drawBox.drawLayer.graphics[i_switch] = g;
-				// this.drawBox.drawLayer.graphics[i]=g_switch;
-				// for(var k in this.drawBox.drawLayer.graphics)
-					// if(k>=i-1)
-						// this.drawBox.drawLayer.graphics[k].getShape().moveToFront();
 				this._generateDrawTable();
 				break;
 			case 'draw-action-delete':
@@ -271,6 +345,7 @@ define([
 		
 		//list event
 		this.onActionClick = lang.hitch(this, this.onActionClick);
+		this._importOnFileLoad = lang.hitch(this, this._importOnFileLoad);
       },
 
       _onIconSelected:function(target,geotype,commontype){

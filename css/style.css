@@ -59,26 +59,51 @@
 	width:100%;
 }
 
-.jimu-widget-draw .list-table{
-	width:94%;
-	margin-left:3%;
-	margin-right:3%;
-	margin-top:0px;
+.jimu-widget-draw .menu{
+	width:100%;
+	height:36px;
+	border-bottom: 2px solid rgb(72,85,102);
 	margin-bottom:10px;
 }
-
-.jimu-widget-draw .list-table tbody tr{
-	background-color:red;
+.jimu-widget-draw .menu-item{
+	width:36px;
+	float:left;
+	background-color:rgba(72,85,102,0.4);
+	margin-right:5px;
+	border: 1px solid rgba(72,85,102,0.8);
+}	
+.jimu-widget-draw .menu-item:hover{
+	background-color:rgba(72,85,102,0.6);
+	cursor:pointer;
 }
+.jimu-widget-draw .menu-item-active{
+	background-color:rgba(72,85,102,0.8);
+	width:36px;
+	float:left;
+	margin-right:5px;
+	border-bottom-left-radius:0px;
+	border-bottom-right-radius:0px;
+	border-top-right-radius:3px;
+	border-top-left-radius:3px;
+	border: 2px solid rgba(72,85,102,0.8);
+	border-bottom: none;
+}
+.jimu-widget-draw .menu-item-active:hover{
+	pointer:auto;
+}
+
+
+
 .jimu-widget-draw .list-draw-actions{
 	width:160px;
 	height:100%;
 	vertical-align:middle;
 }
-.jimu-widget-draw .list-draw-actions > span {
+.jimu-widget-draw .list-draw-actions span {
 	display:block;
 	float:left;
 	width:30px;
+	min-height:30px;
 	height:30px;
 	background-color:grey;
 	color:white;
@@ -89,21 +114,65 @@
 	margin:3px;
 	border-radius:5px;
 }
-.jimu-widget-draw .list-draw-actions > span.clear{
+
+.jimu-widget-draw .list-draw-actions span.clear{
 	background-image:url("images/clear.png");
 	background-color:rgb(255,153,153);
 }
-.jimu-widget-draw .list-draw-actions > span.zoom{
+.jimu-widget-draw .list-draw-actions span.zoom{
 	background-image:url("images/zoom.png");
 }
-.jimu-widget-draw .list-draw-actions > span.up{
+.jimu-widget-draw .list-draw-actions span.up{
 	background-image:url("images/up.png");
 }
-.jimu-widget-draw .list-draw-actions > span.down{
+.jimu-widget-draw .list-draw-actions span.down{
 	background-image:url("images/down.png");
 }
-.jimu-widget-draw .list-draw-actions > span:hover{
+.jimu-widget-draw .list-draw-actions span.export{
+	background-image:url("images/download.png");
+}
+.jimu-widget-draw .list-draw-actions span.import{
+	background-image:url("images/upload.png");
+}
+.jimu-widget-draw .list-draw-actions span:hover{
 	background-color:lightgrey;
 	cursor:pointer;
 	border:1px solid grey;
+}
+
+.jimu-widget-draw .file{
+	position: absolute;
+	margin-left: 5px;
+	vertical-align: middle;
+	background-color: rgba(255, 255, 255, 0.5);
+	padding: 5px;
+	border-radius: 5px;
+	cursor:pointer;
+}
+
+.jimu-widget-draw .title{
+	margin-top:5px;
+	margin-left:5px;
+}
+
+.jimu-widget-draw p.no{
+	display:none;
+}
+.jimu-widget-draw p.info{
+	width:100%;
+	margin:3px;
+	background-color:lightblue;
+	border-radius:3px;
+}
+.jimu-widget-draw p.error{
+	width:100%;
+	margin:3px;
+	background-color:lightred;
+	border-radius:3px;
+}
+.jimu-widget-draw p.warning{
+	width:100%;
+	margin:3px;
+	background-color:orange;
+	border-radius:3px;
 }

@@ -57,8 +57,26 @@
 			${nls.all} :
 			<div class="list-draw-actions">
 				<span class="clear" data-dojo-attach-event="ondijitclick:clear">&nbsp;</span>
-			</div>
+				</div>
 		</div>
-	  </div> 
+	  </div>
+	  <div data-dojo-attach-point="importExportSection">
+		<table class="jimu-table">
+			<tr><td>
+				<h4 class="title">Export draws</h4>
+				<div class="list-draw-actions">
+					<a data-dojo-attach-point="exportButton" target="_BLANK" data-dojo-attach-event="ondijitclick:export" download="myDraw.json" href="#"><span class="export"></span></a>
+				</div>
+			</td></tr>
+			<tr><td>
+				<h4 class="title">Import draws</h4>
+				<div class="list-draw-actions">
+					<a data-dojo-attach-point="importButton" data-dojo-attach-event="ondijitclick:import"><span class="import"></span></a>
+					<input class="file" value="" type="file" data-dojo-attach-point="importFile" />
+				</div>
+			</td></tr>
+		</table>
+		<p data-dojo-attach-point="importExportMessage" class="no"></p>
+	  </div>
 	</div>  
 </div>
