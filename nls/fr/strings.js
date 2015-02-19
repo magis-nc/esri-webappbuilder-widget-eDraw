@@ -39,8 +39,14 @@
     squareMeters: "Mètres carrés",
     squareFeet: "Pieds carrés",
     squareYards: "Yards carrés",
-	confirmDrawDelete:"This draw will be deleted",
-	all:"All",
-	draws:'draws',
+	confirmDrawDelete:"Ce dessin va être supprimé",
+	all:"Tous",
+	draws:'dessins',
+	exportTitle:"Exporter les dessins",
+	importTitle:"Importer des dessins",
+	importErrorMessageNavigator:"Votre navigateur ne supporte pas cette fonctionnalité.",
+	importErrorWarningSelectFile:"Merci de sélectionner un fichier.",
+	importErrorFileStructure:"Impossible d'importer les dessins, la structure du fichier n'est pas bonne.",
+	importWarningNoExport0Draw:"Pas d'export (aucun dessin à exporter).",
   })
 );

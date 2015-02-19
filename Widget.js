@@ -175,14 +175,14 @@ define([
 	  
 	  import:function(){
 		if (!window.FileReader) {
-			this.setImportExportMessage("Your navigator doesn't support this functionnality.", 'error');
+			this.setImportExportMessage(this.nls.importErrorMessageNavigator, 'error');
 			return false;
 		}
 		
 		var input = this.importFile.files[0];
 		
 		if(!input){
-			this.setImportExportMessage("Please select a file.", 'warning');
+			this.setImportExportMessage(this.nls.importErrorWarningSelectFile, 'warning');
 			return false;		
 		}
 		var reader = new FileReader();
@@ -196,7 +196,7 @@ define([
 			try{
 				var json = JSON.parse(contents);
 				if(!json.features){
-					this.setImportExportMessage("The file structure doesn't match.", 'error');
+					this.setImportExportMessage(this.nls.importErrorFileStructure, 'error');
 					return false;
 				}
 				for(var i in json.features){
@@ -211,14 +211,14 @@ define([
 				this.importFile.files[0]="";
 			}
 			catch(e){
-				this.setImportExportMessage("The file structure doesn't match.", 'error');
+				this.setImportExportMessage(this.nls.importErrorFileStructure, 'error');
 				return false;
 			}	
 	  },
 	  
 	  export:function(){
 		if(this.drawBox.drawLayer.graphics.length < 1){
-			this.setImportExportMessage('No draws', 'warning');
+			this.setImportExportMessage(this.nls.importWarningNoExport0Draw, 'warning');
 			return false;
 		}
 		
