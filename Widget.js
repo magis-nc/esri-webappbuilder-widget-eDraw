@@ -45,16 +45,19 @@ define([
     'jimu/dijit/DrawBox',
     'jimu/dijit/Message',
     'jimu/utils',
-	'jimu/symbolUtils'
+	'jimu/symbolUtils',
+	'libs/storejs/store',
+	'esri/InfoTemplate'
   ],
   function(declare,_WidgetsInTemplateMixin,BaseWidget,Graphic,Point,
     SimpleMarkerSymbol,Polyline,SimpleLineSymbol,Polygon,SimpleFillSymbol,
     TextSymbol,Font, esriUnits,webMercatorUtils,geodesicUtils,lang,on,html,
     Color,Query,array, domConstruct, dom, Select,NumberSpinner,ViewStack,SymbolChooser,
-    DrawBox, Message, jimuUtils, jimuSymbolUtils) {/*jshint unused: false*/
+    DrawBox, Message, jimuUtils, jimuSymbolUtils, localStore, InfoTemplate) {/*jshint unused: false*/
     return declare([BaseWidget, _WidgetsInTemplateMixin], {
       name: 'eDraw',
       baseClass: 'jimu-widget-draw',
+
 
       postMixInProperties: function(){
         this.inherited(arguments);
@@ -73,32 +76,235 @@ define([
         html.place(this.viewStack.domNode, this.settingContent);
 		
 		//Global view (add/list)
-		this.globalViewStack = new ViewStack({
-          viewType: 'dom',
-          views: [this.addSection, this.listSection, this.importExportSection]
-        });
-		html.place(this.globalViewStack.domNode, this.settingAllContent);
-		this.globalViewStack.switchView(this.addSection);
+		this._initTabs();
+		
 		
         this._initUnitSelect();
         this._bindEvents();
+		
+		//load if drawings in localStorage
+		this._loadFromLocalStorage();
+		
+		
+		this._initDrawingPopupAndClick();
+		
+
+		
       },
+	 
+      _initTabs:function(){
+			this._tabsConfig={
+				"add":{
+					button:this.addSectionButton,
+					view:this.addSection,
+					active:"menu-item-active",
+					inactive:"menu-item",
+					buttons_when_active:"*"
+				},
+				"edit":{
+					button:this.editSectionButton,
+					view:this.editSection,
+					onlyVisible:true,
+					active:"menu-item-active ",
+					inactive:"hidden",
+					buttons_when_active:["list"]
+				},
+				"list":{
+					button:this.listSectionButton,
+					view:this.listSection,
+					onlyVisible:true,
+					active:"menu-item-active",
+					inactive:"menu-item",
+					buttons_when_active:"*"
+				},
+				"importExport":{
+					button:this.importExportSectionButton,
+					view:this.importExportSection,
+					onlyVisible:true,
+					active:"menu-item-active",
+					inactive:"menu-item",
+					buttons_when_active:"*"
+				}
+		  };
+
+			var views = [];
+			for(var name in this._tabsConfig)
+				views.push(this._tabsConfig[name]["view"]);
+			
+			
+			this.globalViewStack = new ViewStack({
+			  viewType: 'dom',
+			  views: views
+			});
+			html.place(this.globalViewStack.domNode, this.settingAllContent);
+			
+			this.setTab("add");
+			
+	  },	 
+	  
+	  setTab:function(name){
+		var tab_asked = this._tabsConfig[name];
+		
+		if(!tab_asked)
+			return false;
+		
+		for(var tab in this._tabsConfig){
+			if(tab==name || tab_asked["buttons_when_active"]=="*" || tab_asked["buttons_when_active"].indexOf(tab) != -1){
+				this._tabsConfig[tab]["button"].className = 
+					(tab==name)
+					? this._tabsConfig[tab]["active"]
+					: this._tabsConfig[tab]["inactive"];
+			}
+			else{
+				this._tabsConfig[tab]["button"].className = "hidden";
+			}
+		}
+		this.globalViewStack.switchView(this._tabsConfig[name]["view"]);
+		
+		switch(name){
+			case "list":
+				this._generateDrawTable();
+				var nb_draws = this.drawBox.drawLayer.graphics.length;
+				var display = (nb_draws>0) ? 'block' : 'none';
+				html.setStyle(this.allActionsNode,'display',display);
+				this.tableTH.innerHTML = nb_draws + ' ' + this.nls.draws;
+				
+				//Save data in local storage
+				this._saveInLocalStorage();
+				
+				break;
+			case "edit":
+				if(this._editGraphic){
+					console.log("Graphic à éditer : ", this._editGraphic);
+					
+					this.editNameField.value = this._editGraphic.attributes["name"];
+					this.editDescriptionField.value = this._editGraphic.attributes["description"];
+					
+					this._initEditSymbolChooser();
+				}
+				
+				break;
+			default:
+				this._editGraphic = false;
+		}
+		return true;
+	  },
 	  
 	  _clickAddButon:function(){
-		this.globalViewStack.switchView(this.addSection);
-		this.addSectionButton.className='menu-item-active';
-		this.listSectionButton.className='menu-item';
-		this.importExportSectionButton.className='menu-item';
+		this.setTab("add");
 	  },
 	  _clickListButon:function(){
-		this.showList();
+		this.setTab("list");
 	  },
 	  _clickImportExportButon:function(){
-	    this.globalViewStack.switchView(this.importExportSection);
-		this.addSectionButton.className='menu-item';
-		this.listSectionButton.className='menu-item';
-		this.importExportSectionButton.className='menu-item-active';
-	  },	  
+	    this.setTab("importExport");
+	  },
+	  _clickEditSaveButon:function(){
+			
+			
+			if(this._EditSymbolChooser.type=="text")
+				this._EditSymbolChooser.inputText.value = this.editNameField.value;
+			
+			
+			this._editGraphic.attributes["name"] = this.editNameField.value;
+			this._editGraphic.attributes["description"] = this.editDescriptionField.value;
+			this._editGraphic.setSymbol(this._EditSymbolChooser.getSymbol());
+			this.setTab("list");
+	  },
+	   _clickEditCancelButon:function(){
+			this.setTab("list");
+	  },
+	  _clickResetCancelButon:function(){
+		this.setTab("edit");
+	  },
+	  
+	  
+	  _initEditSymbolChooser:function(){
+		if(!this._editGraphic)
+			return false;
+		
+		var geom_type = this._editGraphic.geometry.type;
+		var type = false;
+		switch(geom_type){
+			case "point":
+				console.log("Point donc symbol est : ", this._editGraphic.symbol);
+				type = (this._editGraphic.symbol.type=="textsymbol") ? "text" : "marker";
+				break;
+			case "polyline":
+				type = "line";
+				break;
+			case "fill":
+				type = "marker";
+				break;
+		}
+		
+		if(this._EditSymbolChooser){
+			this._EditSymbolChooser.showBySymbol(this._editGraphic.symbol);
+		}
+		else{
+			this._EditSymbolChooser = new SymbolChooser(
+				{type:type, symbol:this._editGraphic.symbol},
+				this.EditSymbolChooserDiv
+			);
+		}
+		if(type=="text")
+			this._EditSymbolChooser.inputText.style.display = 'none';
+		
+	  },
+	  
+	  
+	  _initDrawingPopupAndClick:function(){
+		var infoTemplate = new esri.InfoTemplate("${name}","${description}");
+		this.drawBox.drawLayer.setInfoTemplate(infoTemplate);
+	    
+		//Catch with infowindow
+		if(this.map.infoWindow){
+			this._onInfoWinHide=lang.hitch(this, function(){
+				this._editGraphic = false;
+				this.setTab("list");
+			});
+			this._onInfoWinShow=lang.hitch(this, function(evt){
+				console.log("show",evt);
+				this._editGraphic = false;
+				
+				if(
+					evt.target 
+					&& evt.target.features 
+					&& evt.target.count ==1
+					&& evt.target.features[0].getLayer()
+					&& evt.target.features[0].getLayer().id == this.drawBox.drawLayer.id)
+				{
+					this._editGraphic = evt.target.features[0];
+				}
+				this.setTab("list");				
+			});
+			this.map.infoWindow.on("hide", this._onInfoWinHide);
+			this.map.infoWindow.on("show", this._onInfoWinShow);
+		}
+		//If no infowindow catch click on draw
+		else{
+			this._onDrawClick = lang.hitch(this, function(evt){
+				if(!evt.graphic)
+					return;
+				
+				this._editGraphic = evt.graphic;
+				this.setTab("list");
+			  });
+			this.drawBox.drawLayer.on("click", this._onDrawClick);
+		}
+	  },
+	  
+	  // __drawingClickHandler:false,
+	  // _enabledDrawingClickHandle:function(bool){
+		// if(bool && !this.__drawingClickHandler)
+			// this.drawingClickHandler = this.drawBox.drawLayer.on("click", this._showPopup);
+		// else{
+			// dojo.disconnect(this.drawingClickHandler);
+			// this.drawingClickHandler = false;
+		// }
+	  // },
+	  
+	    
 	  
 	  _generateDrawTable:function(){
 		//Generate draw features table
@@ -117,14 +323,16 @@ define([
 			var json = symbol.toJson();
 			var font = (json.font.size < 14) ? 'font-size:'+json.font.size+'px;' : 'font-size:14px; font-weight:bold;';
 			var color = (json.color.lenght==4) ? 'rgba('+json.color.join(",")+')' : 'rgba('+json.color.join(",")+')';
-			var symbolHtml = '<span style="text-align:center; color:'+color+';'+font+'">'+json.text+'</span>';
+			var symbolHtml = '<span style="color:'+color+';'+font+'">'+json.text+'</span>';
 		  }else{	
 			var symbolNode = jimuSymbolUtils.createSymbolNode(symbol, {width:50, height:50});
 			var symbolHtml = symbolNode.innerHTML;
 		  }
-		  
-		  var html = '<td id="draw-symbol--'+i+'">'+symbolHtml+'</td>'
+		  var name = (graphic.attributes && graphic.attributes['name']) ? graphic.attributes['name'] : '';
+		  var html = '<td>'+name+'</td>'
+		    +  '<td class="td-symbol" id="draw-symbol--'+i+'">'+symbolHtml+'</td>'
 			+ '<td class="list-draw-actions">'
+			+		'<span class="edit" id="draw-action-edit--'+i+'">&nbsp;</span>'
 			+		'<span class="clear" id="draw-action-delete--'+i+'">&nbsp;</span>'
 			+		'&nbsp;&nbsp;'
 			+		'<span class="up" id="draw-action-up--'+i+'">&nbsp;</span>'
@@ -138,12 +346,14 @@ define([
 			"tr",
 			{
 				id : 'draw-tr--'+i,
-				innerHTML : html
+				innerHTML : html,
+				className:(this._editGraphic && this._editGraphic==graphic) ? 'selected' : ''
 			},
 			this.drawsTableBody
 		  );
 		  
 		  //Bind actions
+		  on(dom.byId('draw-action-edit--'+i), "click", this.onActionClick);
 		  on(dom.byId('draw-action-up--'+i), "click", this.onActionClick);
 		  on(dom.byId('draw-action-down--'+i), "click", this.onActionClick);
 		  on(dom.byId('draw-action-delete--'+i), "click", this.onActionClick);
@@ -151,25 +361,10 @@ define([
 		}
 	  },
 	  
-	  showList:function(){		
-		this._generateDrawTable();
-		
-		var nb_draws = this.drawBox.drawLayer.graphics.length;
-		var display = (nb_draws>0) ? 'block' : 'none';
-		html.setStyle(this.allActionsNode,'display',display);
-		this.tableTH.innerHTML = nb_draws + ' ' + this.nls.draws;
-		
-		//Show
-		this.globalViewStack.switchView(this.listSection);
-	    this.addSectionButton.className='menu-item';
-		this.listSectionButton.className='menu-item-active';
-		this.importExportSectionButton.className='menu-item';
-	  },
-	  
 	  clear:function(){
 		if(confirm(this.nls.clear)){
 			this.drawBox.drawLayer.clear();
-			this.showList();
+			this.setTab("list");
 		}
 	  },
 	  
@@ -190,38 +385,94 @@ define([
 		var txt = reader.readAsText(input);
 	  },
 	  
-	  _importOnFileLoad:function(evt){
-			var contents = evt.target.result;
+	  
+	  _importJsonContent:function(json, nameField, descriptionField){
+		// try{
+			// console.log("-> import json : ", json);
 			
-			try{
-				var json = JSON.parse(contents);
-				if(!json.features){
-					this.setImportExportMessage(this.nls.importErrorFileStructure, 'error');
-					return false;
-				}
-				for(var i in json.features){
-					var json_feat = json.features[i];
-					
-					var g = new Graphic(json_feat);
-					
-					if(g)
-						 this.drawBox.drawLayer.add(g);
-				}
-				this.showList();
-				this.importFile.files[0]="";
+			if(typeof json == 'string'){
+				json = JSON.parse(json);
+				console.log('-->', json);
 			}
-			catch(e){
+			
+			if(!json.features){
 				this.setImportExportMessage(this.nls.importErrorFileStructure, 'error');
 				return false;
-			}	
+			}
+
+			if(json.features.length<1){
+				this.setImportExportMessage(this.nls.importWarningNoDrawings, 'warning');
+				return false;
+			}
+
+			if(!nameField){
+				var g = json.features[0];
+				var fields_possible = ["name", "title", "label"];
+				if(g.attributes){
+					for(var i in fields_possible){
+						if(g.attributes[fields_possible[i]]){
+							nameField = fields_possible[i];
+							break;
+						}										
+					}
+				}				
+			}
+			
+			for(var i in json.features){
+				var json_feat = json.features[i];
+				
+				var g = new Graphic(json_feat);
+				
+				if(!g)
+					continue;
+				
+				if(!g.attributes)
+					g.attributes = {};
+				
+				g.attributes["name"] = (!nameField || !g.attributes[nameField]) ? 'n°'+(i+1) : g.attributes[nameField];
+				g.attributes["description"] = (!descriptionField || !g.attributes[descriptionField]) ? '' : g.attributes[descriptionField];
+				
+				if(g.symbol){
+					this.drawBox.drawLayer.add(g);
+				}
+				else{
+					var symbol = false;
+					switch(g.geometry.type){
+						case 'point':
+							var symbol = new SimpleMarkerSymbol();
+							break;
+						case 'polyline':
+							var symbol = new SimpleLineSymbol();
+							break;
+						case 'polygon':
+							var symbol = new SimpleFillSymbol();
+							break;
+					}
+					if(symbol){
+						g.setSymbol(symbol);
+						this.drawBox.drawLayer.add(g);
+					}
+				}
+			}
+			
+			this.setTab("list");
+			this.setImportExportMessage();
+		// }
+		// catch(e){
+			// this.setImportExportMessage(this.nls.importErrorFileStructure, 'error');
+			// return false;
+		// }
 	  },
 	  
-	  export:function(){
-		if(this.drawBox.drawLayer.graphics.length < 1){
-			this.setImportExportMessage(this.nls.importWarningNoExport0Draw, 'warning');
-			return false;
-		}
-		
+	  _importOnFileLoad:function(evt){
+			var content = evt.target.result;
+			this._importJsonContent(content);
+			this.importFile.files[0]="";
+	  },
+	  
+	  drawsAsJson:function(asString){
+		if(this.drawBox.drawLayer.graphics.length<1)
+			return (asString) ? '' : false;
 		
 		var content = {
 			"features":[],
@@ -229,12 +480,52 @@ define([
 			"fieldAliases" : {},
 			"spatialReference" : this.map.spatialReference.toJson(),
 			"fields" : []
-		};
+		};		
+		
 		for(var i in this.drawBox.drawLayer.graphics)
 			content["features"].push(this.drawBox.drawLayer.graphics[i].toJson());
 		
-		this.exportButton.href = 'data:application/json;charset=utf-8,'+JSON.stringify(content);
+		if(asString){
+			content = JSON.stringify(content);
+		}
+		return content;		
+	  },
+	  
+	   _localStorageKey:'WebAppBuilder.2D.eDraw',
+	  _saveInLocalStorage:function(){
+		localStore.set(this._localStorageKey, this.drawsAsJson());  
+	  },
+	  _loadFromLocalStorage:function(){			
+			var content = localStore.get(this._localStorageKey);
+			
+			if(!content || !content.features || content.features.length < 1)
+				return;
+			
+			//Closure with timeout to be sure widget is ready
+			(function(widget){
+				setTimeout(
+					function(){
+						widget._importJsonContent(content, "name", "description");
+						var mesage = new Message({
+							message:widget.nls.localLoading
+						});
+					}
+					,200
+				);
+			})(this);
+			
+			
+	  },
+	  
+	  
+	  export:function(){
+		if(this.drawBox.drawLayer.graphics.length < 1){
+			this.setImportExportMessage(this.nls.importWarningNoExport0Draw, 'warning');
+			return false;
+		}
 		
+		this.exportButton.href = 'data:application/json;charset=utf-8,'+this.drawsAsJson(true);
+		this.setImportExportMessage();
 		return true;
 	  },
 	  
@@ -273,6 +564,23 @@ define([
 	  },
 	  
 	  
+	  // _showPopup:function(evt){
+		// console.log("draw click", evt);
+		// if(!evt.graphic)
+			// return false;
+			
+		// var g = evt.graphic;
+			
+		// var mapPoint = evt.mapPoint;
+		// if(!mapPoint){
+			// mapPoint = (g.geometry.getExtent) ? g.geometry.getExtent().getCenter() : g.geometry;
+		// }
+		
+		// this.map.infoWindow.setTitle(g.attributes['name']);
+		// this.map.infoWindow.setContent(g.attributes['description']);
+		// this.map.infoWindow.show(mapPoint);
+	  // },
+	  
 	  onActionClick:function(evt){
 		if(!evt.target || !evt.target.id)
 			return;
@@ -282,6 +590,7 @@ define([
 		var i = parseInt(tab[1]);
 		
 		var g = this.drawBox.drawLayer.graphics[i];
+		this._editGraphic = g;
 		
 		switch(type){
 			case 'draw-action-up':
@@ -296,8 +605,11 @@ define([
 			case 'draw-action-delete':
 				if(confirm(this.nls.confirmDrawDelete + ".")){
 					g.getLayer().remove(g);
-					this.showList();
+					this.setTab("list");
 				}
+				break;
+			case 'draw-action-edit':
+				this.setTab("edit");
 				break;
 			case 'draw-action-zoom':
 				if(g.geometry.x){
@@ -307,6 +619,7 @@ define([
 					var extent = g.geometry.getExtent().expand(1.5);
 					this.map.setExtent(extent);
 				}
+				// this._showPopup({"graphic":g});
 				break;
 		}
 	  },
@@ -343,9 +656,11 @@ define([
         //bind unit events
         this.own(on(this.showMeasure,'click',lang.hitch(this,this._setMeasureVisibility)));
 		
-		//list event
+		//bind list event
 		this.onActionClick = lang.hitch(this, this.onActionClick);
 		this._importOnFileLoad = lang.hitch(this, this._importOnFileLoad);
+		
+		
       },
 
       _onIconSelected:function(target,geotype,commontype){
@@ -364,21 +679,32 @@ define([
 		  this._controlTextIsWritten(); 
         }
         this._setMeasureVisibility();
+		
       },
 	  
 	  _controlTextIsWritten : function(){
+		this.textSymChooser.inputText.value = this.nameField.value;
+		this.textSymChooser.inputText.style.display = 'none';
+		
+		
 		var value = this.textSymChooser.inputText.value.trim();
 		if(value==""){
-			html.setStyle(this.textSymChooser.inputText,'box-shadow','3px 3px 1px 1px rgba(200, 0, 0, 0.7)');
-			this.textSymChooser.inputText.focus();
+			html.setStyle(this.nameField,'box-shadow','3px 3px 1px 1px rgba(200, 0, 0, 0.7)');
+			this.nameField.focus();
 		}
 		else{
-			html.setStyle(this.textSymChooser.inputText,'box-shadow','none');
+			html.setStyle(this.nameField,'box-shadow','none');
 		}
 	  },
 
       _onDrawEnd:function(graphic,geotype,commontype){
         var geometry = graphic.geometry;
+		
+		graphic.attributes = {
+			"name":this.nameField.value,
+			"description":this.descriptionField.value
+		}
+		
         if(geometry.type === 'extent'){
           var a = geometry;
           var polygon = new Polygon(a.spatialReference);
@@ -409,6 +735,9 @@ define([
 		
 		this.viewStack.switchView(false);
 		this._setMeasureVisibility();
+		this._saveInLocalStorage();
+		this._editGraphic = graphic;
+		this.setTab("list");
       },
 
       _initUnitSelect:function(){

@@ -44,9 +44,18 @@
 	draws:'dessins',
 	exportTitle:"Exporter les dessins",
 	importTitle:"Importer des dessins",
+	addDrawTitle:'Ajouter un dessin',
+	editDrawTitle:'Modifier un dessin',
+	listDrawTitle:'Liste des dessins',
+	importExportTitle:'Importer ou exporter les dessins',
 	importErrorMessageNavigator:"Votre navigateur ne supporte pas cette fonctionnalité.",
 	importErrorWarningSelectFile:"Merci de sélectionner un fichier.",
+	importWarningNoDrawings:"Pas de dessins à charger",
 	importErrorFileStructure:"Impossible d'importer les dessins, la structure du fichier n'est pas bonne.",
 	importWarningNoExport0Draw:"Pas d'export (aucun dessin à exporter).",
+	nameField:"Nom du dessin",
+	nameFieldDefaultValue:"Mon dessin",
+	descriptionField:"Description",
+	localLoading:"Vos derniers dessins ont été automatiquement chargés",
   })
 );
