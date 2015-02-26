@@ -28,5 +28,8 @@ http://doc.arcgis.com/en/web-appbuilder/create-apps/widget-draw.htm
 	- Local storage key : let empty or set a name :
 		- if empty, all apps with eDraw widgets share the same local storage (apps on the same server)
 		- if not empty, all apps with the same key share the same local storage (apps on the same server)
+		
+## Installation :
+Add eDraw folder in your webApp client\stemapp\widgets folder
 
 
