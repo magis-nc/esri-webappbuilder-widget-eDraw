@@ -689,7 +689,7 @@ define([
 
 	  
 	  _getSelectionSymbol:function(graphic){	
-		if(!graphic)
+		if(!graphic || !graphic.symbol)
 			return false;
 		
 		var select_color = new Color([5,230,242]);
