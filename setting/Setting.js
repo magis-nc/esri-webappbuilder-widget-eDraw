@@ -145,8 +145,13 @@ define([
         this.config = config;
         this._setDistanceTable(this.config.distanceUnits);
         this._setAreaTable(this.config.areaUnits);
+		
+		this.confirmOnDeleteInput.checked = (config.confirmOnDelete) ? true : false;
+		this.allowImportExportInput.checked = (config.allowImportExport) ? true : false;
+		this.allowLocalStorageInput.checked = (config.allowLocalStorage) ? true : false;
+		this.localStorageKeyInput.value = (config.localStorageKey) ? config.localStorageKey : '';
       },
-
+	  
       _setDistanceTable:function(distanceUnits){
         this.distanceTable.clear();
         array.forEach(distanceUnits,lang.hitch(this,function(item){
@@ -178,7 +183,14 @@ define([
         };
         config.distanceUnits = this._getDistanceConfig();
         config.areaUnits = this._getAreaConfig();
-        return config;
+		
+		config.confirmOnDelete = this.confirmOnDeleteInput.checked;
+		config.allowImportExport = this.allowImportExportInput.checked;
+		config.allowLocalStorage = this.allowLocalStorageInput.checked;
+		var key = this.localStorageKeyInput.value.trim();
+		config.localStorageKey = (key=="") ? false : key;
+       
+	   return config;
       },
 
       _getDistanceConfig:function(){

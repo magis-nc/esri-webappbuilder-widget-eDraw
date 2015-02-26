@@ -21,6 +21,11 @@
     squareFeet: "Pieds carrés",
     squareYards: "Yards carrés",
     distance: "Distances",
-    area: "Surfaces"
+    area: "Surfaces",
+	confirmOnDeleteLabel:"Demander confirmation à l'utilisateur avant une suppression",
+	allowImportExportLabel:"Activer l'import et l'export",
+	allowLocalStorageLabel:"Utiliser local storage",
+	localStorageKeyLabel:"Clé Local storage",
+	localStorageKeyInfo:"Si vide, toutes les applications partageront le même storage. Sinon, les applications avec la même clé partageront le même storage."
   })
 );

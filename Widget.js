@@ -125,8 +125,12 @@ define([
 					inactive:"menu-item",
 					buttons_when_active:"*"
 				}
-		  };
-
+		    };
+		  
+		  if(!this.config.allowImportExport){
+			this.importExportSectionButton.style.display = 'none';
+		  }		  
+		  
 			var views = [];
 			for(var name in this._tabsConfig)
 				views.push(this._tabsConfig[name]["view"]);
@@ -136,10 +140,7 @@ define([
 			  viewType: 'dom',
 			  views: views
 			});
-			html.place(this.globalViewStack.domNode, this.settingAllContent);
-			
-			this.setTab("add");
-			
+			html.place(this.globalViewStack.domNode, this.settingAllContent);			
 	  },	 
 	  
 	  setTab:function(name){

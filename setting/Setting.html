@@ -1,4 +1,39 @@
 <div style="width:100%;height:auto;">
+	<ul class="settings">
+		<li>
+			<span class="input">
+				<input type="checkbox" checked="checked" data-dojo-attach-point="confirmOnDeleteInput" />
+			</span>
+			<span class="label">${nls.confirmOnDeleteLabel}</span>
+			
+		</li>
+		<li>
+			<span class="input">
+				<input type="checkbox" checked="checked" data-dojo-attach-point="allowImportExportInput" />
+			</span>
+			<span class="label">${nls.allowImportExportLabel}</span>
+			
+		</li>
+		<li>
+			<span class="input">
+				<input type="checkbox" checked="checked" data-dojo-attach-point="allowLocalStorageInput" />
+			</span>
+			<span class="label">${nls.allowLocalStorageLabel}</span>
+			
+		</li>
+		<li>
+			<span class="input">
+				<input type="text" data-dojo-attach-point="localStorageKeyInput" />
+			</span>
+			<span class="label">
+				${nls.localStorageKeyLabel}
+				<a href="#" title="${nls.localStorageKeyInfo}">?</a>
+			</span>
+			
+		</li>
+	</ul>
+	<hr />
+	
 	<div class="query-setting-content" data-dojo-attach-point="content">
 		<div class="distance-section" data-dojo-attach-point="distanceTabNode" onselectstart="return false;">
 			<div class="btn-add-section"  data-dojo-attach-point="btnAddDistance">

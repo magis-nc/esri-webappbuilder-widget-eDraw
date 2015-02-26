@@ -1,4 +1,8 @@
 {
+  "confirmOnDelete":true,
+  "allowImportExport":true,
+  "allowLocalStorage":true,
+  "localStorageKey":false,  
   "distanceUnits": [{
     "unit": "KILOMETERS",
     "abbr": "km"

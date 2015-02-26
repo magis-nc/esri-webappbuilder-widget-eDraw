@@ -21,7 +21,12 @@ define({
     squareFeet: "Square feet",
     squareYards: "Square yards",
     distance: "Distances",
-    area: "Areas"
+    area: "Areas",
+	confirmOnDeleteLabel:"Ask for confirmation before deleting ?",
+	allowImportExportLabel:"Allow import & export ?",
+	allowLocalStorageLabel:"Use local storage ?",
+	localStorageKeyLabel:"Local storage key",
+	localStorageKeyInfo:"If not empty, applications with same key (and same server) will share the same storage. If empty, all will share same storage."
   }),
   "ar": 1,
   "cs": 1,
