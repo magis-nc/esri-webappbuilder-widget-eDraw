@@ -24,6 +24,7 @@ define([
     'esri/geometry/Polyline',
     'esri/symbols/SimpleLineSymbol',
     'esri/geometry/Polygon',
+    "esri/graphicsUtils",
     'esri/symbols/SimpleFillSymbol',
     'esri/symbols/TextSymbol',
     'esri/symbols/Font',
@@ -50,7 +51,7 @@ define([
 	'esri/InfoTemplate'
   ],
   function(declare,_WidgetsInTemplateMixin,BaseWidget,Graphic,Point,
-    SimpleMarkerSymbol,Polyline,SimpleLineSymbol,Polygon,SimpleFillSymbol,
+    SimpleMarkerSymbol,Polyline,SimpleLineSymbol,Polygon,graphicsUtils,SimpleFillSymbol,
     TextSymbol,Font, esriUnits,webMercatorUtils,geodesicUtils,lang,on,html,
     Color,Query,array, domConstruct, dom, Select,NumberSpinner,ViewStack,SymbolChooser,
     DrawBox, Message, jimuUtils, jimuSymbolUtils, localStore, InfoTemplate) {/*jshint unused: false*/
@@ -58,7 +59,12 @@ define([
       name: 'eDraw',
       baseClass: 'jimu-widget-draw',
 
-
+	  startup: function() {
+        this.inherited(arguments);
+        this.viewStack.startup();
+        this.viewStack.switchView(null);
+      },
+	  
       postMixInProperties: function(){
         this.inherited(arguments);
         this._resetUnitsArrays();
@@ -83,14 +89,22 @@ define([
         this._bindEvents();
 		
 		//load if drawings in localStorage
-		this._loadFromLocalStorage();
+		this._initLocalStorage();
 		
-		
+		//Popup or click init
 		this._initDrawingPopupAndClick();
-		
-
-		
       },
+	  
+	  onClose:function(){
+		this.selectDrawing(false);
+	  },
+	  
+	  onOpen:function(){
+		if(this.drawBox.drawLayer.graphics.length > 0)
+			this.setTab("list");
+		else
+			this.setTab("add");
+	  },
 	 
       _initTabs:function(){
 			this._tabsConfig={
@@ -163,8 +177,13 @@ define([
 		this.globalViewStack.switchView(this._tabsConfig[name]["view"]);
 		
 		switch(name){
+			case "add":
+				this._editGraphic = false;
+				this.selectDrawing(false);				
+				break;			
 			case "list":
 				this._generateDrawTable();
+				
 				var nb_draws = this.drawBox.drawLayer.graphics.length;
 				var display = (nb_draws>0) ? 'block' : 'none';
 				html.setStyle(this.allActionsNode,'display',display);
@@ -176,10 +195,11 @@ define([
 				break;
 			case "edit":
 				if(this._editGraphic){
-					console.log("Graphic à éditer : ", this._editGraphic);
-					
+					this.selectDrawing(this._editGraphic);
 					this.editNameField.value = this._editGraphic.attributes["name"];
 					this.editDescriptionField.value = this._editGraphic.attributes["description"];
+					
+					this.selectDrawing(this._editGraphic);
 					
 					this._initEditSymbolChooser();
 				}
@@ -187,9 +207,71 @@ define([
 				break;
 			default:
 				this._editGraphic = false;
+				this.selectDrawing(false);
 		}
 		return true;
 	  },
+	  
+	   _generateDrawTable:function(){
+		//Generate draw features table
+		var graphics = this.drawBox.drawLayer.graphics;
+		var nb_graphics = graphics.length;
+		
+		//Table
+		this.drawsTableBody.innerHTML = "";
+		
+		for(var i = nb_graphics-1; i>=0;i--){
+		  var graphic = graphics[i];
+		  var num = i+1;
+		  var symbol = graphic.symbol;
+		  
+		  var selected = (this._editGraphic && this._editGraphic==graphic);
+		  
+		  if(selected)
+			this.selectDrawing(graphic);
+		  
+		  if(symbol.type=="textsymbol"){
+			var json = symbol.toJson();
+			var txt = (json.text.length>4) ? json.text.substr(0,4)+"..." : json.text
+			var font = (json.font.size < 14) ? 'font-size:'+json.font.size+'px;' : 'font-size:14px; font-weight:bold;';
+			var color = (json.color.lenght==4) ? 'rgba('+json.color.join(",")+')' : 'rgba('+json.color.join(",")+')';
+			var symbolHtml = '<span style="color:'+color+';'+font+'">'+txt+'</span>';
+		  }else{	
+			var symbolNode = jimuSymbolUtils.createSymbolNode(symbol, {width:50, height:50});
+			var symbolHtml = symbolNode.innerHTML;
+		  }
+		  var name = (graphic.attributes && graphic.attributes['name']) ? graphic.attributes['name'] : '';
+		  var html = '<td>'+name+'</td>'
+		    +  '<td class="td-center" id="draw-symbol--'+i+'">'+symbolHtml+'</td>'
+			+ '<td class="list-draw-actions">'
+			+		'<span class="edit blue-button" id="draw-action-edit--'+i+'" title="'+this.nls.editLabel+'">&nbsp;</span>'
+			+		'<span class="clear red-button" id="draw-action-delete--'+i+'" title="'+this.nls.deleteLabel+'">&nbsp;</span>'
+			+		'&nbsp;&nbsp;'
+			+		'<span class="up grey-button" id="draw-action-up--'+i+'" title="'+this.nls.upLabel+'">&nbsp;</span>'
+			+		'<span class="down grey-button" id="draw-action-down--'+i+'" title="'+this.nls.downLabel+'">&nbsp;</span>'
+			+		'&nbsp;&nbsp;'
+			+		'<span class="zoom grey-button" id="draw-action-zoom--'+i+'" title="'+this.nls.zoomLabel+'">&nbsp;</span>'
+			+ '</td>';
+		  
+		  
+		  var tr = domConstruct.create(
+			"tr",
+			{
+				id : 'draw-tr--'+i,
+				innerHTML : html,
+				className:(selected) ? 'selected' : ''
+			},
+			this.drawsTableBody
+		  );
+		  
+		  //Bind actions
+		  on(dom.byId('draw-action-edit--'+i), "click", this.onActionClick);
+		  on(dom.byId('draw-action-up--'+i), "click", this.onActionClick);
+		  on(dom.byId('draw-action-down--'+i), "click", this.onActionClick);
+		  on(dom.byId('draw-action-delete--'+i), "click", this.onActionClick);
+		  on(dom.byId('draw-action-zoom--'+i), "click", this.onActionClick);
+		}
+	  },	  
 	  
 	  _clickAddButon:function(){
 		this.setTab("add");
@@ -201,8 +283,6 @@ define([
 	    this.setTab("importExport");
 	  },
 	  _clickEditSaveButon:function(){
-			
-			
 			if(this._EditSymbolChooser.type=="text")
 				this._EditSymbolChooser.inputText.value = this.editNameField.value;
 			
@@ -228,7 +308,6 @@ define([
 		var type = false;
 		switch(geom_type){
 			case "point":
-				console.log("Point donc symbol est : ", this._editGraphic.symbol);
 				type = (this._editGraphic.symbol.type=="textsymbol") ? "text" : "marker";
 				break;
 			case "polyline":
@@ -243,17 +322,19 @@ define([
 			this._EditSymbolChooser.showBySymbol(this._editGraphic.symbol);
 		}
 		else{
+			//Create symbolChooser dijit
 			this._EditSymbolChooser = new SymbolChooser(
-				{type:type, symbol:this._editGraphic.symbol},
+				{type:type, symbol:this._editGraphic.symbol, class:"full-width"},
 				this.EditSymbolChooserDiv
 			);
 		}
-		if(type=="text")
+		if(type=="text"){
 			this._EditSymbolChooser.inputText.style.display = 'none';
+		}
 		
 	  },
 	  
-	  
+	  __prevent_next_infowindow_slot:false,
 	  _initDrawingPopupAndClick:function(){
 		var infoTemplate = new esri.InfoTemplate("${name}","${description}");
 		this.drawBox.drawLayer.setInfoTemplate(infoTemplate);
@@ -261,22 +342,34 @@ define([
 		//Catch with infowindow
 		if(this.map.infoWindow){
 			this._onInfoWinHide=lang.hitch(this, function(){
+				if(this.__prevent_next_infowindow_slot){
+					this.__prevent_next_infowindow_slot = false;
+					return;
+				}
+				
 				this._editGraphic = false;
+				this.selectDrawing(false);
 				this.setTab("list");
 			});
-			this._onInfoWinShow=lang.hitch(this, function(evt){
-				console.log("show",evt);
-				this._editGraphic = false;
+			this._onInfoWinShow=lang.hitch(this, function(evt){				
+				if(this.__prevent_next_infowindow_slot){
+					this.__prevent_next_infowindow_slot = false;
+					return;
+				}
+				
 				
 				if(
 					evt.target 
 					&& evt.target.features 
 					&& evt.target.count ==1
 					&& evt.target.features[0].getLayer()
-					&& evt.target.features[0].getLayer().id == this.drawBox.drawLayer.id)
-				{
+					&& evt.target.features[0].getLayer().id == this.drawBox.drawLayer.id
+				){
 					this._editGraphic = evt.target.features[0];
 				}
+				else
+					this._editGraphic = false;
+					
 				this.setTab("list");				
 			});
 			this.map.infoWindow.on("hide", this._onInfoWinHide);
@@ -295,6 +388,61 @@ define([
 		}
 	  },
 	  
+	  setInfoWindow:function(graphic){
+		if(!this.map.infoWindow)
+			return false;
+		
+		//Prevent next e
+		this.__prevent_next_infowindow_slot=true;
+		
+		if(!graphic){
+			this.map.infoWindow.hide();
+			return true;
+		}
+		
+		var center = (graphic.geometry.getExtent) ? graphic.geometry.getExtent() : graphic.geometry;
+		
+		this.map.infoWindow.setFeatures([graphic]);
+		this.map.infoWindow.show(center);
+	  
+	  },
+	  
+	  
+	  _saveInLocalStorage:function(){
+		if(!this.config.allowLocalStorage)
+			return;
+			
+		localStore.set(this._localStorageKey, this.drawingsAsJson());  
+	  },
+	  _initLocalStorage:function(){
+			if(!this.config.allowLocalStorage)
+				return;
+			
+			this._localStorageKey = 
+				(this.config.localStorageKey) 
+				? 'WebAppBuilder.2D.eDraw.'+this.config.localStorageKey 
+				: 'WebAppBuilder.2D.eDraw';
+			
+			var content = localStore.get(this._localStorageKey);
+			
+			if(!content || !content.features || content.features.length < 1)
+				return;
+			
+			//Closure with timeout to be sure widget is ready
+			(function(widget){
+				setTimeout(
+					function(){
+						widget._importJsonContent(content, "name", "description");
+						widget.showMessage(widget.nls.localLoading);
+					}
+					,200
+				);
+			})(this);
+			
+			
+	  },
+	  
+	  
 	  // __drawingClickHandler:false,
 	  // _enabledDrawingClickHandle:function(bool){
 		// if(bool && !this.__drawingClickHandler)
@@ -305,65 +453,22 @@ define([
 		// }
 	  // },
 	  
-	    
+	   zoomAll:function(){
+			var graphics = this.drawBox.drawLayer.graphics;
+			var nb_graphics = graphics.length;
+			
+			if(nb_graphics<1)
+				return;
+			
+			var ext = graphicsUtils.graphicsExtent(this.drawBox.drawLayer.graphics);
+			
+			this.map.setExtent(ext, true);
+			return true;
+	   },	   
 	  
-	  _generateDrawTable:function(){
-		//Generate draw features table
-		var graphics = this.drawBox.drawLayer.graphics;
-		var nb_graphics = graphics.length;
-		
-		//Table
-		this.drawsTableBody.innerHTML = "";
-		
-		for(var i = nb_graphics-1; i>=0;i--){
-		  var graphic = graphics[i];
-		  var num = i+1;
-		  var symbol = graphic.symbol;
-		  
-		  if(symbol.type=="textsymbol"){
-			var json = symbol.toJson();
-			var font = (json.font.size < 14) ? 'font-size:'+json.font.size+'px;' : 'font-size:14px; font-weight:bold;';
-			var color = (json.color.lenght==4) ? 'rgba('+json.color.join(",")+')' : 'rgba('+json.color.join(",")+')';
-			var symbolHtml = '<span style="color:'+color+';'+font+'">'+json.text+'</span>';
-		  }else{	
-			var symbolNode = jimuSymbolUtils.createSymbolNode(symbol, {width:50, height:50});
-			var symbolHtml = symbolNode.innerHTML;
-		  }
-		  var name = (graphic.attributes && graphic.attributes['name']) ? graphic.attributes['name'] : '';
-		  var html = '<td>'+name+'</td>'
-		    +  '<td class="td-symbol" id="draw-symbol--'+i+'">'+symbolHtml+'</td>'
-			+ '<td class="list-draw-actions">'
-			+		'<span class="edit" id="draw-action-edit--'+i+'">&nbsp;</span>'
-			+		'<span class="clear" id="draw-action-delete--'+i+'">&nbsp;</span>'
-			+		'&nbsp;&nbsp;'
-			+		'<span class="up" id="draw-action-up--'+i+'">&nbsp;</span>'
-			+		'<span class="down" id="draw-action-down--'+i+'">&nbsp;</span>'
-			+		'&nbsp;&nbsp;'
-			+		'<span class="zoom" id="draw-action-zoom--'+i+'">&nbsp;</span>'
-			+ '</td>';
-		  
-		  
-		  var tr = domConstruct.create(
-			"tr",
-			{
-				id : 'draw-tr--'+i,
-				innerHTML : html,
-				className:(this._editGraphic && this._editGraphic==graphic) ? 'selected' : ''
-			},
-			this.drawsTableBody
-		  );
-		  
-		  //Bind actions
-		  on(dom.byId('draw-action-edit--'+i), "click", this.onActionClick);
-		  on(dom.byId('draw-action-up--'+i), "click", this.onActionClick);
-		  on(dom.byId('draw-action-down--'+i), "click", this.onActionClick);
-		  on(dom.byId('draw-action-delete--'+i), "click", this.onActionClick);
-		  on(dom.byId('draw-action-zoom--'+i), "click", this.onActionClick);
-		}
-	  },
 	  
 	  clear:function(){
-		if(confirm(this.nls.clear)){
+		if(!this.config.confirmOnDelete || confirm(this.nls.clear)){
 			this.drawBox.drawLayer.clear();
 			this.setTab("list");
 		}
@@ -371,14 +476,14 @@ define([
 	  
 	  import:function(){
 		if (!window.FileReader) {
-			this.setImportExportMessage(this.nls.importErrorMessageNavigator, 'error');
+			this.showMessage(this.nls.importErrorMessageNavigator, 'error');
 			return false;
 		}
 		
 		var input = this.importFile.files[0];
 		
 		if(!input){
-			this.setImportExportMessage(this.nls.importErrorWarningSelectFile, 'warning');
+			this.showMessage(this.nls.importErrorWarningSelectFile, 'warning');
 			return false;		
 		}
 		var reader = new FileReader();
@@ -388,21 +493,18 @@ define([
 	  
 	  
 	  _importJsonContent:function(json, nameField, descriptionField){
-		// try{
-			// console.log("-> import json : ", json);
-			
+		try{			
 			if(typeof json == 'string'){
 				json = JSON.parse(json);
-				console.log('-->', json);
 			}
 			
 			if(!json.features){
-				this.setImportExportMessage(this.nls.importErrorFileStructure, 'error');
+				this.showMessage(this.nls.importErrorFileStructure, 'error');
 				return false;
 			}
 
 			if(json.features.length<1){
-				this.setImportExportMessage(this.nls.importWarningNoDrawings, 'warning');
+				this.showMessage(this.nls.importWarningNoDrawings, 'warning');
 				return false;
 			}
 
@@ -431,6 +533,8 @@ define([
 					g.attributes = {};
 				
 				g.attributes["name"] = (!nameField || !g.attributes[nameField]) ? 'n°'+(i+1) : g.attributes[nameField];
+				if(g.symbol && g.symbol.type=="textsymbol")
+					g.attributes["name"] = g.symbol.text;
 				g.attributes["description"] = (!descriptionField || !g.attributes[descriptionField]) ? '' : g.attributes[descriptionField];
 				
 				if(g.symbol){
@@ -456,13 +560,12 @@ define([
 				}
 			}
 			
-			this.setTab("list");
-			this.setImportExportMessage();
-		// }
-		// catch(e){
-			// this.setImportExportMessage(this.nls.importErrorFileStructure, 'error');
-			// return false;
-		// }
+			this.setTab("list");	
+		}
+		catch(e){
+			this.showMessage(this.nls.importErrorFileStructure, 'error');
+			return false;
+		}
 	  },
 	  
 	  _importOnFileLoad:function(evt){
@@ -471,7 +574,7 @@ define([
 			this.importFile.files[0]="";
 	  },
 	  
-	  drawsAsJson:function(asString){
+	  drawingsAsJson:function(asString){
 		if(this.drawBox.drawLayer.graphics.length<1)
 			return (asString) ? '' : false;
 		
@@ -492,57 +595,37 @@ define([
 		return content;		
 	  },
 	  
-	   _localStorageKey:'WebAppBuilder.2D.eDraw',
-	  _saveInLocalStorage:function(){
-		localStore.set(this._localStorageKey, this.drawsAsJson());  
-	  },
-	  _loadFromLocalStorage:function(){			
-			var content = localStore.get(this._localStorageKey);
-			
-			if(!content || !content.features || content.features.length < 1)
-				return;
-			
-			//Closure with timeout to be sure widget is ready
-			(function(widget){
-				setTimeout(
-					function(){
-						widget._importJsonContent(content, "name", "description");
-						var mesage = new Message({
-							message:widget.nls.localLoading
-						});
-					}
-					,200
-				);
-			})(this);
-			
-			
-	  },
 	  
 	  
 	  export:function(){
+		this.exportButton.href="#";
 		if(this.drawBox.drawLayer.graphics.length < 1){
-			this.setImportExportMessage(this.nls.importWarningNoExport0Draw, 'warning');
+			this.showMessage(this.nls.importWarningNoExport0Draw, 'warning');
 			return false;
 		}
-		
-		this.exportButton.href = 'data:application/json;charset=utf-8,'+this.drawsAsJson(true);
-		this.setImportExportMessage();
-		return true;
+		else{
+			this.exportButton.href = 'data:application/json;charset=utf-8,'+this.drawingsAsJson(true);
+			return true;
+		}
 	  },
 	  
-	  setImportExportMessage:function(msg, type){
-		var p = this.importExportMessage;
-		if(!msg || msg==""){
-			p.innerHTML = "";
-			p.className = "no";
-			return;
+	  showMessage:function(msg, type){
+		
+		var class_icon = "message-info-icon";
+		switch(type){
+			case "error":
+				class_icon = "message-error-icon";
+				break;
+			case "warning":
+				class_icon = "message-warning-icon";
+				break;
 		}
-		var className = 'info';
-		if(['error', 'warning'].indexOf(type)!=-1){
-			className = type;
-		}
-		p.innerHTML = msg;
-		p.className = className;
+
+		var content = '<i class="'+class_icon+'">&nbsp;</i>'+msg ;
+		
+		new Message({
+			message:content
+		});
 	  },
 	  
 	  _switchGraphics:function(i1, i2){
@@ -564,24 +647,6 @@ define([
 		return true;		
 	  },
 	  
-	  
-	  // _showPopup:function(evt){
-		// console.log("draw click", evt);
-		// if(!evt.graphic)
-			// return false;
-			
-		// var g = evt.graphic;
-			
-		// var mapPoint = evt.mapPoint;
-		// if(!mapPoint){
-			// mapPoint = (g.geometry.getExtent) ? g.geometry.getExtent().getCenter() : g.geometry;
-		// }
-		
-		// this.map.infoWindow.setTitle(g.attributes['name']);
-		// this.map.infoWindow.setContent(g.attributes['description']);
-		// this.map.infoWindow.show(mapPoint);
-	  // },
-	  
 	  onActionClick:function(evt){
 		if(!evt.target || !evt.target.id)
 			return;
@@ -592,39 +657,83 @@ define([
 		
 		var g = this.drawBox.drawLayer.graphics[i];
 		this._editGraphic = g;
+		this.setInfoWindow(false);
 		
 		switch(type){
 			case 'draw-action-up':
 				this._switchGraphics(i, i+1);
 				this._generateDrawTable();
-				
 				break;
 			case 'draw-action-down':
 				this._switchGraphics(i, i-1);
 				this._generateDrawTable();
 				break;
 			case 'draw-action-delete':
-				if(confirm(this.nls.confirmDrawDelete + ".")){
+				if(!this.config.confirmOnDelete || confirm(this.nls.confirmDrawDelete + ".")){
 					g.getLayer().remove(g);
-					this.setTab("list");
+					this._editGraphic = false;
+					this.selectDrawing(false);
+					this._generateDrawTable();
 				}
 				break;
 			case 'draw-action-edit':
 				this.setTab("edit");
 				break;
 			case 'draw-action-zoom':
-				if(g.geometry.x){
-					this.map.centerAt(g.geometry);
-				}
-				else if(g.geometry.getExtent){
-					var extent = g.geometry.getExtent().expand(1.5);
-					this.map.setExtent(extent);
-				}
-				// this._showPopup({"graphic":g});
+				var extent = graphicsUtils.graphicsExtent([g]);
+				this.map.setExtent(extent, true);	
+				this._generateDrawTable();
 				break;
 		}
 	  },
 
+	  
+	  _getSelectionSymbol:function(graphic){	
+		var select_color = new Color([5,230,242]);
+		
+		switch(graphic.geometry.type){
+			case "point":
+				if(graphic.symbol.type=="textsymbol"){
+					var size=5;
+					var style = SimpleMarkerSymbol.STYLE_DIAMOND;
+				}
+				else{
+					var size=graphic.symbol.height;
+					var style = SimpleMarkerSymbol.STYLE_SQUARE;
+				}				
+				return new SimpleMarkerSymbol(
+					style, 
+					size,
+					new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, select_color, 2),
+					new Color([0,0,0,0])
+				);
+				break;
+			case "polyline":
+				return new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, select_color, 2)
+				break;
+			case "polygon":
+				return new SimpleFillSymbol(
+					SimpleFillSymbol.STYLE_NULL,
+					new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, select_color, 2),
+					new Color([0,0,0,0])
+				);
+				break;
+		}
+		return graphic.symbol;
+	  },
+	  
+	  selectDrawing:function(graphic){
+		this.map.graphics.clear();
+		
+		if(!graphic)
+			return;
+		
+		var select_graphic = new Graphic(graphic.toJson());
+		var symbol = this._getSelectionSymbol(select_graphic);
+		select_graphic.setSymbol(symbol);
+		this.map.graphics.add(select_graphic);
+	  },
+	  
       _resetUnitsArrays: function(){
         this.defaultDistanceUnits = [];
         this.defaultAreaUnits = [];
@@ -661,7 +770,6 @@ define([
 		this.onActionClick = lang.hitch(this, this.onActionClick);
 		this._importOnFileLoad = lang.hitch(this, this._importOnFileLoad);
 		
-		
       },
 
       _onIconSelected:function(target,geotype,commontype){
@@ -686,7 +794,6 @@ define([
 	  _controlTextIsWritten : function(){
 		this.textSymChooser.inputText.value = this.nameField.value;
 		this.textSymChooser.inputText.style.display = 'none';
-		
 		
 		var value = this.textSymChooser.inputText.value.trim();
 		if(value==""){
@@ -726,10 +833,8 @@ define([
         }
 		else if(commontype == 'text' && this.textSymChooser.inputText.value.trim() == ""){
 			//Message
-			new Message({
-				type:'question',
-				message:this.nls.textWarningMessage
-			});
+			this.showMessage(this.nls.textWarningMessage, 'warning');
+			
 			//Remove empty feature (text symbol without text)
 			graphic.getLayer().remove(graphic);
 		}
@@ -931,8 +1036,10 @@ define([
         var localeLength = jimuUtils.localizeNumber(lengths[0].toFixed(1));
         var length = localeLength + " " + abbr;
         var textSymbol = new TextSymbol(length,symbolFont,fontColor);
-        var labelGraphic = new Graphic(center,textSymbol,null,null);
-        this.drawBox.addGraphic(labelGraphic);
+        var labelGraphic = new Graphic(center,textSymbol,{"name":textSymbol.text, "description":""},null);
+        // var labelGraphic = new Graphic(center,textSymbol,null,null);
+        // this.drawBox.addGraphic(labelGraphic);
+        this.drawBox.drawLayer.add(labelGraphic);
       },
 
       _addPolygonMeasure:function(geometry){
@@ -962,8 +1069,10 @@ define([
         var length = localeLength + " " + lengthAbbr;
         var text = area + "    " + length;
         var textSymbol = new TextSymbol(text,symbolFont,fontColor);
-        var labelGraphic = new Graphic(center,textSymbol,null,null);
-        this.drawBox.addGraphic(labelGraphic);
+         var labelGraphic = new Graphic(center,textSymbol,{"name":textSymbol.text, "description":""},null);
+        // var labelGraphic = new Graphic(center,textSymbol,null,null);
+        // this.drawBox.addGraphic(labelGraphic);
+        this.drawBox.drawLayer.add(labelGraphic);
       },
 
       destroy: function() {
@@ -988,12 +1097,6 @@ define([
           this.textSymChooser = null;
         }
         this.inherited(arguments);
-      },
-
-      startup: function() {
-        this.inherited(arguments);
-        this.viewStack.startup();
-        this.viewStack.switchView(null);
       }
     });
   });

@@ -9,54 +9,58 @@
 	
 	  <div data-dojo-attach-point="addSection">
 		  <h2>${nls.addDrawTitle}</h2>
-		  <hr />
-		  <label>${nls.nameField}:</label>
-		  <br />
-		  <input id="nameField" type="text" data-dojo-attach-point="nameField" value="${nls.nameFieldDefaultValue}" class="jimu-input" />
-		  <br />
-		  <label>${nls.descriptionField}:</label>
-		  <br />
-		  <textarea id="descriptionField" data-dojo-attach-point="descriptionField" class="jimu-input" rows="3"></textarea>
-		  <hr />
 		  
-		  <label>${nls.selectDrawMode}</label>
-		  <div data-dojo-attach-point="drawBox" data-dojo-type="jimu/dijit/DrawBox" data-dojo-props='types:["point","polyline","polygon","text"],showClear:true' style="margin-top:5px;"></div>
-		  <div data-dojo-attach-point="settingContent" style="width:100%;">
-			<div class="point-section" data-dojo-attach-point="pointSection">
-			  <div data-dojo-attach-point="pointSymChooser" data-dojo-type="jimu/dijit/SymbolChooser" data-dojo-props='type:"marker"'></div>
-			</div>
+		  <div class="bloc">
+		  
+			  <label>${nls.nameField}:</label>
+			  <br />
+			  <input id="nameField" type="text" data-dojo-attach-point="nameField" value="${nls.nameFieldDefaultValue}" class="jimu-input" />
+			  <br />
+			  <label>${nls.descriptionField}:</label>
+			  <br />
+			  <textarea id="descriptionField" data-dojo-attach-point="descriptionField" class="jimu-input" rows="3"></textarea>
+			  <hr />
+			  
+			  <label>${nls.selectDrawMode}</label>
+			  <div data-dojo-attach-point="drawBox" data-dojo-type="jimu/dijit/DrawBox" data-dojo-props='types:["point","polyline","polygon","text"],showClear:true' style="margin-top:5px;"></div>
+			  <div data-dojo-attach-point="settingContent" style="width:100%;">
+				<div class="point-section" data-dojo-attach-point="pointSection">
+				  <div data-dojo-attach-point="pointSymChooser" data-dojo-type="jimu/dijit/SymbolChooser" data-dojo-props='type:"marker"'></div>
+				</div>
 
-			<div class="line-section" data-dojo-attach-point="lineSection">
-			  <div data-dojo-attach-point="lineSymChooser" data-dojo-type="jimu/dijit/SymbolChooser" data-dojo-props='type:"line"'></div>
-			</div>
+				<div class="line-section" data-dojo-attach-point="lineSection">
+				  <div data-dojo-attach-point="lineSymChooser" data-dojo-type="jimu/dijit/SymbolChooser" data-dojo-props='type:"line"'></div>
+				</div>
 
-			<div class="polygon-section" data-dojo-attach-point="polygonSection">
-			  <div data-dojo-attach-point="fillSymChooser" data-dojo-type="jimu/dijit/SymbolChooser" data-dojo-props='type:"fill"'></div>
-			</div>
+				<div class="polygon-section" data-dojo-attach-point="polygonSection">
+				  <div data-dojo-attach-point="fillSymChooser" data-dojo-type="jimu/dijit/SymbolChooser" data-dojo-props='type:"fill"'></div>
+				</div>
 
-			<div class="text-section" data-dojo-attach-point="textSection">
-			  <div data-dojo-attach-point="textSymChooser" data-dojo-type="jimu/dijit/SymbolChooser" data-dojo-props='type:"text"'></div>
-			</div>
-		  </div>
+				<div class="text-section" data-dojo-attach-point="textSection">
+				  <div data-dojo-attach-point="textSymChooser" data-dojo-type="jimu/dijit/SymbolChooser" data-dojo-props='type:"text"'></div>
+				</div>
+			  </div>
 
-		  <div data-dojo-attach-point="measureSection" class="measure-section">
-			<div style="margin-bottom:7px;">
-			  <input data-dojo-attach-point="showMeasure" type="checkbox" />
-			  <label data-dojo-attach-point="showMeasureLabel">${nls.showMeasurements}</label>
+			  <div data-dojo-attach-point="measureSection" class="measure-section">
+				<div style="margin-bottom:7px;">
+				  <input data-dojo-attach-point="showMeasure" type="checkbox" />
+				  <label data-dojo-attach-point="showMeasureLabel">${nls.showMeasurements}</label>
+				</div>
+				<div data-dojo-attach-point="areaMeasure" style="display:none;height:30px;margin-bottom:7px;">
+				  <div class="area-units-tip  jimu-float-leading">${nls.areaUnits}</div>
+				  <select data-dojo-attach-point="areaUnitSelect" data-dojo-type="dijit/form/Select" class=" jimu-float-trailing" style="width:50%;height:30px;"></select>
+				</div>
+				<div data-dojo-attach-point="distanceMeasure" style="display:none;height:30px;">
+				  <div class="distance-units-tip jimu-float-leading">${nls.distanceUnits}</div>
+				  <select data-dojo-attach-point="distanceUnitSelect" data-dojo-type="dijit/form/Select" class=" jimu-float-trailing" style="width:50%;height:30px;"></select>
+				</div>
+			  </div>
 			</div>
-			<div data-dojo-attach-point="areaMeasure" style="display:none;height:30px;margin-bottom:7px;">
-			  <div class="area-units-tip  jimu-float-leading">${nls.areaUnits}</div>
-			  <select data-dojo-attach-point="areaUnitSelect" data-dojo-type="dijit/form/Select" class=" jimu-float-trailing" style="width:50%;height:30px;"></select>
-			</div>
-			<div data-dojo-attach-point="distanceMeasure" style="display:none;height:30px;">
-			  <div class="distance-units-tip jimu-float-leading">${nls.distanceUnits}</div>
-			  <select data-dojo-attach-point="distanceUnitSelect" data-dojo-type="dijit/form/Select" class=" jimu-float-trailing" style="width:50%;height:30px;"></select>
-			</div>
-		  </div>
 	  </div>
+	  
 	  <div data-dojo-attach-point="editSection">
 		<h2>${nls.editDrawTitle}</h2>
-		  <hr />
+		<div class="content">
 		  <label>${nls.nameField}:</label>
 		  <br />
 		  <input id="nameField" type="text" data-dojo-attach-point="editNameField" value="${nls.nameFieldDefaultValue}" class="jimu-input" />
@@ -65,49 +69,58 @@
 		  <br />	  
 		  <textarea id="descriptionField" data-dojo-attach-point="editDescriptionField" class="jimu-input" rows="3"></textarea>
 		  <hr />
-		  <div data-dojo-attach-point="EditSymbolChooserDiv" "width:100%;"></div>
-		  <hr />
-		<input type="button" class="jimu-input" value="Save" data-dojo-attach-event="ondijitclick:_clickEditSaveButon"/>
-		<input type="button" class="jimu-input" value="Cancel" data-dojo-attach-event="ondijitclick:_clickEditCancelButon"/>
-		<input type="button" class="jimu-input" value="Reset" data-dojo-attach-event="ondijitclick:_clickResetCancelButon"/>
-	  </div>
-	  <div data-dojo-attach-point="listSection">
-		<h2>${nls.listDrawTitle}</h2>
-		<table class="jimu-table">
-			<thead>
-				<tr>
-					<!--<th></th>-->
-					<th>${nls.nameField}</th>
-					<th colspan="2" data-dojo-attach-point="tableTH"></th>
-				</tr>
-			</thead>
-			<tbody data-dojo-attach-point="drawsTableBody"></tbody>
-		</table>
-		<div data-dojo-attach-point="allActionsNode">
-			${nls.all} :
-			<div class="list-draw-actions">
-				<span class="clear" data-dojo-attach-event="ondijitclick:clear">&nbsp;</span>
-				</div>
+		  <div data-dojo-attach-point="EditSymbolChooserDiv" class="full-width"></div>
+		</div>
+		<div class="footer">
+			<input type="button" class="jimu-input blue-button" value="Save" data-dojo-attach-event="ondijitclick:_clickEditSaveButon"/>
+			<input type="button" class="jimu-input red-button" value="Cancel" data-dojo-attach-event="ondijitclick:_clickEditCancelButon"/>
+			<input type="button" class="jimu-input grey-button" value="Reset" data-dojo-attach-event="ondijitclick:_clickResetCancelButon"/>
 		</div>
 	  </div>
+	  
+	  <div data-dojo-attach-point="listSection">
+		<h2>${nls.listDrawTitle}</h2>
+		<div class="content">
+			<table class="jimu-table draw-table">
+				<thead>
+					<tr>
+						<!--<th></th>-->
+						<th>${nls.nameField}</th>
+						<th>${nls.symbolField}</th>
+						<th data-dojo-attach-point="tableTH"></th>
+					</tr>
+				</thead>
+				<tbody data-dojo-attach-point="drawsTableBody"></tbody>
+			</table>
+		</div>
+		<div class="footer">
+			<div data-dojo-attach-point="allActionsNode">
+				<div class="list-draw-actions">
+					<span class="text">${nls.all} :</span>
+					<span title="${nls.clear}" class="clear red-button" data-dojo-attach-event="ondijitclick:clear">&nbsp;</span>
+					<span title="${nls.zoomAllLabel}" class="zoom blue-button" data-dojo-attach-event="ondijitclick:zoomAll">&nbsp;</span>
+				</div>
+			</div>
+		</div>
+	  </div>
+	  
 	  <div data-dojo-attach-point="importExportSection">
 		<h2>${nls.importExportTitle}</h2>
 		<table class="jimu-table">
 			<tr><td>
 				<h4 class="title">${nls.exportTitle}</h4>
 				<div class="list-draw-actions">
-					<a data-dojo-attach-point="exportButton" target="_BLANK" data-dojo-attach-event="ondijitclick:export" download="myDraw.json" href="#"><span class="export"></span></a>
+					<a data-dojo-attach-point="exportButton" target="_BLANK" data-dojo-attach-event="ondijitclick:export" download="myDraw.json" href="#"><span class="export blue-button"></span></a>
 				</div>
 			</td></tr>
 			<tr><td>
 				<h4 class="title">${nls.importTitle}</h4>
 				<div class="draw-import list-draw-actions">
 					<input class="file" value="" type="file" data-dojo-attach-point="importFile" />
-					<a data-dojo-attach-point="importButton" data-dojo-attach-event="ondijitclick:import"><span class="import"></span></a>
+					<a data-dojo-attach-point="importButton" data-dojo-attach-event="ondijitclick:import"><span class="import blue-button"></span></a>
 				</div>
 			</td></tr>
 		</table>
-		<p data-dojo-attach-point="importExportMessage" class="no"></p>
 	  </div>
 	</div>  
 </div>
