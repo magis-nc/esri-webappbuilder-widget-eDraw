@@ -689,6 +689,9 @@ define([
 
 	  
 	  _getSelectionSymbol:function(graphic){	
+		if(!graphic)
+			return false;
+		
 		var select_color = new Color([5,230,242]);
 		
 		switch(graphic.geometry.type){
@@ -718,6 +721,15 @@ define([
 					new Color([0,0,0,0])
 				);
 				break;
+			case "extent":
+				return new SimpleFillSymbol(
+					SimpleFillSymbol.STYLE_NULL,
+					new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, select_color, 2),
+					new Color([0,0,0,0])
+				);
+				break;
+			default:
+				console.log("Pas de symbole de selection !!!!", graphic);
 		}
 		return graphic.symbol;
 	  },
@@ -730,8 +742,10 @@ define([
 		
 		var select_graphic = new Graphic(graphic.toJson());
 		var symbol = this._getSelectionSymbol(select_graphic);
-		select_graphic.setSymbol(symbol);
-		this.map.graphics.add(select_graphic);
+		if(symbol){
+			select_graphic.setSymbol(symbol);
+			this.map.graphics.add(select_graphic);
+		}
 	  },
 	  
       _resetUnitsArrays: function(){
