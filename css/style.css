@@ -282,3 +282,62 @@
 .jimu-widget-draw .grey-button:hover {
     background-color: rgba(153, 153, 153, 1);
 }
+
+.jimu-widget-draw .symbol-set-table{
+	width:100%;
+}
+
+
+
+.jimu-widget-draw div.symbol-section.text-symbol-section > table > colgroup > col:nth-child(1) {
+  width: 80px;
+}
+.jimu-widget-draw .draw-plus.font-name {
+  width:145px;
+  height:30px;
+  float:left;"
+}
+.jimu-widget-draw .draw-plus.text-angle {
+  width: 50%;
+}
+.jimu-widget-draw .draw-plus.text-angle-sample {
+  position: absolute;
+  margin-left: 30px;
+  margin-top: 7px;
+}
+.jimu-widget-draw .draw-plus.text-options {
+  float:left; 
+  padding:4px; 
+  height:30px;
+}
+.jimu-widget-draw .draw-plus.text-option {
+  width:22px;
+  height:22px;
+  line-height: 22px;
+  text-align: center;
+  float: left;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #808080;
+  margin-left: 5px;
+  font-family: serif;
+  font-size: 14px;
+  font-weight: bold;
+  display: table;
+}
+.jimu-widget-draw .draw-plus.text-option.selected {
+  background-color: #C0C0C0;
+  border-width: 2px;
+  border-radius:2px;
+}
+.jimu-widget-draw .draw-plus.text-option:hover{
+  background-color: #D1D1D1;
+  cursor:pointer;
+}
+
+.jimu-widget-draw .draw-plus.text-options div.draw-plus.text-option.text-italic {
+  font-style: italic;
+}
+.jimu-widget-draw .draw-plus.text-options div.draw-plus.text-option.text-underline {
+  text-decoration: underline;
+}

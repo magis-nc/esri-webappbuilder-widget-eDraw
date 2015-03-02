@@ -1,4 +1,4 @@
-﻿define(
+define(
    ({
     _widgetLabel: "Dessin",
     selectDrawMode: "Sélectionner le mode de dessin",
@@ -65,5 +65,14 @@
 	downLabel:"Descendre ce dessin",
 	zoomLabel:"Zoomer sur ce dessin",
 	zoomAllLabel:"Zoomer sur tous les dessins",
+	textAngle: 'Angle',
+    fontName: 'Police',
+    drawSampleRotatedText: 'Texte',
+    boldTitle: 'Gras',
+    boldCharacter: 'B',
+    italicTitle: 'Italique',
+    italicCharacter: 'I',
+    underlineTitle: 'Souligné',
+    underlineCharacter: 'U'
   })
 );

@@ -38,6 +38,39 @@
 
 				<div class="text-section" data-dojo-attach-point="textSection">
 				  <div data-dojo-attach-point="textSymChooser" data-dojo-type="jimu/dijit/SymbolChooser" data-dojo-props='type:"text"'></div>
+				  <table class="symbol-set-table" cellspading="0">
+					  <tbody>
+					  <tr class="draw-plus textFontOptions">
+						<td>
+							<span>${nls.fontName}</span>
+						  </td>
+						  <td>
+							<div data-dojo-attach-point="textPlusPoliceNode" data-dojo-type="dijit/form/Select" class="draw-plus font-name">
+							  <span value="Arial, Helvetica, sans-serif">Sans Serif (1)</span>
+							  <span value="Comic Sans MS, Futura, sans-serif">Sans Serif (2)</span>
+							  <span value="Times New Roman, Times, serif">Serif (1)</span>
+							  <span value="Palatino Linotype, Book Antiqua, Palatino, serif">Serif (2)</span>
+							  <span value="Lucida Console, Monaco, monospace">Fixed Width (1)</span>
+							  <span value="Courier New, Courier, monospace">Fixed Width (2)</span>
+							</div>
+							<div class="draw-plus text-options">
+							  <div data-dojo-attach-point="textPlusBoldNode" title="${nls.boldTitle}" class="draw-plus text-option text-bold">${nls.boldCharacter}</div>
+							  <div data-dojo-attach-point="textPlusItalicNode" title="${nls.italicTitle}" class="draw-plus text-option text-italic">${nls.italicCharacter}</div>
+							  <div data-dojo-attach-point="textPlusUnderlineNode" title="${nls.underlineTitle}" class="draw-plus text-option text-underline">${nls.underlineCharacter}</div>
+							</div>
+						  </td>
+						</tr>
+						<tr class="draw-plus textAngleOptions">
+						  <td>
+							<span>${nls.textAngle}</span>
+						  </td>
+						  <td>
+							<input data-dojo-attach-point="textAngleNode" data-dojo-type="dijit/form/NumberSpinner" data-dojo-props="value:0,smallDelta:5,constraints:{min:-90,max:90},intermediateChanges:true" class="draw-plus text-angle"></input>
+							<span data-dojo-attach-point="textAnglePreviewNode" class="draw-plus text-angle-sample">${nls.drawSampleRotatedText}</span>
+						  </td>
+					  </tr>
+					  </tbody>
+					</table>
 				</div>
 			  </div>
 
@@ -70,6 +103,39 @@
 		  <textarea id="descriptionField" data-dojo-attach-point="editDescriptionField" class="jimu-input" rows="3"></textarea>
 		  <hr />
 		  <div data-dojo-attach-point="EditSymbolChooserDiv" class="full-width"></div>
+		  <table class="symbol-set-table" cellspading="0" data-dojo-attach-point="EditSymbolTextPlusNode" style="display:none;">
+			  <tbody>
+			  <tr class="draw-plus textFontOptions">
+				<td>
+					<span>${nls.fontName}</span>
+				  </td>
+				  <td>
+					<div data-dojo-attach-point="EditTextPlusPoliceNode" data-dojo-type="dijit/form/Select" class="draw-plus font-name">
+					  <span value="Arial, Helvetica, sans-serif">Sans Serif (1)</span>
+					  <span value="Comic Sans MS, Futura, sans-serif">Sans Serif (2)</span>
+					  <span value="Times New Roman, Times, serif">Serif (1)</span>
+					  <span value="Palatino Linotype, Book Antiqua, Palatino, serif">Serif (2)</span>
+					  <span value="Lucida Console, Monaco, monospace">Fixed Width (1)</span>
+					  <span value="Courier New, Courier, monospace">Fixed Width (2)</span>
+					</div>
+					<div class="draw-plus text-options">
+					  <div data-dojo-attach-point="EditTextPlusBoldNode" title="${nls.boldTitle}" class="draw-plus text-option text-bold">${nls.boldCharacter}</div>
+					  <div data-dojo-attach-point="EditTextPlusItalicNode" title="${nls.italicTitle}" class="draw-plus text-option text-italic">${nls.italicCharacter}</div>
+					  <div data-dojo-attach-point="EditTextPlusUnderlineNode" title="${nls.underlineTitle}" class="draw-plus text-option text-underline">${nls.underlineCharacter}</div>
+					</div>
+				  </td>
+				</tr>
+				<tr class="draw-plus textAngleOptions">
+				  <td>
+					<span>${nls.textAngle}</span>
+				  </td>
+				  <td>
+					<input data-dojo-attach-point="EditTextAngleNode" data-dojo-type="dijit/form/NumberSpinner" data-dojo-props="value:0,smallDelta:5,constraints:{min:-90,max:90},intermediateChanges:true" class="draw-plus text-angle"></input>
+					<span data-dojo-attach-point="EditTextAnglePreviewNode" class="draw-plus text-angle-sample">${nls.drawSampleRotatedText}</span>
+				  </td>
+			  </tr>
+			  </tbody>
+			</table>
 		</div>
 		<div class="footer">
 			<input type="button" class="jimu-input blue-button" value="Save" data-dojo-attach-event="ondijitclick:_clickEditSaveButon"/>

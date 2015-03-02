@@ -59,7 +59,25 @@ define([
     return declare([BaseWidget, _WidgetsInTemplateMixin], {
       name: 'eDraw',
       baseClass: 'jimu-widget-draw',
-
+	  
+	  
+	  _drawPlus:{
+		"add":{
+			"police":false,
+			"bold":false,
+			"italic":false,
+			"underline":false,
+			"angle":false
+		},
+		"edit":{
+			"police":false,
+			"bold":false,
+			"italic":false,
+			"underline":false,
+			"angle":false
+		}
+	  },
+	  
 	  startup: function() {
         this.inherited(arguments);
         this.viewStack.startup();
@@ -94,6 +112,8 @@ define([
 		
 		//Popup or click init
 		this._initDrawingPopupAndClick();
+
+		
       },
 	  
 	  onClose:function(){
@@ -289,13 +309,14 @@ define([
 	    this.setTab("importExport");
 	  },
 	  _clickEditSaveButon:function(){
-			if(this._EditSymbolChooser.type=="text")
+			if(this._EditSymbolChooser.type=="text"){
 				this._EditSymbolChooser.inputText.value = this.editNameField.value;
-			
+				this._update_edit_textSymbol();
+			}
 			
 			this._editGraphic.attributes["name"] = this.editNameField.value;
 			this._editGraphic.attributes["description"] = this.editDescriptionField.value;
-			this._editGraphic.setSymbol(this._EditSymbolChooser.getSymbol());
+			this._editGraphic.setSymbol(this._EditSymbolChooser.symbol);
 			this.setTab("list");
 	  },
 	   _clickEditCancelButon:function(){
@@ -324,6 +345,10 @@ define([
 				break;
 		}
 		
+		//textPlus
+		this.EditSymbolTextPlusNode.style.display = (type=="text") ? 'block' : 'none';
+		
+		//Show (or create) symbolChooser
 		if(this._EditSymbolChooser){
 			this._EditSymbolChooser.showBySymbol(this._editGraphic.symbol);
 		}
@@ -339,6 +364,22 @@ define([
 					tr.style.display = 'none';
 			}
 		}
+		
+		//TEXT PLUS
+		if(type=="text"){
+			this._drawPlus["edit"]["bold"] = (this._editGraphic.symbol.font.weight == esri.symbol.Font.WEIGHT_BOLD);
+			this._drawPlus["edit"]["italic"] = (this._editGraphic.symbol.font.style == esri.symbol.Font.STYLE_ITALIC);
+			this._drawPlus["edit"]["underline"] = (this._editGraphic.symbol.font.decoration == 'underline');
+			// this.EditTextPlusPoliceNode.value = this._editGraphic.symbol.font.family;
+			this.EditTextPlusPoliceNode.set("value",this._editGraphic.symbol.font.family);
+			// this.EditTextAngleNode.value = this._editGraphic.symbol.angle;
+			this.EditTextAngleNode.set("value", this._editGraphic.symbol.angle);
+			
+			this._enableClass(this.EditTextPlusBoldNode, 'selected',this._drawPlus["edit"]["bold"]);
+			this._enableClass(this.EditTextPlusItalicNode, 'selected',this._drawPlus["edit"]["italic"]);
+			this._enableClass(this.EditTextPlusUnderlineNode, 'selected',this._drawPlus["edit"]["underline"]);
+		}
+		
 	  },
 	  
 	  __prevent_next_infowindow_slot:false,
@@ -797,7 +838,132 @@ define([
 		this.onActionClick = lang.hitch(this, this.onActionClick);
 		this._importOnFileLoad = lang.hitch(this, this._importOnFileLoad);
 		
+		//Draw plus !	
+		this._update_add_textSymbol = lang.hitch(this, this._update_add_textSymbol);
+		this._update_edit_textSymbol = lang.hitch(this, this._update_edit_textSymbol);
+		
+		this.textPlusPoliceNode.on("change", this._update_add_textSymbol);
+		this.textAngleNode.on("change", this._update_add_textSymbol);
+		on(this.textPlusBoldNode, "click", lang.hitch(this, this._onAddBoldClick));
+		on(this.textPlusItalicNode, "click", lang.hitch(this, this._onAddItalicClick));
+		on(this.textPlusUnderlineNode, "click", lang.hitch(this, this._onAddUnderlineClick));
+		
+		this.EditTextPlusPoliceNode.on("change", this._update_edit_textSymbol);
+		this.EditTextAngleNode.on("change", this._update_edit_textSymbol);
+		on(this.EditTextPlusBoldNode, "click", lang.hitch(this, this._onEditBoldClick));
+		on(this.EditTextPlusItalicNode, "click", lang.hitch(this, this._onEditItalicClick));
+		on(this.EditTextPlusUnderlineNode, "click", lang.hitch(this, this._onEditUnderlineClick));
+		
       },
+	  
+	  _update_add_textSymbol:function(){
+		var family = this.textPlusPoliceNode.value;
+		var angle = this.textAngleNode.value;
+		var weight = this._drawPlus["add"]["bold"] ? esri.symbol.Font.WEIGHT_BOLD : esri.symbol.Font.WEIGHT_NORMAL;
+		var style = this._drawPlus["add"]["italic"] ? esri.symbol.Font.STYLE_ITALIC : esri.symbol.Font.STYLE_NORMAL;
+		var decoration = this._drawPlus["add"]["underline"] ? 'underline' : 'none';
+		
+		this.textSymChooser.symbol.font.setFamily(family);
+		this.textSymChooser.symbol.setAngle(angle);
+		this.textSymChooser.symbol.font.setWeight(weight);
+		this.textSymChooser.symbol.font.setStyle(style);
+		this.textSymChooser.symbol.font.setDecoration(decoration);
+		
+		this.drawBox.setTextSymbol(this.textSymChooser.symbol);
+		
+		this.textSymChooser.textPreview.style.fontFamily = family;
+		this.textSymChooser.textPreview.style['font-style'] = (this._drawPlus["add"]["italic"]) ? 'italic' : 'normal';
+		this.textSymChooser.textPreview.style['font-weight'] = (this._drawPlus["add"]["bold"]) ? 'bold' : 'normal';
+		this.textSymChooser.textPreview.style['text-decoration'] = (this._drawPlus["add"]["underline"]) ? 'underline' : 'none';
+		this.textSymChooser.textPreview.style.transform = 'rotate(' + angle + 'deg)';
+		this.textSymChooser.textPreview.style['-ms-transform'] = 'rotate(' + angle + 'deg)';
+		
+		this.textAnglePreviewNode.style['font-style'] = (this._drawPlus["add"]["italic"]) ? 'italic' : 'normal';
+		this.textAnglePreviewNode.style['font-weight'] = (this._drawPlus["add"]["bold"]) ? 'bold' : 'normal';
+		this.textAnglePreviewNode.style['text-decoration'] = (this._drawPlus["add"]["underline"]) ? 'underline' : 'none';
+		this.textAnglePreviewNode.style.transform = 'rotate(' + angle + 'deg)';
+		this.textAnglePreviewNode.style['-ms-transform'] = 'rotate(' + angle + 'deg)';
+		
+		if(this._phantomSymbol){
+			this._phantomSymbol.font.setFamily(family);
+			this._phantomSymbol.setAngle(angle);
+			this._phantomSymbol.font.setWeight(weight);
+			this._phantomSymbol.font.setStyle(style);
+			this._phantomSymbol.font.setDecoration(decoration);
+		}
+	  },
+	  
+	  _update_edit_textSymbol:function(){
+		var family = this.EditTextPlusPoliceNode.value;
+		var angle = this.EditTextAngleNode.value;
+		var weight = this._drawPlus["edit"]["bold"] ? esri.symbol.Font.WEIGHT_BOLD : esri.symbol.Font.WEIGHT_NORMAL;
+		var style = this._drawPlus["edit"]["italic"] ? esri.symbol.Font.STYLE_ITALIC : esri.symbol.Font.STYLE_NORMAL;
+		var decoration = this._drawPlus["edit"]["underline"] ? 'underline' : 'none';
+		
+		 
+		this._EditSymbolChooser.symbol.font.setFamily(family);
+		this._EditSymbolChooser.symbol.setAngle(angle);
+		this._EditSymbolChooser.symbol.font.setWeight(weight);
+		this._EditSymbolChooser.symbol.font.setStyle(style);
+		this._EditSymbolChooser.symbol.font.setDecoration(decoration);
+		
+		this._EditSymbolChooser.textPreview.style.fontFamily = family;
+		this._EditSymbolChooser.textPreview.style['font-style'] = (this._drawPlus["edit"]["italic"]) ? 'italic' : 'normal';
+		this._EditSymbolChooser.textPreview.style['font-weight'] = (this._drawPlus["edit"]["bold"]) ? 'bold' : 'normal';
+		this._EditSymbolChooser.textPreview.style['text-decoration'] = (this._drawPlus["edit"]["underline"]) ? 'underline' : 'none';
+		this._EditSymbolChooser.textPreview.style.transform = 'rotate(' + angle + 'deg)';
+		this._EditSymbolChooser.textPreview.style['-ms-transform'] = 'rotate(' + angle + 'deg)';
+		
+		this.EditTextAnglePreviewNode.style['font-style'] = (this._drawPlus["edit"]["italic"]) ? 'italic' : 'normal';
+		this.EditTextAnglePreviewNode.style['font-weight'] = (this._drawPlus["edit"]["bold"]) ? 'bold' : 'normal';
+		this.EditTextAnglePreviewNode.style['text-decoration'] = (this._drawPlus["edit"]["underline"]) ? 'underline' : 'none';
+		this.EditTextAnglePreviewNode.style.transform = 'rotate(' + angle + 'deg)';
+		this.EditTextAnglePreviewNode.style['-ms-transform'] = 'rotate(' + angle + 'deg)';
+	  },
+	  
+	  _enableClass:function(elt, className, bool){
+		if(elt.classList){
+			if(bool)
+				elt.classList.add(className);
+			else
+				elt.classList.remove(className);
+			return;
+		}
+		elt.className = elt.className.replace(className,"").replace("  ", " ").trim();
+		if(bool)
+			elt.className += className;
+	  },
+	  
+	 _onAddBoldClick:function(evt){
+			this._drawPlus["add"]["bold"] = !this._drawPlus["add"]["bold"];
+			this._enableClass(this.textPlusBoldNode, 'selected',this._drawPlus["add"]["bold"]);
+			this._update_add_textSymbol();
+		},
+		_onAddItalicClick:function(evt){
+			this._drawPlus["add"]["italic"] = !this._drawPlus["add"]["italic"];
+			this._enableClass(this.textPlusItalicNode, 'selected',this._drawPlus["add"]["italic"]);
+			this._update_add_textSymbol();
+		},
+		_onAddUnderlineClick:function(evt){
+			this._drawPlus["add"]["underline"] = !this._drawPlus["add"]["underline"];
+			this._enableClass(this.textPlusUnderlineNode, 'selected',this._drawPlus["add"]["underline"]);
+			this._update_add_textSymbol();
+		},
+		_onEditBoldClick:function(evt){
+			this._drawPlus["edit"]["bold"] = !this._drawPlus["edit"]["bold"];
+			this._enableClass(this.EditTextPlusBoldNode, 'selected',this._drawPlus["edit"]["bold"]);
+			this._update_edit_textSymbol();
+		},
+		_onEditItalicClick:function(evt){
+			this._drawPlus["edit"]["italic"] = !this._drawPlus["edit"]["italic"];
+			this._enableClass(this.EditTextPlusItalicNode, 'selected',this._drawPlus["edit"]["italic"]);
+			this._update_edit_textSymbol();
+		},
+		_onEditUnderlineClick:function(evt){
+			this._drawPlus["edit"]["underline"] = !this._drawPlus["edit"]["underline"];
+			this._enableClass(this.EditTextPlusUnderlineNode, 'selected',this._drawPlus["edit"]["underline"]);
+			this._update_edit_textSymbol();
+		},
 	  
 	  _phantomPoint:false,
 	  _phantomSymbol:false,
