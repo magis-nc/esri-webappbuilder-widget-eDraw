@@ -48,13 +48,14 @@ define([
     'jimu/utils',
 	'jimu/symbolUtils',
 	'libs/storejs/store',
-	'esri/InfoTemplate'
+	'esri/InfoTemplate',
+	'esri/layers/GraphicsLayer'
   ],
   function(declare,_WidgetsInTemplateMixin,BaseWidget,Graphic,Point,
     SimpleMarkerSymbol,Polyline,SimpleLineSymbol,Polygon,graphicsUtils,SimpleFillSymbol,
     TextSymbol,Font, esriUnits,webMercatorUtils,geodesicUtils,lang,on,html,
     Color,Query,array, domConstruct, dom, Select,NumberSpinner,ViewStack,SymbolChooser,
-    DrawBox, Message, jimuUtils, jimuSymbolUtils, localStore, InfoTemplate) {/*jshint unused: false*/
+    DrawBox, Message, jimuUtils, jimuSymbolUtils, localStore, InfoTemplate,GraphicsLayer) {/*jshint unused: false*/
     return declare([BaseWidget, _WidgetsInTemplateMixin], {
       name: 'eDraw',
       baseClass: 'jimu-widget-draw',
@@ -97,6 +98,7 @@ define([
 	  
 	  onClose:function(){
 		this.selectDrawing(false);
+		this._enableMapPreview(false);
 	  },
 	  
 	  onOpen:function(){
@@ -157,8 +159,12 @@ define([
 			html.place(this.globalViewStack.domNode, this.settingAllContent);			
 	  },	 
 	  
+	  
+	  
 	  setTab:function(name){
 		var tab_asked = this._tabsConfig[name];
+		
+		this._enableMapPreview(false);
 		
 		if(!tab_asked)
 			return false;
@@ -327,11 +333,12 @@ define([
 				{type:type, symbol:this._editGraphic.symbol, class:"full-width"},
 				this.EditSymbolChooserDiv
 			);
+			if(type=="text"){
+				var tr = this._parentByTag(this._EditSymbolChooser.inputText, 'tr');
+				if(tr)
+					tr.style.display = 'none';
+			}
 		}
-		if(type=="text"){
-			this._EditSymbolChooser.inputText.style.display = 'none';
-		}
-		
 	  },
 	  
 	  __prevent_next_infowindow_slot:false,
@@ -765,16 +772,22 @@ define([
         //bind symbol change events
         this.own(on(this.pointSymChooser,'change',lang.hitch(this,function(){
           this._setDrawDefaultSymbols();
+		  this._phantomSymbol = this.pointSymChooser.getSymbol();
+		  this._enableMapPreview(true);
         })));
         this.own(on(this.lineSymChooser,'change',lang.hitch(this,function(){
           this._setDrawDefaultSymbols();
+		  this._enableMapPreview(false);
         })));
         this.own(on(this.fillSymChooser,'change',lang.hitch(this,function(){
           this._setDrawDefaultSymbols();
+		   this._enableMapPreview(false);
         })));
         this.own(on(this.textSymChooser,'change',lang.hitch(this,function(symbol){
 			this.drawBox.setTextSymbol(symbol);
 			this._controlTextIsWritten();
+			this._phantomSymbol = this.textSymChooser.getSymbol();
+			this._enableMapPreview(true);
         })));
 
         //bind unit events
@@ -785,21 +798,87 @@ define([
 		this._importOnFileLoad = lang.hitch(this, this._importOnFileLoad);
 		
       },
+	  
+	  _phantomPoint:false,
+	  _phantomSymbol:false,
+	  _phantomLayer:false,
+	  _phantomHandle:false,
+	  
+	  _enableMapPreview:function(bool){
+		if(!bool){
+			if(this._phantomPoint)
+				this._phantomPoint.hide();
+			if(this._phantomHandle){
+				dojo.disconnect(this._phantomHandle);
+				this._phantomHandle = false;
+			}
+			return;
+		}
+		
+		//Create layer
+		if(!this._phantomLayer){
+			this._phantomLayer = new GraphicsLayer({id:this.id+"__phantomLayer"});
+			// this._phantomPoint
+			var center = this.map.extent.getCenter();
+			this._phantomPoint = new Graphic(center, this._phantomSymbol, {});
+			this._phantomLayer.add(this._phantomPoint);
+			this._phantomPoint.hide();
+			
+			this.map.addLayer(this._phantomLayer);
+		}
+		else{
+			this._phantomPoint.setSymbol(this._phantomSymbol);
+		}
+		
+		//Track mouse on map
+		if(!this._phantomHandle){
+			this._phantomHandle = on(this.map, 'mouse-move, mouse-out, mouse-over', lang.hitch(this, function(evt) {
+			  if (this.state === 'opened') {
+				switch (evt.type) {
+				  case 'mousemove':
+					if (this._phantomPoint) {
+					  this._phantomPoint.setGeometry(evt.mapPoint);
+					  this._phantomPoint.show();
+					}
+					break;
+				  case 'mouseout':
+					if (this._phantomPoint) {
+					  this._phantomPoint.hide();
+					}
+					break;
+				  case 'mouseover':
+					if (this._phantomPoint) {
+					  this._phantomPoint.setGeometry(evt.mapPoint);
+					  this._phantomPoint.show();
+					}
+					break;
+				}
+			  }
+			}));
+		}
+		
+	  },
 
       _onIconSelected:function(target,geotype,commontype){
         this._setDrawDefaultSymbols();
         if(commontype === 'point'){
           this.viewStack.switchView(this.pointSection);
+		  this._phantomSymbol = this.pointSymChooser.getSymbol();
+		  this._enableMapPreview(true);
         }
         else if(commontype === 'polyline'){
           this.viewStack.switchView(this.lineSection);
+		  this._enableMapPreview(false);
         }
         else if(commontype === 'polygon'){
           this.viewStack.switchView(this.polygonSection);
+		  this._enableMapPreview(false);
         }
         else if(commontype === 'text'){
           this.viewStack.switchView(this.textSection);
 		  this._controlTextIsWritten(); 
+		  this._phantomSymbol = this.textSymChooser.getSymbol();
+		  this._enableMapPreview(true);
         }
         this._setMeasureVisibility();
 		
@@ -807,7 +886,10 @@ define([
 	  
 	  _controlTextIsWritten : function(){
 		this.textSymChooser.inputText.value = this.nameField.value;
-		this.textSymChooser.inputText.style.display = 'none';
+		
+		var tr = this._parentByTag(this.textSymChooser.inputText, 'tr');
+		if(tr)
+			tr.style.display = 'none';
 		
 		var value = this.textSymChooser.inputText.value.trim();
 		if(value==""){
@@ -821,6 +903,8 @@ define([
 
       _onDrawEnd:function(graphic,geotype,commontype){
         var geometry = graphic.geometry;
+		
+		this._enableMapPreview(false);
 		
 		graphic.attributes = {
 			"name":this.nameField.value,
@@ -1088,6 +1172,17 @@ define([
         // this.drawBox.addGraphic(labelGraphic);
         this.drawBox.drawLayer.add(labelGraphic);
       },
+	  
+	  _parentByTag:function(el, tagName) {
+		  tagName = tagName.toLowerCase();
+		  while (el && el.parentNode) {
+			el = el.parentNode;
+			if (el.tagName && el.tagName.toLowerCase() == tagName) {
+			  return el;
+			}
+		  }
+		  return null;
+		},
 
       destroy: function() {
         if(this.drawBox){
