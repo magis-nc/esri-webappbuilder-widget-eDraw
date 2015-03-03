@@ -29,6 +29,7 @@ define([
     'esri/symbols/TextSymbol',
     'esri/symbols/Font',
     'esri/units',
+	"esri/toolbars/edit",
     'esri/geometry/webMercatorUtils',
     'esri/geometry/geodesicUtils',
     'dojo/_base/lang',
@@ -54,7 +55,7 @@ define([
   ],
   function(declare,_WidgetsInTemplateMixin,BaseWidget,Graphic,Point,
     SimpleMarkerSymbol,Polyline,SimpleLineSymbol,Polygon,graphicsUtils,SimpleFillSymbol,
-    TextSymbol,Font, esriUnits,webMercatorUtils,geodesicUtils,lang,on,html,has,
+    TextSymbol,Font, esriUnits, Edit, webMercatorUtils,geodesicUtils,lang,on,html,has,
     Color,Query,array, domConstruct, dom, Select,NumberSpinner,ViewStack,SymbolChooser,
     DrawBox, Message, jimuUtils, jimuSymbolUtils, localStore, InfoTemplate,GraphicsLayer) {/*jshint unused: false*/
     return declare([BaseWidget, _WidgetsInTemplateMixin], {
@@ -114,12 +115,43 @@ define([
 		//Popup or click init
 		this._initDrawingPopupAndClick();
 
-		
+		//Create edit dijit
+		this.editToolbar = new Edit(this.map);
       },
+	  
+	  resetGeometryEdit:function(){
+		if(this._geometryEditSaveGraphic && this._editGraphic){
+			var g = new Graphic(this._geometryEditSaveGraphic);
+			this._editGraphic.setGeometry(g.geometry);
+		}			
+	  },
+	  
+	  activateGeometryEdit:function(graphic){
+		 if(!graphic && this.editToolbar){
+			this.editToolbar.deactivate();
+			return ;
+		  }
+		  // if(graphic.geometry.type=="extent")
+			// return;
+		   
+		  this._geometryEditSaveGraphic = graphic.toJson();
+		 
+		  var tool = 0 | Edit.MOVE;
+		  if(graphic.geometry.type!="point")
+			tool = tool | Edit.EDIT_VERTICES | Edit.SCALE | Edit.ROTATE; 
+         
+		  var options = {
+            allowAddVertices: true,
+            allowDeleteVertices: true,
+            uniformScaling: true
+          };
+          this.editToolbar.activate(tool, graphic, options);
+	  },
 	  
 	  onClose:function(){
 		this.selectDrawing(false);
 		this._enableMapPreview(false);
+		this.activateGeometryEdit(false);
 	  },
 	  
 	  onOpen:function(){
@@ -186,6 +218,7 @@ define([
 		var tab_asked = this._tabsConfig[name];
 		
 		this._enableMapPreview(false);
+		this.activateGeometryEdit(false);
 		
 		if(!tab_asked)
 			return false;
@@ -206,7 +239,7 @@ define([
 		switch(name){
 			case "add":
 				this._editGraphic = false;
-				this.selectDrawing(false);				
+				this.selectDrawing(false);
 				break;			
 			case "list":
 				this._generateDrawTable();
@@ -229,6 +262,7 @@ define([
 					this.selectDrawing(this._editGraphic);
 					
 					this._initEditSymbolChooser();
+					this.activateGeometryEdit(this._editGraphic);
 				}
 				
 				break;
@@ -320,10 +354,13 @@ define([
 			this._editGraphic.setSymbol(this._EditSymbolChooser.symbol);
 			this.setTab("list");
 	  },
-	   _clickEditCancelButon:function(){
+	  _clickEditCancelButon:function(){
+			this.resetGeometryEdit();
+			this.activateGeometryEdit(false);
 			this.setTab("list");
 	  },
 	  _clickResetCancelButon:function(){
+		this.resetGeometryEdit();
 		this.setTab("edit");
 	  },
 	  
@@ -491,17 +528,6 @@ define([
 			
 	  },
 	  
-	  
-	  // __drawingClickHandler:false,
-	  // _enabledDrawingClickHandle:function(bool){
-		// if(bool && !this.__drawingClickHandler)
-			// this.drawingClickHandler = this.drawBox.drawLayer.on("click", this._showPopup);
-		// else{
-			// dojo.disconnect(this.drawingClickHandler);
-			// this.drawingClickHandler = false;
-		// }
-	  // },
-	  
 	   zoomAll:function(){
 			var graphics = this.drawBox.drawLayer.graphics;
 			var nb_graphics = graphics.length;
@@ -514,11 +540,11 @@ define([
 			this.map.setExtent(ext, true);
 			return true;
 	   },	   
-	  
-	  
+
 	  clear:function(){
 		if(!this.config.confirmOnDelete || confirm(this.nls.clear)){
 			this.drawBox.drawLayer.clear();
+			this.selectDrawing(false);
 			this.setTab("list");
 		}
 	  },
@@ -657,7 +683,7 @@ define([
 			if(!has("ie") && (!navigator.appName || navigator.appName != 'Microsoft Internet Explorer')){
 				this.exportButton.href = 'data:application/json;charset=utf-8,'+this.drawingsAsJson(true);
 				this.exportButton.target = "_BLANK";
-				this.exportButton.download = this.config.exportFileName;
+				this.exportButton.download = (this.config.exportFileName) ? (this.config.exportFileName) : 'myDrawings.json';
 				return true;
 			}
 			
@@ -906,7 +932,7 @@ define([
 		this.textAnglePreviewNode.style.transform = 'rotate(' + angle + 'deg)';
 		this.textAnglePreviewNode.style['-ms-transform'] = 'rotate(' + angle + 'deg)';
 		
-		if(this._phantomSymbol){
+		if(this._phantomSymbol && this._phantomSymbol.font){
 			this._phantomSymbol.font.setFamily(family);
 			this._phantomSymbol.setAngle(angle);
 			this._phantomSymbol.font.setWeight(weight);
@@ -1059,13 +1085,21 @@ define([
 		  this._enableMapPreview(false);
         }
         else if(commontype === 'polygon'){
-          this.viewStack.switchView(this.polygonSection);
+          this.viewStack.switchView(this.polygonSection);		  
 		  this._enableMapPreview(false);
         }
         else if(commontype === 'text'){
-          this.viewStack.switchView(this.textSection);
-		  this._controlTextIsWritten(); 
+		  this.textSymChooser.inputText.value = this.nameField.value;
+		  if(this.textSymChooser.inputText.value.trim() == ""){
+			this.showMessage(this.nls.textWarningMessage, 'warning');
+			return false;
+		  }
+		  
 		  this._phantomSymbol = this.textSymChooser.getSymbol();
+		  this.drawBox.setTextSymbol(this._phantomSymbol);		  
+          this.viewStack.switchView(this.textSection);
+		  this._controlTextIsWritten();
+		  
 		  this._enableMapPreview(true);
         }
         this._setMeasureVisibility();
@@ -1105,7 +1139,13 @@ define([
           var r=[[a.xmin,a.ymin],[a.xmin,a.ymax],[a.xmax,a.ymax],[a.xmax,a.ymin],[a.xmin,a.ymin]];
           polygon.addRing(r);
           geometry = polygon;
-          commontype = 'polygon';
+		  
+		  graphic.setGeometry(polygon);
+		  var layer = graphic.getLayer();
+		  layer.remove(graphic);
+		  layer.add(graphic);
+          
+		  commontype = 'polygon';
         }
         if(commontype === 'polyline'){
           if(this.showMeasure.checked){
