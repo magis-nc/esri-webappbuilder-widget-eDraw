@@ -26,6 +26,7 @@
 	allowImportExportLabel:"Activer l'import et l'export",
 	allowLocalStorageLabel:"Utiliser local storage",
 	localStorageKeyLabel:"Clé Local storage",
-	localStorageKeyInfo:"Si vide, toutes les applications partageront le même storage. Sinon, les applications avec la même clé partageront le même storage."
+	localStorageKeyInfo:"Si vide, toutes les applications partageront le même storage. Sinon, les applications avec la même clé partageront le même storage.",
+	exportFileName:"mesDessins.json",
   })
 );

@@ -2,32 +2,39 @@
 	<ul class="settings">
 		<li>
 			<span class="input">
-				<input type="checkbox" checked="checked" data-dojo-attach-point="confirmOnDeleteInput" />
+				<input class="jimu-input" type="text" data-dojo-attach-point="exportFileNameInput" value="${nls.exportFileName}" />
+			</span>
+			<span class="label">${nls.exportFileName}</span>
+			
+		</li>
+		<li>
+			<span class="input">
+				<input class="jimu-input" type="checkbox" checked="checked" data-dojo-attach-point="confirmOnDeleteInput" />
 			</span>
 			<span class="label">${nls.confirmOnDeleteLabel}</span>
 			
 		</li>
 		<li>
 			<span class="input">
-				<input type="checkbox" checked="checked" data-dojo-attach-point="allowImportExportInput" />
+				<input  class="jimu-input" type="checkbox" checked="checked" data-dojo-attach-point="allowImportExportInput" />
 			</span>
 			<span class="label">${nls.allowImportExportLabel}</span>
 			
 		</li>
 		<li>
 			<span class="input">
-				<input type="checkbox" checked="checked" data-dojo-attach-point="allowLocalStorageInput" />
+				<input  class="jimu-input" type="checkbox" checked="checked" data-dojo-attach-point="allowLocalStorageInput" />
 			</span>
 			<span class="label">${nls.allowLocalStorageLabel}</span>
 			
 		</li>
 		<li>
 			<span class="input">
-				<input type="text" data-dojo-attach-point="localStorageKeyInput" />
+				<input  class="jimu-input" type="text" data-dojo-attach-point="localStorageKeyInput" />
 			</span>
 			<span class="label">
 				${nls.localStorageKeyLabel}
-				<a href="#" title="${nls.localStorageKeyInfo}">?</a>
+				<a data-dojo-attach-event="ondijitclick:localStorageKeyMessage" href="#" title="${nls.localStorageKeyInfo}">?</a>
 			</span>
 			
 		</li>

@@ -30,3 +30,22 @@
   margin-left: 0;
   margin-right: 7px;
 }
+
+.jimu-widget-draw-setting .settings{
+	list-style-type:none;
+	display:table;
+}
+.jimu-widget-draw-setting .settings li{
+	display:table-row;
+}
+.jimu-widget-draw-setting .settings .input{
+	display:table-cell;
+	width:49%;
+	text-align:right;
+}
+.jimu-widget-draw-setting .settings .label{
+	display:table-cell;
+	width:49%;
+	text-align:left;
+	padding-left:10px;
+}

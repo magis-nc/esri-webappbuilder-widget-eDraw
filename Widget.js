@@ -657,6 +657,7 @@ define([
 			if(!has("ie") && (!navigator.appName || navigator.appName != 'Microsoft Internet Explorer')){
 				this.exportButton.href = 'data:application/json;charset=utf-8,'+this.drawingsAsJson(true);
 				this.exportButton.target = "_BLANK";
+				this.exportButton.download = this.config.exportFileName;
 				return true;
 			}
 			
@@ -671,7 +672,7 @@ define([
 			iframe.document.write(this.drawingsAsJson(true));
 			iframe.document.close();
 			iframe.focus();
-			iframe.document.execCommand('SaveAs', true, 'myDraw.json');
+			iframe.document.execCommand('SaveAs', true, this.config.exportFileName);
 			
 			return false;
 		}

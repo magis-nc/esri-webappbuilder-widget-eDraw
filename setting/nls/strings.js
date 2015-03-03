@@ -26,7 +26,8 @@ define({
 	allowImportExportLabel:"Allow import & export ?",
 	allowLocalStorageLabel:"Use local storage ?",
 	localStorageKeyLabel:"Local storage key",
-	localStorageKeyInfo:"If not empty, applications with same key (and same server) will share the same storage. If empty, all will share same storage."
+	localStorageKeyInfo:"If not empty, applications with same key (and same server) will share the same storage. If empty, all will share same storage.",
+	exportFileName:"myDrawings.json"
   }),
   "ar": 1,
   "cs": 1,

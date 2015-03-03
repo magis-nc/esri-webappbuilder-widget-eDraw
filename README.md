@@ -24,7 +24,8 @@ http://doc.arcgis.com/en/web-appbuilder/create-apps/widget-draw.htm
 	
 
 ## configuration :
-4 options :
+5 options :
+- export file name.
 - Confirm on delete. A confirm dialog when user delete drawing(s) ?
 - Enable import/export. Let the user import or export drawings ?
 - Enable local storage. enable auto-saving in local storage and loading saved drawings on widget load.

@@ -25,16 +25,22 @@ define([
     'jimu/BaseWidgetSetting',
     'jimu/dijit/TabContainer',
     'jimu/dijit/SimpleTable',
+    'jimu/dijit/Message',
     'jimu/utils',
     'dijit/form/Select'
   ],
   function(declare, lang, array, html, query, on, _WidgetsInTemplateMixin, BaseWidgetSetting,
-    TabContainer, SimpleTable, jimuUtils, Select) {
+    TabContainer, SimpleTable,Message, jimuUtils, Select) {
     return declare([BaseWidgetSetting, _WidgetsInTemplateMixin], {
       baseClass: 'jimu-widget-draw-setting',
       distanceUnits:null,
       areaUnits:null,
-
+		
+	  localStorageKeyMessage:function(){
+			new Message({message:this.nls.localStorageKeyInfo});
+			
+		},	  
+		
       postMixInProperties:function(){
         this.inherited(arguments);
 
@@ -146,6 +152,7 @@ define([
         this._setDistanceTable(this.config.distanceUnits);
         this._setAreaTable(this.config.areaUnits);
 		
+		this.exportFileNameInput.value = (config.exportFileName) ? config.exportFileName : this.nls.exportFileName;
 		this.confirmOnDeleteInput.checked = (config.confirmOnDelete) ? true : false;
 		this.allowImportExportInput.checked = (config.allowImportExport) ? true : false;
 		this.allowLocalStorageInput.checked = (config.allowLocalStorage) ? true : false;
@@ -184,6 +191,7 @@ define([
         config.distanceUnits = this._getDistanceConfig();
         config.areaUnits = this._getAreaConfig();
 		
+		config.exportFileName = (this.exportFileNameInput.value.trim() != "") ? this.exportFileNameInput.value.trim() : this.nls.exportFileName;
 		config.confirmOnDelete = this.confirmOnDeleteInput.checked;
 		config.allowImportExport = this.allowImportExportInput.checked;
 		config.allowLocalStorage = this.allowLocalStorageInput.checked;
