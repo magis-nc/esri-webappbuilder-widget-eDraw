@@ -6,7 +6,7 @@ http://doc.arcgis.com/en/web-appbuilder/create-apps/widget-draw.htm
 
 ## Improvments :
 - add name and description fields on drawings
-- enable infowindow on drawings
+- enable infowindow on drawings (selection)
 - on text drawing, no insert if no name.
 - list
 	- add list of all drawings
@@ -18,6 +18,9 @@ http://doc.arcgis.com/en/web-appbuilder/create-apps/widget-draw.htm
 - localStorage
 	- dynamic saving on each drawing add/delete/update
 	- on widget load : load drawings saved in local Storage
+- draws plus (from Larry Stout https://geonet.esri.com/people/Larry_Stout)
+	- preview under mouse when adding text or point
+	- for text, add font choice, font angle, bold, italic and underline options.
 	
 
 ## configuration :
