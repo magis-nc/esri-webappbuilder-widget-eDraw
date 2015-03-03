@@ -848,7 +848,8 @@ define([
         this.own(on(this.textSymChooser,'change',lang.hitch(this,function(symbol){
 			this.drawBox.setTextSymbol(symbol);
 			this._controlTextIsWritten();
-			this._phantomSymbol = this.textSymChooser.getSymbol();
+			this._update_add_textSymbol();
+			this._phantomSymbol = this.textSymChooser.symbol;
 			this._enableMapPreview(true);
         })));
 
