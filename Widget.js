@@ -34,6 +34,7 @@ define([
     'dojo/_base/lang',
     'dojo/on',
     'dojo/_base/html',
+	"dojo/sniff",
     'dojo/_base/Color',
     'dojo/_base/query',
     'dojo/_base/array',
@@ -53,7 +54,7 @@ define([
   ],
   function(declare,_WidgetsInTemplateMixin,BaseWidget,Graphic,Point,
     SimpleMarkerSymbol,Polyline,SimpleLineSymbol,Polygon,graphicsUtils,SimpleFillSymbol,
-    TextSymbol,Font, esriUnits,webMercatorUtils,geodesicUtils,lang,on,html,
+    TextSymbol,Font, esriUnits,webMercatorUtils,geodesicUtils,lang,on,html,has,
     Color,Query,array, domConstruct, dom, Select,NumberSpinner,ViewStack,SymbolChooser,
     DrawBox, Message, jimuUtils, jimuSymbolUtils, localStore, InfoTemplate,GraphicsLayer) {/*jshint unused: false*/
     return declare([BaseWidget, _WidgetsInTemplateMixin], {
@@ -651,9 +652,28 @@ define([
 			this.showMessage(this.nls.importWarningNoExport0Draw, 'warning');
 			return false;
 		}
-		else{
-			this.exportButton.href = 'data:application/json;charset=utf-8,'+this.drawingsAsJson(true);
-			return true;
+		else{	
+			//If not IE
+			if(!has("ie") && (!navigator.appName || navigator.appName != 'Microsoft Internet Explorer')){
+				this.exportButton.href = 'data:application/json;charset=utf-8,'+this.drawingsAsJson(true);
+				this.exportButton.target = "_BLANK";
+				return true;
+			}
+			
+			//if IE, specific. (ie doesn't accept data in link href)
+			this.exportButton.href = "#";
+			this.exportButton.target = "";
+			
+			var iframe = this.exportIframeForIE;
+			iframe = iframe.contentWindow || iframe.contentDocument; 
+			
+			iframe.document.open("application/json", "replace");
+			iframe.document.write(this.drawingsAsJson(true));
+			iframe.document.close();
+			iframe.focus();
+			iframe.document.execCommand('SaveAs', true, 'myDraw.json');
+			
+			return false;
 		}
 	  },
 	  
