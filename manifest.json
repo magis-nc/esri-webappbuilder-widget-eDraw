@@ -4,7 +4,7 @@
   "version": "1.1",
   "wabVersion": "1.1",
   "author": "Esri R&D Center Beijing modified by MAGIS NC",
-  "description": "",
+  "description": "Enhanced draw widget for WebApp Builder for Arcgis.",
   "copyright": "",
   "license": "http://www.apache.org/licenses/LICENSE-2.0"
 }
