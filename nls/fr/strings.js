@@ -42,7 +42,6 @@ define(
 	confirmDrawDelete:"Ce dessin va être supprimé",
 	all:"Tous",
 	draws:'dessins',
-	
 	addDrawTitle:'Ajouter un dessin',
 	editDrawTitle:'Modifier un dessin',
 	listDrawTitle:'Liste des dessins',
@@ -65,6 +64,9 @@ define(
 	downLabel:"Descendre ce dessin",
 	zoomLabel:"Zoomer sur ce dessin",
 	zoomAllLabel:"Zoomer sur tous les dessins",
+	saveButton:"Sauvegarder",
+	resetButton:"Réinitialiser",
+	cancelButton:"Annuler",
 	textAngle: 'Angle',
     fontName: 'Police',
     drawSampleRotatedText: 'Texte',
