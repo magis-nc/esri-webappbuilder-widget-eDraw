@@ -212,8 +212,7 @@ define([
 			html.place(this.globalViewStack.domNode, this.settingAllContent);			
 	  },	 
 	  
-	  
-	  
+
 	  setTab:function(name){
 		var tab_asked = this._tabsConfig[name];
 		
@@ -904,6 +903,14 @@ define([
 		
       },
 	  
+	  _nameChanged:function(){
+		this._update_add_textSymbol()
+	  },
+	  
+	  _editNameChanged:function(){
+		this._update_edit_textSymbol()
+	  },
+	  
 	  _update_add_textSymbol:function(){
 		var family = this.textPlusPoliceNode.value;
 		var angle = this.textAngleNode.value;
@@ -911,6 +918,7 @@ define([
 		var style = this._drawPlus["add"]["italic"] ? esri.symbol.Font.STYLE_ITALIC : esri.symbol.Font.STYLE_NORMAL;
 		var decoration = this._drawPlus["add"]["underline"] ? 'underline' : 'none';
 		
+		this.textSymChooser.symbol.text = this.nameField.value;
 		this.textSymChooser.symbol.font.setFamily(family);
 		this.textSymChooser.symbol.setAngle(angle);
 		this.textSymChooser.symbol.font.setWeight(weight);
@@ -919,6 +927,7 @@ define([
 		
 		this.drawBox.setTextSymbol(this.textSymChooser.symbol);
 		
+		this.textSymChooser.textPreview.innerHTML = this.nameField.value;
 		this.textSymChooser.textPreview.style.fontFamily = family;
 		this.textSymChooser.textPreview.style['font-style'] = (this._drawPlus["add"]["italic"]) ? 'italic' : 'normal';
 		this.textSymChooser.textPreview.style['font-weight'] = (this._drawPlus["add"]["bold"]) ? 'bold' : 'normal';
@@ -933,6 +942,7 @@ define([
 		this.textAnglePreviewNode.style['-ms-transform'] = 'rotate(' + angle + 'deg)';
 		
 		if(this._phantomSymbol && this._phantomSymbol.font){
+			this._phantomSymbol.text = this.nameField.value;
 			this._phantomSymbol.font.setFamily(family);
 			this._phantomSymbol.setAngle(angle);
 			this._phantomSymbol.font.setWeight(weight);
@@ -949,12 +959,14 @@ define([
 		var decoration = this._drawPlus["edit"]["underline"] ? 'underline' : 'none';
 		
 		 
+		this._EditSymbolChooser.symbol.text = this.editNameField.value;
 		this._EditSymbolChooser.symbol.font.setFamily(family);
 		this._EditSymbolChooser.symbol.setAngle(angle);
 		this._EditSymbolChooser.symbol.font.setWeight(weight);
 		this._EditSymbolChooser.symbol.font.setStyle(style);
 		this._EditSymbolChooser.symbol.font.setDecoration(decoration);
 		
+		this._EditSymbolChooser.textPreview.innerHTML = this.editNameField.value;
 		this._EditSymbolChooser.textPreview.style.fontFamily = family;
 		this._EditSymbolChooser.textPreview.style['font-style'] = (this._drawPlus["edit"]["italic"]) ? 'italic' : 'normal';
 		this._EditSymbolChooser.textPreview.style['font-weight'] = (this._drawPlus["edit"]["bold"]) ? 'bold' : 'normal';

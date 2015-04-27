@@ -14,7 +14,7 @@
 		  
 			  <label>${nls.nameField}:</label>
 			  <br />
-			  <input id="nameField" type="text" data-dojo-attach-point="nameField" value="${nls.nameFieldDefaultValue}" class="jimu-input" />
+			  <input id="nameField" type="text" data-dojo-attach-point="nameField" value="${nls.nameFieldDefaultValue}" class="jimu-input" data-dojo-attach-event="onchange:_nameChanged"/>
 			  <br />
 			  <label>${nls.descriptionField}:</label>
 			  <br />
@@ -96,7 +96,7 @@
 		<div class="content">
 		  <label>${nls.nameField}:</label>
 		  <br />
-		  <input id="nameField" type="text" data-dojo-attach-point="editNameField" value="${nls.nameFieldDefaultValue}" class="jimu-input" />
+		  <input id="nameField" type="text" data-dojo-attach-point="editNameField" value="${nls.nameFieldDefaultValue}" class="jimu-input" data-dojo-attach-event="onchange:_editNameChanged" />
 		  <br />
 		  <label>${nls.descriptionField}:</label>
 		  <br />	  
