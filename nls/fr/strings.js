@@ -69,12 +69,13 @@ define(
 	cancelButton:"Annuler",
 	textAngle: 'Angle',
     fontName: 'Police',
-    drawSampleRotatedText: 'Texte',
+    drawSampleRotatedText: 'angle',
     boldTitle: 'Gras',
     boldCharacter: 'B',
     italicTitle: 'Italique',
     italicCharacter: 'I',
     underlineTitle: 'Souligné',
-    underlineCharacter: 'U'
+    underlineCharacter: 'U',
+	addMessage:'Vous pouvez maintenant faire votre dessin sur la carte'
   })
 );

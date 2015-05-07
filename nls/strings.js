@@ -69,13 +69,14 @@ define({
 	cancelButton:"Cancel",
 	textAngle: 'Text Angle',
     fontName: 'Font Name',
-    drawSampleRotatedText: 'Text',
+    drawSampleRotatedText: 'angle',
     boldTitle: 'Bold',
     boldCharacter: 'B',
     italicTitle: 'Italic',
     italicCharacter: 'I',
     underlineTitle: 'Underline',
-    underlineCharacter: 'U'
+    underlineCharacter: 'U',
+	addMessage:'You can now make your drawing on map'
   }),
   "ar": 1,
   "cs": 1,

@@ -1,78 +1,18 @@
 <div>
   <div class="menu">
-	<img title="${nls.addDrawTitle}" data-dojo-attach-point="addSectionButton" class="menu-item-active" src="${folderUrl}images/add.png" data-dojo-attach-event="ondijitclick:_clickAddButon"/>
-	<img title="${nls.editDrawTitle}" data-dojo-attach-point="editSectionButton" class="menu-item-active hidden" src="${folderUrl}images/edit.png" />
-	<img title="${nls.listDrawTitle}" data-dojo-attach-point="listSectionButton" class="menu-item" src="${folderUrl}images/list.png" data-dojo-attach-event="ondijitclick:_clickListButon"/>
-	<img title="${nls.importExportTitle}" data-dojo-attach-point="importExportSectionButton" class="menu-item" src="${folderUrl}images/swap_vert.png" data-dojo-attach-event="ondijitclick:_clickImportExportButon"/>
+	<img title="${nls.addDrawTitle}" data-dojo-attach-point="menuAddButton" class="menu-item-active" src="${folderUrl}images/add.png" data-dojo-attach-event="ondijitclick:menuOnClickAdd"/>
+	<img title="${nls.editDrawTitle}" data-dojo-attach-point="menuEditButton" class="menu-item-active hidden" src="${folderUrl}images/edit.png" />
+	<img title="${nls.listDrawTitle}" data-dojo-attach-point="menuListButton" class="menu-item" src="${folderUrl}images/list.png" data-dojo-attach-event="ondijitclick:menuOnClickList"/>
+	<img title="${nls.importExportTitle}" data-dojo-attach-point="menuListImportExport" class="menu-item" src="${folderUrl}images/swap_vert.png" data-dojo-attach-event="ondijitclick:menuOnClickImportExport"/>
   </div>
   <div data-dojo-attach-point="settingAllContent">
 	
 	  <div data-dojo-attach-point="addSection">
 		  <h2>${nls.addDrawTitle}</h2>
 		  
-		  <div class="bloc">
-		  
-			  <label>${nls.nameField}:</label>
-			  <br />
-			  <input id="nameField" type="text" data-dojo-attach-point="nameField" value="${nls.nameFieldDefaultValue}" class="jimu-input" data-dojo-attach-event="onchange:_nameChanged"/>
-			  <br />
-			  <label>${nls.descriptionField}:</label>
-			  <br />
-			  <textarea id="descriptionField" data-dojo-attach-point="descriptionField" class="jimu-input" rows="3"></textarea>
-			  <hr />
-			  
+		  <div class="bloc">			  
 			  <label>${nls.selectDrawMode}</label>
 			  <div data-dojo-attach-point="drawBox" data-dojo-type="jimu/dijit/DrawBox" data-dojo-props='types:["point","polyline","polygon","text"],showClear:true' style="margin-top:5px;"></div>
-			  <div data-dojo-attach-point="settingContent" style="width:100%;">
-				<div class="point-section" data-dojo-attach-point="pointSection">
-				  <div data-dojo-attach-point="pointSymChooser" data-dojo-type="jimu/dijit/SymbolChooser" data-dojo-props='type:"marker"'></div>
-				</div>
-
-				<div class="line-section" data-dojo-attach-point="lineSection">
-				  <div data-dojo-attach-point="lineSymChooser" data-dojo-type="jimu/dijit/SymbolChooser" data-dojo-props='type:"line"'></div>
-				</div>
-
-				<div class="polygon-section" data-dojo-attach-point="polygonSection">
-				  <div data-dojo-attach-point="fillSymChooser" data-dojo-type="jimu/dijit/SymbolChooser" data-dojo-props='type:"fill"'></div>
-				</div>
-
-				<div class="text-section" data-dojo-attach-point="textSection">
-				  <div data-dojo-attach-point="textSymChooser" data-dojo-type="jimu/dijit/SymbolChooser" data-dojo-props='type:"text"'></div>
-				  <table class="symbol-set-table" cellspading="0">
-					  <tbody>
-					  <tr class="draw-plus textFontOptions">
-						<td>
-							<span>${nls.fontName}</span>
-						  </td>
-						  <td>
-							<div data-dojo-attach-point="textPlusPoliceNode" data-dojo-type="dijit/form/Select" class="draw-plus font-name">
-							  <span value="Arial, Helvetica, sans-serif">Sans Serif (1)</span>
-							  <span value="Comic Sans MS, Futura, sans-serif">Sans Serif (2)</span>
-							  <span value="Times New Roman, Times, serif">Serif (1)</span>
-							  <span value="Palatino Linotype, Book Antiqua, Palatino, serif">Serif (2)</span>
-							  <span value="Lucida Console, Monaco, monospace">Fixed Width (1)</span>
-							  <span value="Courier New, Courier, monospace">Fixed Width (2)</span>
-							</div>
-							<div class="draw-plus text-options">
-							  <div data-dojo-attach-point="textPlusBoldNode" title="${nls.boldTitle}" class="draw-plus text-option text-bold">${nls.boldCharacter}</div>
-							  <div data-dojo-attach-point="textPlusItalicNode" title="${nls.italicTitle}" class="draw-plus text-option text-italic">${nls.italicCharacter}</div>
-							  <div data-dojo-attach-point="textPlusUnderlineNode" title="${nls.underlineTitle}" class="draw-plus text-option text-underline">${nls.underlineCharacter}</div>
-							</div>
-						  </td>
-						</tr>
-						<tr class="draw-plus textAngleOptions">
-						  <td>
-							<span>${nls.textAngle}</span>
-						  </td>
-						  <td>
-							<input data-dojo-attach-point="textAngleNode" data-dojo-type="dijit/form/NumberSpinner" data-dojo-props="value:0,smallDelta:5,constraints:{min:-90,max:90},intermediateChanges:true" class="draw-plus text-angle"></input>
-							<span data-dojo-attach-point="textAnglePreviewNode" class="draw-plus text-angle-sample">${nls.drawSampleRotatedText}</span>
-						  </td>
-					  </tr>
-					  </tbody>
-					</table>
-				</div>
-			  </div>
 
 			  <div data-dojo-attach-point="measureSection" class="measure-section">
 				<div style="margin-bottom:7px;">
@@ -91,26 +31,26 @@
 			</div>
 	  </div>
 	  
-	  <div data-dojo-attach-point="editSection">
-		<h2>${nls.editDrawTitle}</h2>
+	  <div data-dojo-attach-point="editorSection">
+		<h2 data-dojo-attach-point="editorTitle">${nls.addDrawTitle}</h2>
 		<div class="content">
 		  <label>${nls.nameField}:</label>
 		  <br />
-		  <input id="nameField" type="text" data-dojo-attach-point="editNameField" value="${nls.nameFieldDefaultValue}" class="jimu-input" data-dojo-attach-event="onchange:_editNameChanged" />
+		  <input id="nameField" type="text" data-dojo-attach-point="nameField" value="${nls.nameFieldDefaultValue}" class="jimu-input" data-dojo-attach-event="onchange:editorUpdateTextPlus" />
 		  <br />
 		  <label>${nls.descriptionField}:</label>
 		  <br />	  
-		  <textarea id="descriptionField" data-dojo-attach-point="editDescriptionField" class="jimu-input" rows="3"></textarea>
+		  <textarea id="descriptionField" data-dojo-attach-point="descriptionField" class="jimu-input" rows="3"></textarea>
 		  <hr />
-		  <div data-dojo-attach-point="EditSymbolChooserDiv" class="full-width"></div>
-		  <table class="symbol-set-table" cellspading="0" data-dojo-attach-point="EditSymbolTextPlusNode" style="display:none;">
+		  <div data-dojo-attach-point="editorSymbolChooserDiv" class="full-width"></div>
+		  <table class="symbol-set-table" cellspading="0" data-dojo-attach-point="editorSymbolTextPlusNode">
 			  <tbody>
 			  <tr class="draw-plus textFontOptions">
 				<td>
 					<span>${nls.fontName}</span>
 				  </td>
 				  <td>
-					<div data-dojo-attach-point="EditTextPlusPoliceNode" data-dojo-type="dijit/form/Select" class="draw-plus font-name">
+					<div data-dojo-attach-point="editorTextPlusPoliceNode" data-dojo-type="dijit/form/Select" class="draw-plus font-name">
 					  <span value="Arial, Helvetica, sans-serif">Sans Serif (1)</span>
 					  <span value="Comic Sans MS, Futura, sans-serif">Sans Serif (2)</span>
 					  <span value="Times New Roman, Times, serif">Serif (1)</span>
@@ -119,9 +59,9 @@
 					  <span value="Courier New, Courier, monospace">Fixed Width (2)</span>
 					</div>
 					<div class="draw-plus text-options">
-					  <div data-dojo-attach-point="EditTextPlusBoldNode" title="${nls.boldTitle}" class="draw-plus text-option text-bold">${nls.boldCharacter}</div>
-					  <div data-dojo-attach-point="EditTextPlusItalicNode" title="${nls.italicTitle}" class="draw-plus text-option text-italic">${nls.italicCharacter}</div>
-					  <div data-dojo-attach-point="EditTextPlusUnderlineNode" title="${nls.underlineTitle}" class="draw-plus text-option text-underline">${nls.underlineCharacter}</div>
+					  <div data-dojo-attach-point="editorTextPlusBoldNode" title="${nls.boldTitle}" class="draw-plus text-option text-bold">${nls.boldCharacter}</div>
+					  <div data-dojo-attach-point="editorTextPlusItalicNode" title="${nls.italicTitle}" class="draw-plus text-option text-italic">${nls.italicCharacter}</div>
+					  <div data-dojo-attach-point="editorTextPlusUnderlineNode" title="${nls.underlineTitle}" class="draw-plus text-option text-underline">${nls.underlineCharacter}</div>
 					</div>
 				  </td>
 				</tr>
@@ -130,17 +70,25 @@
 					<span>${nls.textAngle}</span>
 				  </td>
 				  <td>
-					<input data-dojo-attach-point="EditTextAngleNode" data-dojo-type="dijit/form/NumberSpinner" data-dojo-props="value:0,smallDelta:5,constraints:{min:-90,max:90},intermediateChanges:true" class="draw-plus text-angle"></input>
-					<span data-dojo-attach-point="EditTextAnglePreviewNode" class="draw-plus text-angle-sample">${nls.drawSampleRotatedText}</span>
+					<input data-dojo-attach-point="editorTextPlusAngleNode" data-dojo-type="dijit/form/NumberSpinner" data-dojo-props="value:0,smallDelta:5,constraints:{min:-90,max:90},intermediateChanges:true" class="draw-plus text-angle"></input>
+					<span data-dojo-attach-point="editorTextAnglePreviewNode" class="draw-plus text-angle-sample">${nls.drawSampleRotatedText}</span>
 				  </td>
 			  </tr>
 			  </tbody>
 			</table>
+		
+		  <br />
+		  <p class="editor-add-message" data-dojo-attach-point="editorAddMessage" style="display:none;">${nls.addMessage}.</p>
 		</div>
 		<div class="footer">
-			<input type="button" class="jimu-input blue-button" value="${nls.saveButton}" data-dojo-attach-event="ondijitclick:_clickEditSaveButon"/>
-			<input type="button" class="jimu-input red-button" value="${nls.cancelButton}" data-dojo-attach-event="ondijitclick:_clickEditCancelButon"/>
-			<input type="button" class="jimu-input grey-button" value="${nls.resetButton}" data-dojo-attach-event="ondijitclick:_clickResetCancelButon"/>
+			<div data-dojo-attach-point="editorFooterEdit">
+				<input type="button" class="jimu-input blue-button" value="${nls.saveButton}" data-dojo-attach-event="ondijitclick:editorOnClickEditSaveButon"/>
+				<input type="button" class="jimu-input red-button" value="${nls.cancelButton}" data-dojo-attach-event="ondijitclick:editorOnClickEditCancelButon"/>
+				<input type="button" class="jimu-input grey-button" value="${nls.resetButton}" data-dojo-attach-event="ondijitclick:editorOnClickResetCancelButon"/>
+			</div>
+			<div data-dojo-attach-point="editorFooterAdd" style="display:none;">
+				<input type="button" class="jimu-input red-button" value="${nls.cancelButton}" data-dojo-attach-event="ondijitclick:editorOnClickAddCancelButon"/>
+			</div>
 		</div>
 	  </div>
 	  

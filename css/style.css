@@ -1,74 +1,79 @@
-
-.jimu-widget-draw {
+.jimu-widget-edraw {
     font-size: 14px;
     height: 100%;
     min-height: 192px;
     min-width: 270px;
     width: 100%;
 }
-.jimu-widget-draw .full-width {
+.jimu-widget-edraw .full-width {
     width: 100% !important;
 }
-.jimu-widget-draw .measure-section {
-    display: none;
+.jimu-widget-edraw .editor-add-message{
+	margin-top:10px;
+	font-style:italic;
+}
+.jimu-widget-edraw .measure-section {
     margin-top: 12px;
     width: 100%;
+	margin-bottom: 12px;
+	padding-right: 3px;
+	padding-bottom: 10px;
 }
-.jimu-widget-draw .area-units-tip {
+.jimu-widget-edraw .area-units-tip {
     height: 30px;
     line-height: 30px;
     padding-left: 17px;
 }
-.jimu-rtl .jimu-widget-draw .area-units-tip {
+.jimu-rtl .jimu-widget-edraw .area-units-tip {
     padding-left: 0;
     padding-right: 17px;
 }
-.jimu-widget-draw .distance-units-tip {
+.jimu-widget-edraw .distance-units-tip {
     height: 30px;
     line-height: 30px;
     padding-left: 17px;
 }
-.jimu-rtl .jimu-widget-draw .distance-units-tip {
+.jimu-rtl .jimu-widget-edraw .distance-units-tip {
     padding-left: 0;
     padding-right: 17px;
 }
-.jimu-widget-draw .dijitArrowButtonContainer {
+.jimu-widget-edraw .dijitArrowButtonContainer {
     width: 40px;
 }
-.jimu-widget-draw .dijitSelect {
+.jimu-widget-edraw .dijitSelect {
     height: 40px;
     width: 100%;
 }
-.jimu-widget-draw .dijitReset.dijitLeft.dijitButtonNode.dijitArrowButton.dijitDownArrowButton {
+.jimu-widget-edraw .dijitReset.dijitLeft.dijitButtonNode.dijitArrowButton.dijitDownArrowButton {
     width: 100%;
 }
-.jimu-widget-draw .dijitReset.dijitLeft.dijitButtonNode.dijitArrowButton.dijitUpArrowButton {
+.jimu-widget-edraw .dijitReset.dijitLeft.dijitButtonNode.dijitArrowButton.dijitUpArrowButton {
     width: 100%;
 }
-.jimu-widget-draw .dijitReset.dijitLeft.dijitButtonNode.dijitArrowButton.dijitDownArrowButton .dijitArrowButtonInner {
+.jimu-widget-edraw .dijitReset.dijitLeft.dijitButtonNode.dijitArrowButton.dijitDownArrowButton .dijitArrowButtonInner {
     width: 100%;
 }
-.jimu-widget-draw .dijitReset.dijitLeft.dijitButtonNode.dijitArrowButton.dijitUpArrowButton .dijitArrowButtonInner {
+.jimu-widget-edraw .dijitReset.dijitLeft.dijitButtonNode.dijitArrowButton.dijitUpArrowButton .dijitArrowButtonInner {
     width: 100%;
 }
-.jimu-widget-draw .menu {
+.jimu-widget-edraw .menu {
     border-bottom: 2px solid rgb(72, 85, 102);
     height: 36px;
     margin-bottom: 10px;
     width: 100%;
 }
-.jimu-widget-draw .menu-item {
+.jimu-widget-edraw .menu-item {
     background-color: rgba(72, 85, 102, 0.4);
     border: 1px solid rgba(72, 85, 102, 0.8);
     float: left;
     margin-right: 5px;
     width: 36px;
 }
-.jimu-widget-draw .menu-item:hover {
+.jimu-widget-edraw .menu-item:hover {
     background-color: rgba(72, 85, 102, 0.6);
     cursor: pointer;
 }
-.jimu-widget-draw .menu-item-active {
+.jimu-widget-edraw .menu-item-active {
     -moz-border-bottom-colors: none;
     -moz-border-left-colors: none;
     -moz-border-right-colors: none;
@@ -83,37 +88,37 @@
     margin-right: 5px;
     width: 36px;
 }
-.jimu-widget-draw .menu-item-active:hover {
+.jimu-widget-edraw .menu-item-active:hover {
 }
-.jimu-widget-draw .hidden {
+.jimu-widget-edraw .hidden {
     display: none;
 }
-.jimu-widget-draw .draw-table tr {
+.jimu-widget-edraw .draw-table tr {
     border: 1px solid white;
 }
-.jimu-widget-draw .draw-table th {
+.jimu-widget-edraw .draw-table th {
     background-color: #8d989e;
     font-weight: bold;
     text-align: center;
 }
-.jimu-widget-draw .draw-table tr:hover th {
+.jimu-widget-edraw .draw-table tr:hover th {
     background-color: #8d989e;
 }
-.jimu-widget-draw .draw-table .td-center {
+.jimu-widget-edraw .draw-table .td-center {
     text-align: center;
 }
-.jimu-widget-draw .draw-table .selected td {
+.jimu-widget-edraw .draw-table .selected td {
     background-color: rgba(15, 108, 159, 0.2);
 }
-.jimu-widget-draw .draw-table .selected:hover td {
+.jimu-widget-edraw .draw-table .selected:hover td {
     background-color: rgba(15, 108, 159, 0.3);
 }
-.jimu-widget-draw .list-draw-actions {
+.jimu-widget-edraw .list-draw-actions {
     height: 100%;
     vertical-align: middle;
     width: 197px;
 }
-.jimu-widget-draw .list-draw-actions span {
+.jimu-widget-edraw .list-draw-actions span {
     border-radius: 5px;
     color: white;
     display: block;
@@ -127,44 +132,44 @@
     vertical-align: middle;
     width: 30px;
 }
-.jimu-widget-draw .list-draw-actions span.text {
+.jimu-widget-edraw .list-draw-actions span.text {
     background: none repeat scroll 0 0 rgba(0, 0, 0, 0);
     color: black;
     font-size: 1em;
     position: relative;
     width: auto;
 }
-.jimu-widget-draw .list-draw-actions span.text:hover {
+.jimu-widget-edraw .list-draw-actions span.text:hover {
     border: medium none;
     cursor: auto;
     font-size: 1em;
 }
-.jimu-widget-draw .list-draw-actions span.clear {
+.jimu-widget-edraw .list-draw-actions span.clear {
     background-image: url("images/clear.png");
 }
-.jimu-widget-draw .list-draw-actions span.edit {
+.jimu-widget-edraw .list-draw-actions span.edit {
     background-image: url("images/edit.png");
 }
-.jimu-widget-draw .list-draw-actions span.zoom {
+.jimu-widget-edraw .list-draw-actions span.zoom {
     background-image: url("images/zoom.png");
 }
-.jimu-widget-draw .list-draw-actions span.up {
+.jimu-widget-edraw .list-draw-actions span.up {
     background-image: url("images/up.png");
 }
-.jimu-widget-draw .list-draw-actions span.down {
+.jimu-widget-edraw .list-draw-actions span.down {
     background-image: url("images/down.png");
 }
-.jimu-widget-draw .list-draw-actions span.export {
+.jimu-widget-edraw .list-draw-actions span.export {
     background-image: url("images/download.png");
 }
-.jimu-widget-draw .list-draw-actions span.import {
+.jimu-widget-edraw .list-draw-actions span.import {
     background-image: url("images/upload.png");
 }
-.jimu-widget-draw .list-draw-actions span:hover {
+.jimu-widget-edraw .list-draw-actions span:hover {
     border: 1px solid rgb(72, 85, 102);
     cursor: pointer;
 }
-.jimu-widget-draw .title {
+.jimu-widget-edraw .title {
     margin-left: 5px;
     margin-top: 5px;
 }
@@ -186,57 +191,57 @@
     height: 48px;
     width: 48px;
 }
-.jimu-widget-draw p.no {
+.jimu-widget-edraw p.no {
     display: none;
 }
-.jimu-widget-draw p.info {
+.jimu-widget-edraw p.info {
     background-color: lightblue;
     border-radius: 3px;
     padding: 3px;
     width: 100%;
 }
-.jimu-widget-draw p.error {
+.jimu-widget-edraw p.error {
     border-radius: 3px;
     padding: 3px;
     width: 100%;
 }
-.jimu-widget-draw p.warning {
+.jimu-widget-edraw p.warning {
     background-color: orange;
     border-radius: 3px;
     padding: 3px;
     width: 100%;
 }
-.jimu-widget-draw h2 {
+.jimu-widget-edraw h2 {
     margin-bottom: 0;
     margin-top: 2px;
 }
-.jimu-widget-draw .draw-import {
+.jimu-widget-edraw .draw-import {
     height: 50px;
     width: 100%;
 }
-.jimu-widget-draw .draw-import .file {
+.jimu-widget-edraw .draw-import .file {
     background-color: rgba(255, 255, 255, 0.5);
     border-radius: 5px;
     cursor: pointer;
     float: left;
     padding: 5px;
 }
-.jimu-widget-draw .draw-import > a {
+.jimu-widget-edraw .draw-import > a {
     float: left;
     height: 36px;
     width: 36px;
 }
-.jimu-widget-draw #nameField {
+.jimu-widget-edraw #nameField {
     width: 100%;
 }
-.jimu-widget-draw #descriptionField {
+.jimu-widget-edraw #descriptionField {
     min-height: 60px;
     width: 100%;
 }
-.jimu-widget-draw label {
+.jimu-widget-edraw label {
     font-weight: bold;
 }
-.jimu-widget-draw .content {
+.jimu-widget-edraw .content {
     background-color: rgba(78, 130, 138, 0.1);
     height: calc(100% - 100px);
     overflow-x: hidden;
@@ -245,72 +250,72 @@
     width: calc(100%);
 }
 
-.jimu-widget-draw .bloc{
+.jimu-widget-edraw .bloc{
     background-color: rgba(78, 130, 138, 0.1);
 }
 
-.jimu-widget-draw .content hr {
+.jimu-widget-edraw .content hr {
     color: rgba(78, 130, 138, 0.6);
 }
-.jimu-widget-draw .footer {
+.jimu-widget-edraw .footer {
     bottom: 0;
     position: absolute;
     width: 100%;
 }
-.jimu-widget-draw .footer .jimu-input {
+.jimu-widget-edraw .footer .jimu-input {
     border-radius: 5px;
     color: black;
 }
-.jimu-widget-draw .footer .jimu-input:hover {
+.jimu-widget-edraw .footer .jimu-input:hover {
     cursor: pointer;
 }
-.jimu-widget-draw .blue-button {
+.jimu-widget-edraw .blue-button {
     background-color: rgba(115, 185, 255, 0.7);
 }
-.jimu-widget-draw .blue-button:hover {
+.jimu-widget-edraw .blue-button:hover {
     background-color: rgba(115, 185, 255, 1);
 }
-.jimu-widget-draw .red-button {
+.jimu-widget-edraw .red-button {
     background-color: rgba(255, 150, 115, 0.7);
 }
-.jimu-widget-draw .red-button:hover {
+.jimu-widget-edraw .red-button:hover {
     background-color: rgba(255, 150, 115, 1);
 }
-.jimu-widget-draw .grey-button {
+.jimu-widget-edraw .grey-button {
     background-color: rgba(153, 153, 153, 0.7);
 }
-.jimu-widget-draw .grey-button:hover {
+.jimu-widget-edraw .grey-button:hover {
     background-color: rgba(153, 153, 153, 1);
 }
 
-.jimu-widget-draw .symbol-set-table{
+.jimu-widget-edraw .symbol-set-table{
 	width:100%;
 }
 
 
 
-.jimu-widget-draw div.symbol-section.text-symbol-section > table > colgroup > col:nth-child(1) {
+.jimu-widget-edraw div.symbol-section.text-symbol-section > table > colgroup > col:nth-child(1) {
   width: 80px;
 }
-.jimu-widget-draw .draw-plus.font-name {
+.jimu-widget-edraw .draw-plus.font-name {
   width:145px;
   height:30px;
   float:left;"
 }
-.jimu-widget-draw .draw-plus.text-angle {
+.jimu-widget-edraw .draw-plus.text-angle {
   width: 50%;
 }
-.jimu-widget-draw .draw-plus.text-angle-sample {
+.jimu-widget-edraw .draw-plus.text-angle-sample {
   position: absolute;
   margin-left: 30px;
   margin-top: 7px;
 }
-.jimu-widget-draw .draw-plus.text-options {
+.jimu-widget-edraw .draw-plus.text-options {
   float:left; 
   padding:4px; 
   height:30px;
 }
-.jimu-widget-draw .draw-plus.text-option {
+.jimu-widget-edraw .draw-plus.text-option {
   width:22px;
   height:22px;
   line-height: 22px;
@@ -325,19 +330,19 @@
   font-weight: bold;
   display: table;
 }
-.jimu-widget-draw .draw-plus.text-option.selected {
+.jimu-widget-edraw .draw-plus.text-option.selected {
   background-color: #C0C0C0;
   border-width: 2px;
   border-radius:2px;
 }
-.jimu-widget-draw .draw-plus.text-option:hover{
+.jimu-widget-edraw .draw-plus.text-option:hover{
   background-color: #D1D1D1;
   cursor:pointer;
 }
 
-.jimu-widget-draw .draw-plus.text-options div.draw-plus.text-option.text-italic {
+.jimu-widget-edraw .draw-plus.text-options div.draw-plus.text-option.text-italic {
   font-style: italic;
 }
-.jimu-widget-draw .draw-plus.text-options div.draw-plus.text-option.text-underline {
+.jimu-widget-edraw .draw-plus.text-options div.draw-plus.text-option.text-underline {
   text-decoration: underline;
 }
