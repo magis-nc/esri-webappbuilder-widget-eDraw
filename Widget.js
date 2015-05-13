@@ -706,19 +706,20 @@ define([
 			this.setMode("list");
 		},
 		editorOnClickEditCancelButon : function () {
-			this.editorResetGeometry();
+			this.editorResetGraphic();
 			this.editorActivateGeometryEdit(false);
 			this.setMode("list");
 		},
 		editorOnClickResetCancelButon : function () {
-			this.editorResetGeometry();
+			this.editorResetGraphic();
 			this.setMode("edit");
 		},
 		
-		editorResetGeometry : function () {
+		editorResetGraphic : function () {
 			if (this._editorConfig["graphicSaved"] && this._editorConfig["graphicCurrent"]) {
 				var g = new Graphic(this._editorConfig["graphicSaved"]);
 				this._editorConfig["graphicCurrent"].setGeometry(g.geometry);
+				this._editorConfig["graphicCurrent"].setSymbol(g.symbol);
 			}
 		},
 
@@ -1020,10 +1021,16 @@ define([
 			//Bind symbol chooser change
 			this.own(on(this.editorSymbolChooser, 'change', lang.hitch(this, function () {
 						this.editorSetDefaultSymbols();
+						//Text plus
 						if(this.editorSymbolChooser.type == "text")
 							this.editorUpdateTextPlus();
+						//Phantom for marker
 						else if(this.editorSymbolChooser.type == "marker")
 							this.editorUpdateMapPreview(this.editorSymbolChooser.getSymbol());
+						
+						//If in modification, update graphic symbology 
+						if(this._editorConfig["graphicCurrent"])
+							this._editorConfig["graphicCurrent"].setSymbol(this.editorSymbolChooser.getSymbol());
 						
 					})));
 
@@ -1261,6 +1268,7 @@ define([
 		},
 		
 		onClose : function () {
+			this.editorResetGraphic();
 			this.drawBox.deactivate();
 			this.setInfoWindow(false);
 			this.editorEnableMapPreview(false);
