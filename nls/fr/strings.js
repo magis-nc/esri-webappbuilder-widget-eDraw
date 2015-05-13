@@ -76,6 +76,7 @@ define(
     italicCharacter: 'I',
     underlineTitle: 'Souligné',
     underlineCharacter: 'U',
-	addMessage:'Vous pouvez maintenant faire votre dessin sur la carte'
+	addMessage:'Vous pouvez maintenant faire votre dessin sur la carte',
+	editMessage:'NB : vous pouvez modifier/déplacer la géométrie sur la carte'
   })
 );

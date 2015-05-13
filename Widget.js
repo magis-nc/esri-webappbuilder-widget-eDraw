@@ -426,6 +426,7 @@ define([
 			this.editorFooterEdit.style.display = 'none'; 
 			this.editorFooterAdd.style.display = 'block';
 			this.editorAddMessage.style.display = 'block';
+			this.editorEditMessage.style.display = 'none';
 			
 			var commontype = this._editorConfig['commontype'];
 				
@@ -451,6 +452,7 @@ define([
 			this.editorFooterEdit.style.display = 'block'; 
 			this.editorFooterAdd.style.display = 'none';
 			this.editorAddMessage.style.display = 'none';
+			this.editorEditMessage.style.display = 'block';
 			
 			this.editorEnableMapPreview(false);
 		},
@@ -681,7 +683,7 @@ define([
 				var iframe = this.exportIframeForIE;
 				iframe = iframe.contentWindow || iframe.contentDocument;
 
-				iframe.document.open("application/json", "replace");
+				iframe.document.open("application/octet-stream", "replace");
 				iframe.document.write(this.drawingsGetJson(true));
 				iframe.document.close();
 				iframe.focus();

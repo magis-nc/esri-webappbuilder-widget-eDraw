@@ -76,7 +76,8 @@ define({
     italicCharacter: 'I',
     underlineTitle: 'Underline',
     underlineCharacter: 'U',
-	addMessage:'You can now make your drawing on map'
+	addMessage:'You can now make your drawing on map',
+	editMessage:'NB : you can modify/moove geometry on map'
   }),
   "ar": 1,
   "cs": 1,
