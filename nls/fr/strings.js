@@ -77,7 +77,8 @@ define(
     underlineTitle: 'Souligné',
     underlineCharacter: 'U',
 	addMessage:'Vous pouvez maintenant faire votre dessin sur la carte',
-	editMessage:'NB : vous pouvez modifier/déplacer la géométrie sur la carte'
+	editMessage:'NB : vous pouvez modifier/déplacer la géométrie sur la carte',
+	snappingMessage:'NB : l\'accrochage est possible (utiliser la touche CTRL)',
 	hideOption:'Cacher les dessins'
   })
 );

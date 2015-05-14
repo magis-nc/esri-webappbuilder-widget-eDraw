@@ -439,6 +439,7 @@ define([
 			this.editorFooterAdd.style.display = 'block';
 			this.editorAddMessage.style.display = 'block';
 			this.editorEditMessage.style.display = 'none';
+			this.editorSnappingMessage.style.display = 'none';
 			
 			var commontype = this._editorConfig['commontype'];
 				
@@ -450,6 +451,7 @@ define([
 			if(commontype=="text")
 				this.editorUpdateTextPlus();
 			
+			this.editorActivateSnapping(true);
 		},
 
 		editorPrepareForEdit : function (graphic) {
@@ -465,8 +467,10 @@ define([
 			this.editorFooterAdd.style.display = 'none';
 			this.editorAddMessage.style.display = 'none';
 			this.editorEditMessage.style.display = 'block';
+			this.editorSnappingMessage.style.display = 'block';
 			
 			this.editorEnableMapPreview(false);
+			this.editorActivateSnapping(true);
 		},
 		
 		editorSymbolChooserConfigure : function (symbol) {
@@ -501,6 +505,25 @@ define([
 				this.editorSymbolTextPlusNode.style.display = 'none';
 			}
 		},
+		
+		editorActivateSnapping:function(bool){
+			console.log("Snapping : " + bool);
+			
+			//If disable
+			if(!bool){
+				this.map.disableSnapping();
+				return;
+			}
+			
+			//If enable
+			this.map.enableSnapping({
+				"layerInfos": [{
+					"layer" : this.drawBox.drawLayer
+				}],
+				"tolerance":20
+			});
+		},
+					
 		
 		editorUpdateTextPlus : function () {
 			//Only if text
@@ -736,13 +759,16 @@ define([
 		},
 
 		editorActivateGeometryEdit : function (graphic) {
+			if(!graphic)
+				this.editorActivateSnapping(false);
+			
 			if (!graphic && this._editorConfig["editToolbar"]) {
 				this._editorConfig["editToolbar"].deactivate();
 				return;
 			}
 
 			this._editorConfig["graphicSaved"] = graphic.toJson();
-
+			
 			var tool = 0 | Edit.MOVE;
 			if (graphic.geometry.type != "point")
 				tool = tool | Edit.EDIT_VERTICES | Edit.SCALE | Edit.ROTATE;

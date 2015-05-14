@@ -77,7 +77,8 @@ define({
     underlineTitle: 'Underline',
     underlineCharacter: 'U',
 	addMessage:'You can now make your drawing on map',
-	editMessage:'NB : you can modify/moove geometry on map'
+	editMessage:'NB : you can modify/moove geometry on map',
+	snappingMessage:'NB : snapping is allowed (use CTRL)',
 	hideOption:'Hide drawings'
   }),
   "ar": 1,
