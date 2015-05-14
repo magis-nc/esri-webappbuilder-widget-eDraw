@@ -75,6 +75,7 @@ define([
 		setMode : function (name) {			
 			this.editorEnableMapPreview(false);
 			this.editorActivateGeometryEdit(false);
+			this.allowPopup(false);
 			
 			switch(name){
 				case 'add1':
@@ -120,6 +121,7 @@ define([
 					break;
 				case 'list':
 					this.setMenuState('list');
+					this.allowPopup(true);
 					
 					//Generate list and 
 					this.listGenerateDrawTable();
@@ -139,6 +141,8 @@ define([
 					break;
 				case 'importExport':
 					this.setMenuState('importExport');
+					this.allowPopup(true);
+					
 					
 					//Other params
 					this._editorConfig["graphicCurrent"] = false;
@@ -149,6 +153,18 @@ define([
 					
 					break;
 			}
+		},
+		
+		_clickHandler:false,
+		allowPopup:function(bool){
+			this.map.setInfoWindowOnClick(bool);
+			
+			if(!bool && this._clickHandler){
+				dojo.disconnect(this._clickHandler);
+			}
+			else{
+				this._clickHandler = this.drawBox.drawLayer.on("click", this._onDrawClick);
+			}			
 		},
 		
 		showMessage : function (msg, type) {
@@ -1163,7 +1179,9 @@ define([
 					this._editorConfig["graphicCurrent"] = evt.graphic;
 					this.setMode("list");
 				});
-			this.drawBox.drawLayer.on("click", this._onDrawClick);
+			
+			//Allow click
+			this.allowPopup(true);
 			
 		},
 		
@@ -1312,6 +1330,7 @@ define([
 			this.editorEnableMapPreview(false);
 			this.editorActivateGeometryEdit(false);
 			this.map.infoWindow.hide();
+			this.allowPopup(true);
 		},
 
 		destroy : function () {
