@@ -90,6 +90,15 @@
 }
 .jimu-widget-edraw .menu-item-active:hover {
 }
+
+.jimu-widget-edraw .hide-box{
+	float:right;
+	position:absolute;
+	right:0;
+	top:0px;
+	font-size:1.1em;
+}
+
 .jimu-widget-edraw .hidden {
     display: none;
 }

@@ -269,7 +269,19 @@ define([
 		menuOnClickImportExport : function () {
 			this.setMode("importExport");
 		},
-
+		
+		onHideCheckboxClick:function(){
+			var display = (this.hideCheckbox.checked) ? 'none' : 'block';
+			
+			this.drawBox.drawLayer.setVisibility(!this.hideCheckbox.checked);
+			this.menu.style.display = display;
+			this.settingAllContent.style.display = display;
+			
+			if(this.hideCheckbox.checked)
+				this.onClose();
+			else
+				this.onOpen();
+		},
 		
 ///////////////////////// LIST METHODS ///////////////////////////////////////////////////////////		
 		listGenerateDrawTable : function () {

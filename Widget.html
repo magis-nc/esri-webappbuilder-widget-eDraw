@@ -1,10 +1,14 @@
 <div>
-  <div class="menu">
+  <div class="menu" data-dojo-attach-point="menu">
 	<img title="${nls.addDrawTitle}" data-dojo-attach-point="menuAddButton" class="menu-item-active" src="${folderUrl}images/add.png" data-dojo-attach-event="ondijitclick:menuOnClickAdd"/>
 	<img title="${nls.editDrawTitle}" data-dojo-attach-point="menuEditButton" class="menu-item-active hidden" src="${folderUrl}images/edit.png" />
 	<img title="${nls.listDrawTitle}" data-dojo-attach-point="menuListButton" class="menu-item" src="${folderUrl}images/list.png" data-dojo-attach-event="ondijitclick:menuOnClickList"/>
 	<img title="${nls.importExportTitle}" data-dojo-attach-point="menuListImportExport" class="menu-item" src="${folderUrl}images/swap_vert.png" data-dojo-attach-event="ondijitclick:menuOnClickImportExport"/>
   </div>
+  <span class="hide-box">
+		${nls.hideOption}
+		<input type="checkbox" data-dojo-attach-point="hideCheckbox" data-dojo-attach-event="ondijitclick:onHideCheckboxClick"/>
+  </span>
   <div data-dojo-attach-point="settingAllContent">
 	
 	  <div data-dojo-attach-point="addSection">

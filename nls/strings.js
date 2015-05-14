@@ -78,6 +78,7 @@ define({
     underlineCharacter: 'U',
 	addMessage:'You can now make your drawing on map',
 	editMessage:'NB : you can modify/moove geometry on map'
+	hideOption:'Hide drawings'
   }),
   "ar": 1,
   "cs": 1,
