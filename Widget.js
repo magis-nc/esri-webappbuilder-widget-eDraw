@@ -155,18 +155,6 @@ define([
 			}
 		},
 		
-		_clickHandler:false,
-		allowPopup:function(bool){
-			this.map.setInfoWindowOnClick(bool);
-			
-			if(!bool && this._clickHandler){
-				dojo.disconnect(this._clickHandler);
-			}
-			else{
-				this._clickHandler = this.drawBox.drawLayer.on("click", this._onDrawClick);
-			}			
-		},
-		
 		showMessage : function (msg, type) {
 
 			var class_icon = "message-info-icon";
@@ -224,7 +212,19 @@ define([
 			this.map.infoWindow.show(center);
 
 		},
-
+		
+		_clickHandler:false,
+		allowPopup:function(bool){
+			this.map.setInfoWindowOnClick(bool);
+			
+			if(!bool && this._clickHandler){
+				dojo.disconnect(this._clickHandler);
+			}
+			else{
+				this._clickHandler = this.drawBox.drawLayer.on("click", this._onDrawClick);
+			}			
+		},
+		
 		saveInLocalStorage : function () {
 			if (!this.config.allowLocalStorage)
 				return;
