@@ -89,6 +89,7 @@ define([
 					this.drawBox.deactivate();
 					
 					this.setInfoWindow(false);
+					this.allowPopup(false);
 					
 					break;
 				case 'add2':
