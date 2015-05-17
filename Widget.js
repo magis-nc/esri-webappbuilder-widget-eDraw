@@ -617,13 +617,13 @@ define([
 		
 		
 ///////////////////////// IMPORT/EXPORT METHODS ///////////////////////////////////////////////////////////
-		import : function () {
+		importFile : function () {
 			if (!window.FileReader) {
 				this.showMessage(this.nls.importErrorMessageNavigator, 'error');
 				return false;
 			}
 
-			var input = this.importFile.files[0];
+			var input = this.importFileInput.files[0];
 
 			if (!input) {
 				this.showMessage(this.nls.importErrorWarningSelectFile, 'warning');
@@ -712,6 +712,7 @@ define([
 			var content = evt.target.result;
 			this.importJsonContent(content);
 			this.importFile.files[0] = "";
+			this.importFileInput.files[0] = "";
 		},
 
 		export : function () {
