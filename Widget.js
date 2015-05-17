@@ -711,39 +711,46 @@ define([
 		importOnFileLoad : function (evt) {
 			var content = evt.target.result;
 			this.importJsonContent(content);
-			this.importFile.files[0] = "";
 			this.importFileInput.files[0] = "";
 		},
 
-		export : function () {
+		exportFile : function () {
+			// Be sure the link will not open if not asked : 
 			this.exportButton.href = "#";
+			this.exportButton.target = "_self";
+			
+			// Control if there are drawings
 			if (this.drawBox.drawLayer.graphics.length < 1) {
 				this.showMessage(this.nls.importWarningNoExport0Draw, 'warning');
 				return false;
-			} else {
-				//If not IE
-				if (!has("ie") && (!navigator.appName || navigator.appName != 'Microsoft Internet Explorer')) {
-					this.exportButton.href = 'data:application/json;charset=utf-8,' + this.drawingsGetJson(true);
-					this.exportButton.target = "_BLANK";
-					this.exportButton.download = (this.config.exportFileName) ? (this.config.exportFileName) : 'myDrawings.json';
-					return true;
-				}
-
-				//if IE, specific. (ie doesn't accept data in link href)
-				this.exportButton.href = "#";
-				this.exportButton.target = "";
-
-				var iframe = this.exportIframeForIE;
-				iframe = iframe.contentWindow || iframe.contentDocument;
-
-				iframe.document.open("application/octet-stream", "replace");
-				iframe.document.write(this.drawingsGetJson(true));
-				iframe.document.close();
-				iframe.focus();
-				iframe.document.execCommand('SaveAs', true, this.config.exportFileName);
-
+			}
+			
+			var export_name = (this.config.exportFileName) ? (this.config.exportFileName) : 'myDrawings.json';
+			
+			//  Case IE with blob support (IE >= 10) : use MS save blob
+			if(window.navigator && window.navigator.msSaveOrOpenBlob) {
+				var fileData = [this.drawingsGetJson(true)];
+				blobObject = new Blob(fileData, { type: 'application/octet-stream' });
+				window.navigator.msSaveOrOpenBlob(blobObject, export_name);
 				return false;
 			}
+			
+			//  Case IE without blob support : write in tab. Doesn't allways work....
+			if(has("ie")){
+				var exportWin = window.top.open("about:blank", "_blank");
+				exportWin.document.write(this.drawingsGetJson(true));
+				exportWin.document.close();
+				exportWin.focus();
+				exportWin.document.execCommand('SaveAs', true, export_name);
+				exportWin.close();
+				return false;
+			}
+			
+			//  Case HTML5 (Firefox > 25, Chrome > 30....) : use data link with download attribute
+			this.exportButton.href = 'data:application/octet-stream;charset=utf-8,' + this.drawingsGetJson(true);
+			this.exportButton.target = "_blank";
+			this.exportButton.download = export_name;
+			return true;
 		},
 
 
