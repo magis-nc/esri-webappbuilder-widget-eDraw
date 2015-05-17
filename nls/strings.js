@@ -79,7 +79,8 @@ define({
 	addMessage:'You can now make your drawing on map',
 	editMessage:'NB : you can modify/moove geometry on map',
 	snappingMessage:'NB : snapping is allowed (use CTRL)',
-	hideOption:'Hide drawings'
+	hideOption:'Hide drawings',
+	textPlacement:'Placement'
   }),
   "ar": 1,
   "cs": 1,

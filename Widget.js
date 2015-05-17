@@ -435,7 +435,11 @@ define([
 				"bold" : false,
 				"italic" : false,
 				"underline" : false,
-				"angle" : false
+				"angle" : false,
+				"placement" : {
+					"vertical" : "middle",
+					"horizontal" : "center"
+				}
 			},
 			phantom : {
 				"point" : false,
@@ -500,6 +504,9 @@ define([
 			var type = symbol.type;
 			//Draw plus and specific comportment when text symbol.
 			if (type == "textsymbol") {
+				//Force editorSymbolChooser _init to walk around jimu.js bug (initTextSection doesn't pass symbol to _initTextSettings)
+				this.editorSymbolChooser._initTextSettings(symbol);
+				
 				//show draw plus
 				this.editorSymbolTextPlusNode.style.display = 'block';
 
@@ -512,20 +519,25 @@ define([
 				this._editorConfig["drawPlus"]["bold"] = (symbol.font.weight == esri.symbol.Font.WEIGHT_BOLD);
 				this._editorConfig["drawPlus"]["italic"] = (symbol.font.style == esri.symbol.Font.STYLE_ITALIC);
 				this._editorConfig["drawPlus"]["underline"] = (symbol.font.decoration == 'underline');
+				this._editorConfig["drawPlus"]["placement"]["horizontal"] = symbol.horizontalAlignment;
+				this._editorConfig["drawPlus"]["placement"]["vertical"] = symbol.verticalAlignment;
 				this.editorTextPlusPoliceNode.set("value", symbol.font.family);
 				this.editorTextPlusAngleNode.set("value", symbol.angle);
 				this._UTIL__enableClass(this.editorTextPlusBoldNode, 'selected', this._editorConfig["drawPlus"]["bold"]);
 				this._UTIL__enableClass(this.editorTextPlusItalicNode, 'selected', this._editorConfig["drawPlus"]["italic"]);
 				this._UTIL__enableClass(this.editorTextPlusUnderlineNode, 'selected', this._editorConfig["drawPlus"]["underline"]);
+				for(var i in this._editorTextPlusPlacements){
+					var title_tab = this._editorTextPlusPlacements[i].title.split(" ");
+					var selected = (title_tab[0] == symbol.verticalAlignment && title_tab[1] == symbol.horizontalAlignment);
+					this._UTIL__enableClass(this._editorTextPlusPlacements[i], 'selected', selected);
+				}				
 			} else {
 				//Hide draw plus
 				this.editorSymbolTextPlusNode.style.display = 'none';
 			}
 		},
 		
-		editorActivateSnapping:function(bool){
-			console.log("Snapping : " + bool);
-			
+		editorActivateSnapping:function(bool){			
 			//If disable
 			if(!bool){
 				this.map.disableSnapping();
@@ -555,18 +567,27 @@ define([
 			var weight = this._editorConfig["drawPlus"]["bold"] ? esri.symbol.Font.WEIGHT_BOLD : esri.symbol.Font.WEIGHT_NORMAL;
 			var style = this._editorConfig["drawPlus"]["italic"] ? esri.symbol.Font.STYLE_ITALIC : esri.symbol.Font.STYLE_NORMAL;
 			var decoration = this._editorConfig["drawPlus"]["underline"] ? 'underline' : 'none';
+			var horizontal = this._editorConfig["drawPlus"]["placement"]["horizontal"];
+			var vertical = this._editorConfig["drawPlus"]["placement"]["vertical"];
+			
+			//Prepare symbol
+			var symbol = this.editorSymbolChooser.getSymbol();
+			this.editorSymbolChooser.inputText.value = text;				
+			symbol.text = text;
+			symbol.font.setFamily(family);
+			symbol.setAngle(angle);
+			symbol.setHorizontalAlignment(horizontal);
+			symbol.setVerticalAlignment(vertical);
+			symbol.font.setWeight(weight);
+			symbol.font.setStyle(style);
+			symbol.font.setDecoration(decoration);
 			
 			//Set in symbol chooser
 			this.editorSymbolChooser.inputText.value = text;				
-			this.editorSymbolChooser.symbol.text = text;
-			this.editorSymbolChooser.symbol.font.setFamily(family);
-			this.editorSymbolChooser.symbol.setAngle(angle);
-			this.editorSymbolChooser.symbol.font.setWeight(weight);
-			this.editorSymbolChooser.symbol.font.setStyle(style);
-			this.editorSymbolChooser.symbol.font.setDecoration(decoration);
+			this.editorSymbolChooser.showBySymbol(symbol);
 			
 			//Update in drawBox
-			this.drawBox.setTextSymbol(this.editorSymbolChooser.symbol);
+			this.drawBox.setTextSymbol(symbol);
 			
 			//Update preview
 			this.editorSymbolChooser.textPreview.innerHTML = text;
@@ -574,18 +595,18 @@ define([
 			this.editorSymbolChooser.textPreview.style['font-style'] = (this._editorConfig["drawPlus"]["italic"]) ? 'italic' : 'normal';
 			this.editorSymbolChooser.textPreview.style['font-weight'] = (this._editorConfig["drawPlus"]["bold"]) ? 'bold' : 'normal';
 			this.editorSymbolChooser.textPreview.style['text-decoration'] = (this._editorConfig["drawPlus"]["underline"]) ? 'underline' : 'none';
-			this.editorSymbolChooser.textPreview.style.transform = 'rotate(' + angle + 'deg)';
-			this.editorSymbolChooser.textPreview.style['-ms-transform'] = 'rotate(' + angle + 'deg)';
 
 			//Update angle preview
-			this.editorTextAnglePreviewNode.style['font-style'] = (this._editorConfig["drawPlus"]["italic"]) ? 'italic' : 'normal';
-			this.editorTextAnglePreviewNode.style['font-weight'] = (this._editorConfig["drawPlus"]["bold"]) ? 'bold' : 'normal';
-			this.editorTextAnglePreviewNode.style['text-decoration'] = (this._editorConfig["drawPlus"]["underline"]) ? 'underline' : 'none';
 			this.editorTextAnglePreviewNode.style.transform = 'rotate(' + angle + 'deg)';
 			this.editorTextAnglePreviewNode.style['-ms-transform'] = 'rotate(' + angle + 'deg)';
 			
-			//Update phantom symbol
-			this.editorUpdateMapPreview(this.editorSymbolChooser.symbol);
+			//Update symbol on map if on modification
+			if(this._editorConfig["graphicCurrent"])
+				this._editorConfig["graphicCurrent"].setSymbol(symbol);
+			else{
+				//Update phantom symbol
+				this.editorUpdateMapPreview(symbol);
+			}
 		},
 		
 		editorSetDefaultSymbols : function () {
@@ -762,7 +783,7 @@ define([
 
 			this._editorConfig["graphicCurrent"].attributes["name"] = this.nameField.value;
 			this._editorConfig["graphicCurrent"].attributes["description"] = this.descriptionField.value;
-			this._editorConfig["graphicCurrent"].setSymbol(this.editorSymbolChooser.symbol);
+
 			this.setMode("list");
 		},
 		editorOnClickEditCancelButon : function () {
@@ -1084,16 +1105,19 @@ define([
 			//Bind symbol chooser change
 			this.own(on(this.editorSymbolChooser, 'change', lang.hitch(this, function () {
 						this.editorSetDefaultSymbols();
-						//Text plus
-						if(this.editorSymbolChooser.type == "text")
-							this.editorUpdateTextPlus();
-						//Phantom for marker
-						else if(this.editorSymbolChooser.type == "marker")
-							this.editorUpdateMapPreview(this.editorSymbolChooser.getSymbol());
 						
-						//If in modification, update graphic symbology 
-						if(this._editorConfig["graphicCurrent"])
-							this._editorConfig["graphicCurrent"].setSymbol(this.editorSymbolChooser.getSymbol());
+						//If text plus
+						if(this.editorSymbolChooser.type == "text"){
+							this.editorUpdateTextPlus();
+						}
+						else if(this._editorConfig["graphicCurrent"]){
+							//If in modification, update graphic symbology 
+							this._editorConfig["graphicCurrent"].setSymbol(this.editorSymbolChooser.getSymbol());	
+						}
+						
+						//Phantom for marker
+						if(this.editorSymbolChooser.type == "marker")
+							this.editorUpdateMapPreview(this.editorSymbolChooser.getSymbol());
 						
 					})));
 
@@ -1124,7 +1148,42 @@ define([
 					this._UTIL__enableClass(this.editorTextPlusUnderlineNode, 'selected', this._editorConfig["drawPlus"]["underline"]);
 					this.editorUpdateTextPlus();
 				}));
-
+			this.onEditorTextPlusPlacementClick=lang.hitch(this, function(evt){
+				if(!evt.target)
+					return;
+				
+				var selected = false;
+				for(var i in this._editorTextPlusPlacements){
+					var is_this = (evt.target == this._editorTextPlusPlacements[i]);
+					
+					this._UTIL__enableClass(this._editorTextPlusPlacements[i], 'selected', is_this);
+					
+					if(is_this)
+						selected = this._editorTextPlusPlacements[i];
+				}
+				if(!selected.title)
+					return;
+				var tab = selected.title.split(" ");
+				this._editorConfig["drawPlus"]["placement"] = {
+					"vertical" : tab[0],
+					"horizontal" : tab[1],
+				}
+				this.editorUpdateTextPlus();
+			});
+			this._editorTextPlusPlacements = [
+				this.editorTextPlusPlacementTopLeft,
+				this.editorTextPlusPlacementTopCenter,
+				this.editorTextPlusPlacementTopRight,
+				this.editorTextPlusPlacementMiddleLeft,
+				this.editorTextPlusPlacementMiddleCenter,
+				this.editorTextPlusPlacementMiddleRight,
+				this.editorTextPlusPlacementBottomLeft,
+				this.editorTextPlusPlacementBottomCenter,
+				this.editorTextPlusPlacementBottomRight
+			];
+			for(var i in this._editorTextPlusPlacements)
+				on(this._editorTextPlusPlacements[i], "click",this.onEditorTextPlusPlacementClick);
+			
 		},
 		
 		_menuInit : function () {
@@ -1297,7 +1356,7 @@ define([
 			//Create symbol chooser
 			this.editorSymbolChooser = new SymbolChooser(
 				{
-					class : "full-width",
+					"class" : "full-width",
 					"type" : "text",
 					"symbol" : new SimpleMarkerSymbol()
 				},

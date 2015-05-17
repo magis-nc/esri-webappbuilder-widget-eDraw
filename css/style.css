@@ -355,3 +355,84 @@
 .jimu-widget-edraw .draw-plus.text-options div.draw-plus.text-option.text-underline {
   text-decoration: underline;
 }
+
+.jimu-widget-edraw .draw-plus.text-place {
+  position:relative;
+  width:80px;
+  height:80px;
+  border-radius:5px;
+  border:1px solid lightgrey;
+}
+.jimu-widget-edraw .draw-plus.text-place span{
+	position:absolute;
+	width:20px;
+	height:20px;
+	border-radius:3px;
+    border:1px solid grey;
+	background-color: #E4E4E4;
+	line-height:50%;
+}
+.jimu-widget-edraw .draw-plus.text-place span.selected{
+	background-color: #C0C0C0;
+}
+.jimu-widget-edraw .draw-plus.text-place span:hover{
+	background-color: #C8C8E4;
+	cursor:pointer;
+}
+.jimu-widget-edraw .draw-plus.text-place span.selected:hover{
+	background-color: #B3B3D9;
+}
+.jimu-widget-edraw .draw-plus.text-place .text-place-top-left{
+	top:55px;
+	left:55px;
+	text-align: right;
+	vertical-align:top;
+}
+.jimu-widget-edraw .draw-plus.text-place .text-place-top-center{
+	top:55px;
+	left:30px;
+	text-align: center;
+	vertical-align:top;
+}
+.jimu-widget-edraw .draw-plus.text-place .text-place-top-right{
+	top:55px;
+	left:5px;
+	text-align: right;
+	vertical-align:top;
+}
+.jimu-widget-edraw .draw-plus.text-place .text-place-middle-left{
+	top:30px;
+	left:55px;
+	text-align: left;
+	line-height:100%;
+}
+.jimu-widget-edraw .draw-plus.text-place .text-place-middle-center{
+	top:30px;
+	left:30px;
+	text-align: center;
+	line-height:100%;
+}
+.jimu-widget-edraw .draw-plus.text-place .text-place-middle-right{
+	top:30px;
+	left:5px;
+	text-align: right;
+	line-height:100%;
+}
+.jimu-widget-edraw .draw-plus.text-place .text-place-bottom-left{
+	top:5px;
+	left:55px;
+	text-align: left;
+	padding-top: 10px;
+}
+.jimu-widget-edraw .draw-plus.text-place .text-place-bottom-center{
+	top:5px;
+	left:30px;
+	text-align: center;
+	padding-top: 10px;
+}
+.jimu-widget-edraw .draw-plus.text-place .text-place-bottom-right{
+	top:5px;
+	left:5px;
+	text-align: right;
+	padding-top: 10px;
+}

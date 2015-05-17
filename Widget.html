@@ -74,11 +74,28 @@
 					<span>${nls.textAngle}</span>
 				  </td>
 				  <td>
-					<input data-dojo-attach-point="editorTextPlusAngleNode" data-dojo-type="dijit/form/NumberSpinner" data-dojo-props="value:0,smallDelta:5,constraints:{min:-90,max:90},intermediateChanges:true" class="draw-plus text-angle"></input>
 					<input data-dojo-attach-point="editorTextPlusAngleNode" data-dojo-type="dijit/form/NumberSpinner" data-dojo-props="value:0,smallDelta:5,constraints:{min:-180,max:180},intermediateChanges:true" class="draw-plus text-angle"></input>
 					<span data-dojo-attach-point="editorTextAnglePreviewNode" class="draw-plus text-angle-sample">${nls.drawSampleRotatedText}</span>
 				  </td>
-			  </tr>
+			    </tr>
+			    <tr>
+				  <td>
+					<span>${nls.textPlacement}</span>
+				  </td>
+				  <td>
+					<div class="draw-plus text-place">
+						<span data-dojo-attach-point="editorTextPlusPlacementTopLeft" class="text-place-top-left" title="top left">•</span>
+						<span data-dojo-attach-point="editorTextPlusPlacementTopCenter" class="text-place-top-center" title="top center">•</span>
+						<span data-dojo-attach-point="editorTextPlusPlacementTopRight"class="text-place-top-right" title="top right">•</span>
+						<span data-dojo-attach-point="editorTextPlusPlacementMiddleLeft" class="text-place-middle-left" title="middle left">•</span>
+						<span data-dojo-attach-point="editorTextPlusPlacementMiddleCenter" class="text-place-middle-center selected" title="middle center">•</span>
+						<span data-dojo-attach-point="editorTextPlusPlacementMiddleRight" class="text-place-middle-right" title="middle right">•</span>
+						<span data-dojo-attach-point="editorTextPlusPlacementBottomLeft" class="text-place-bottom-left" title="bottom left">•</span>
+						<span data-dojo-attach-point="editorTextPlusPlacementBottomCenter" class="text-place-bottom-center" title="bottom center">•</span>
+						<span data-dojo-attach-point="editorTextPlusPlacementBottomRight" class="text-place-bottom-right" title="bottom right">•</span>
+					</div>
+				  </td>
+				</tr>
 			  </tbody>
 			</table>
 		
@@ -131,16 +148,12 @@
 			<tr><td>
 				<h4 class="title">${nls.exportTitle}</h4>
 				<div class="list-draw-actions">
-					<a data-dojo-attach-point="exportButton" target="_BLANK" data-dojo-attach-event="ondijitclick:export" download="myDraw.json" href="#"><span class="export blue-button"></span></a>
-					<iframe data-dojo-attach-point="exportIframeForIE" style="display:none;"></iframe>
 					<a data-dojo-attach-point="exportButton" target="_BLANK" data-dojo-attach-event="ondijitclick:exportFile" download="myDraw.json" href="#"><span class="export blue-button"></span></a>
 				</div>
 			</td></tr>
 			<tr><td>
 				<h4 class="title">${nls.importTitle}</h4>
 				<div class="draw-import list-draw-actions">
-					<input class="file" value="" type="file" data-dojo-attach-point="importFile" />
-					<a data-dojo-attach-point="importButton" data-dojo-attach-event="ondijitclick:import"><span class="import blue-button"></span></a>
 					<input class="file" value="" type="file" data-dojo-attach-point="importFileInput" />
 					<a data-dojo-attach-point="importButton" data-dojo-attach-event="ondijitclick:importFile"><span class="import blue-button"></span></a>
 				</div>
