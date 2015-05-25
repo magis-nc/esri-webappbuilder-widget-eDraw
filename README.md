@@ -35,7 +35,7 @@ http://doc.arcgis.com/en/web-appbuilder/create-apps/widget-draw.htm
 		- if not empty, all apps with the same key share the same local storage (apps on the same server)
 		
 ## Installation :
-Add eDraw folder in your webApp Builder client\stemapp\widgets folder
+Add eDraw folder in your webApp Builder client\stemapp\widgets folder.
 Download Release here : 
 https://github.com/magis-nc/esri-webappbuilder-widget-eDraw/releases/tag/v1.1.2
 

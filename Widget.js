@@ -23,7 +23,7 @@ define([
 		'esri/geometry/Polyline',
 		'esri/symbols/SimpleLineSymbol',
 		'esri/geometry/Polygon',
-		"esri/graphicsUtils",
+		'esri/graphicsUtils',
 		'esri/symbols/SimpleFillSymbol',
 		'esri/symbols/TextSymbol',
 		'esri/symbols/Font',
@@ -34,7 +34,7 @@ define([
 		'dojo/_base/lang',
 		'dojo/on',
 		'dojo/_base/html',
-		"dojo/sniff",
+		'dojo/sniff',
 		'dojo/_base/Color',
 		'dojo/_base/array',
 		'dojo/dom-construct',
@@ -1166,7 +1166,7 @@ define([
 				var tab = selected.title.split(" ");
 				this._editorConfig["drawPlus"]["placement"] = {
 					"vertical" : tab[0],
-					"horizontal" : tab[1],
+					"horizontal" : tab[1]
 				}
 				this.editorUpdateTextPlus();
 			});
@@ -1191,7 +1191,7 @@ define([
 				"add" : this.menuAddButton,
 				"edit" : this.menuEditButton,
 				"list" : this.menuListButton,
-				"importExport" : this.menuListImportExport,
+				"importExport" : this.menuListImportExport
 			};
 
 			var views = [this.addSection, this.editorSection, this.listSection];
