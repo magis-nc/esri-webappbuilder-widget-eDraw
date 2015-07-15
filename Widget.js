@@ -847,7 +847,10 @@ define([
 						symbol = new SimpleFillSymbol();
 						break;
 					case "text":
-						symbol = new TextSymbol();
+						symbol = new TextSymbol({
+							"verticalAlignment": "middle",
+							"horizontalAlignment": "center"
+						});
 						break;
 				}
 			}
