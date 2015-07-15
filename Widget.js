@@ -1373,6 +1373,9 @@ define([
 			
 			//Bind and hitch events
 			this._bindEvents();
+			
+			//Prepare text plus
+			this._prepareTextPlus();
 
 			//load if drawings in localStorage
 			this._initLocalStorage();
@@ -1382,6 +1385,19 @@ define([
 
 			//Create edit dijit
 			this._editorConfig["editToolbar"] = new Edit(this.map);
+		},
+		
+		_prepareTextPlus:function(){
+			//Select central position in UI (text placement)
+			this._UTIL__enableClass(this._editorTextPlusPlacements[4], 'selected', true);
+			
+			//Manage availaible polices
+			if(this.config.drawPlus && this.config.drawPlus.polices){
+				if(this.config.drawPlus.polices.length > 0){
+					this.editorTextPlusPoliceNode.set("options", this.config.drawPlus.polices).reset();
+				}
+			}
+			
 		},
 		
 		onOpen : function () {
