@@ -385,7 +385,7 @@
 .jimu-widget-edraw .draw-plus.text-place .text-place-top-left{
 	top:55px;
 	left:55px;
-	text-align: right;
+	text-align: left;
 	vertical-align:top;
 }
 .jimu-widget-edraw .draw-plus.text-place .text-place-top-center{
