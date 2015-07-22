@@ -10,18 +10,18 @@ http://doc.arcgis.com/en/web-appbuilder/create-apps/widget-draw.htm
 - on text drawing, no insert if no name.
 - on modification : enable geometry update (with snapping if wanted : CTRL) and preview symbology changes on the fly
 - list
-	- add list of all drawings
-	- actions on each drawing : modify / delete / up / down / zoom
-	- all drawings : zoom or delete
-	- on drawing infowindow -> select drawing in list
-	- on zoom on a drawing -> select drawing on map (and show infoWindow)
+    - add list of all drawings
+    - actions on each drawing : modify / delete / up / down / zoom
+    - all drawings : zoom or delete
+    - on drawing infowindow -> select drawing in list
+    - on zoom on a drawing -> select drawing on map (and show infoWindow)
 - import/export : allow users to export or import drawings (json format)
 - localStorage
-	- dynamic saving on each drawing add/delete/update
-	- on widget load : load drawings saved in local Storage
+    - dynamic saving on each drawing add/delete/update
+    - on widget load : load drawings saved in local Storage
 - draws plus (from Larry Stout https://geonet.esri.com/people/Larry_Stout)
-	- preview under mouse when adding text or point
-	- for text, add font choice, font angle, bold, italic, placement and underline options.
+    - preview under mouse when adding text or point
+    - for text, add font choice, font angle, bold, italic, placement and underline options.
 - checkbox to hide drawing's layer (and therefore widget UI)
 
 ## configuration :
@@ -30,10 +30,10 @@ http://doc.arcgis.com/en/web-appbuilder/create-apps/widget-draw.htm
 - Confirm on delete. A confirm dialog when user delete drawing(s) ?
 - Enable import/export. Let the user import or export drawings ?
 - Enable local storage. enable auto-saving in local storage and loading saved drawings on widget load.
-	- Local storage key : let empty or set a name :
-		- if empty, all apps with eDraw widgets share the same local storage (apps on the same server)
-		- if not empty, all apps with the same key share the same local storage (apps on the same server)
-		
+    - Local storage key : let empty or set a name :
+        - if empty, all apps with eDraw widgets share the same local storage (apps on the same server)
+        - if not empty, all apps with the same key share the same local storage (apps on the same server)
+        
 ## Installation :
 Add eDraw folder in your webApp Builder client\stemapp\widgets folder.
 Download Release here : 
