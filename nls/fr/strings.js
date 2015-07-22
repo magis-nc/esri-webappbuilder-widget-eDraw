@@ -30,6 +30,7 @@ define(
     kilometers: "Kilomètres",
     miles: "Miles",
     meters: "Mètres",
+	nauticals: "Milles marins",
     feet: "Pieds",
     yards: "Yards",
     squareKilometers: "Kilomètres carrés",

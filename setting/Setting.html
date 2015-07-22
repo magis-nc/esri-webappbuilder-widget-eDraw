@@ -2,7 +2,7 @@
 	<ul class="settings">
 		<li>
 			<span class="input">
-				<input class="jimu-input" type="text" data-dojo-attach-point="exportFileNameInput" value="${nls.exportFileName}" />
+				<input class="jimu-input" type="text" data-dojo-attach-point="exportFileNameInput" value="${nls.exportFileNameValue}" />
 			</span>
 			<span class="label">${nls.exportFileName}</span>
 			
@@ -39,6 +39,15 @@
 			
 		</li>
 	</ul>
+	
+	<hr />
+
+	<div class="btn-add-section"  data-dojo-attach-point="btnAddFontFamily">
+		<span class="btn-add-icon jimu-float-leading"></span>
+		<span class="btn-add-label jimu-float-leading">${nls.addFontFamily}</span>
+	</div>
+	<div data-dojo-attach-point="textPlusFontFamilyTable" data-dojo-type="jimu/dijit/SimpleTable" data-dojo-props='fields:[{name:"label",title:"${nls.label}","class":"label",type:"text",editable:true,unique:true},{name:"value",title:"${nls.value}","class":"value",type:"text",editable:true,unique:true},{name:"actions",title:"${nls.actions}","class":"actions",type:"actions",actions:["up","down","delete"]}]'></div>
+	
 	<hr />
 	
 	<div class="query-setting-content" data-dojo-attach-point="content">

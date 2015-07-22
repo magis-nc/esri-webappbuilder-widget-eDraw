@@ -130,9 +130,6 @@ define([
 					var display = (nb_draws > 0) ? 'block' : 'none';
 					html.setStyle(this.allActionsNode, 'display', display);
 					this.tableTH.innerHTML = nb_draws + ' ' + this.nls.draws;
-
-					//Save data in local storage
-					this.saveInLocalStorage();
 					
 					//Other params
 					this._editorConfig["graphicCurrent"] = false;
@@ -360,6 +357,7 @@ define([
 				on(dom.byId('draw-action-delete--' + i), "click", this.listOnActionClick);
 				on(dom.byId('draw-action-zoom--' + i), "click", this.listOnActionClick);
 			}
+			this.saveInLocalStorage();
 		},
 			
 		switch2DrawingGraphics : function (i1, i2) {
@@ -431,7 +429,7 @@ define([
 ///////////////////////// SYMBOL EDITOR METHODS ///////////////////////////////////////////////////////////			
 		_editorConfig : {
 			drawPlus : {
-				"police" : false,
+				"FontFamily" : false,
 				"bold" : false,
 				"italic" : false,
 				"underline" : false,
@@ -521,7 +519,7 @@ define([
 				this._editorConfig["drawPlus"]["underline"] = (symbol.font.decoration == 'underline');
 				this._editorConfig["drawPlus"]["placement"]["horizontal"] = symbol.horizontalAlignment;
 				this._editorConfig["drawPlus"]["placement"]["vertical"] = symbol.verticalAlignment;
-				this.editorTextPlusPoliceNode.set("value", symbol.font.family);
+				this.editorTextPlusFontFamilyNode.set("value", symbol.font.family);
 				this.editorTextPlusAngleNode.set("value", symbol.angle);
 				this._UTIL__enableClass(this.editorTextPlusBoldNode, 'selected', this._editorConfig["drawPlus"]["bold"]);
 				this._UTIL__enableClass(this.editorTextPlusItalicNode, 'selected', this._editorConfig["drawPlus"]["italic"]);
@@ -562,7 +560,7 @@ define([
 			
 			//Get parameters
 			var text = this.nameField.value;
-			var family = this.editorTextPlusPoliceNode.value;
+			var family = this.editorTextPlusFontFamilyNode.value;
 			var angle = this.editorTextPlusAngleNode.value;
 			var weight = this._editorConfig["drawPlus"]["bold"] ? esri.symbol.Font.WEIGHT_BOLD : esri.symbol.Font.WEIGHT_NORMAL;
 			var style = this._editorConfig["drawPlus"]["italic"] ? esri.symbol.Font.STYLE_ITALIC : esri.symbol.Font.STYLE_NORMAL;
@@ -1134,7 +1132,7 @@ define([
 
 			//Bind draw plus event
 			this.editorUpdateTextPlus = lang.hitch(this, this.editorUpdateTextPlus);
-			this.editorTextPlusPoliceNode.on("change", this.editorUpdateTextPlus);
+			this.editorTextPlusFontFamilyNode.on("change", this.editorUpdateTextPlus);
 			this.editorTextPlusAngleNode.on("change", this.editorUpdateTextPlus);
 			on(this.editorTextPlusBoldNode, "click", lang.hitch(this, function (evt) {
 					this._editorConfig["drawPlus"]["bold"] = !this._editorConfig["drawPlus"]["bold"];
@@ -1292,6 +1290,9 @@ define([
 				}, {
 					unit : 'METERS',
 					label : this.nls.meters
+				},{
+					unit : 'NAUTICAL_MILES',
+					label : this.nls.nauticals
 				}, {
 					unit : 'FEET',
 					label : this.nls.feet
@@ -1394,10 +1395,10 @@ define([
 			//Select central position in UI (text placement)
 			this._UTIL__enableClass(this._editorTextPlusPlacements[4], 'selected', true);
 			
-			//Manage availaible polices
-			if(this.config.drawPlus && this.config.drawPlus.polices){
-				if(this.config.drawPlus.polices.length > 0){
-					this.editorTextPlusPoliceNode.set("options", this.config.drawPlus.polices).reset();
+			//Manage availaible FontFamily
+			if(this.config.drawPlus && this.config.drawPlus.fontFamilies){
+				if(this.config.drawPlus.fontFamilies.length > 0){
+					this.editorTextPlusFontFamilyNode.set("options", this.config.drawPlus.fontFamilies).reset();
 				}
 			}
 			

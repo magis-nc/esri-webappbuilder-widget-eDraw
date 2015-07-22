@@ -60,6 +60,11 @@ define([
           abbr: this.nls.metersAbbreviation||'m',
           conversion: jimuUtils.localizeNumber(1)
         }, {
+          value: 'NAUTICAL_MILES',
+          label: this.nls.nauticals,
+          abbr: this.nls.nauticalsAbbreviation||'nm',
+          conversion: jimuUtils.localizeNumber(0.00053957, {places: 7})
+        }, {
           value: 'FEET',
           label: this.nls.feet,
           abbr: this.nls.feetAbbreviation||'ft',
@@ -114,6 +119,7 @@ define([
         this.inherited(arguments);
         this.own(on(this.btnAddDistance,'click',lang.hitch(this,this._addDistance)));
         this.own(on(this.btnAddArea,'click',lang.hitch(this,this._addArea)));
+        this.own(on(this.btnAddFontFamily,'click',lang.hitch(this,this._addFontFamily)));
         this.own(on(this.distanceTable,'row-delete',lang.hitch(this,function(tr){
           if(tr.select){
             tr.select.destroy();
@@ -151,12 +157,32 @@ define([
         this.config = config;
         this._setDistanceTable(this.config.distanceUnits);
         this._setAreaTable(this.config.areaUnits);
+        this._setTextPlusFontFamilyTable(this.config);
 		
 		this.exportFileNameInput.value = (config.exportFileName) ? config.exportFileName : this.nls.exportFileName;
 		this.confirmOnDeleteInput.checked = (config.confirmOnDelete) ? true : false;
 		this.allowImportExportInput.checked = (config.allowImportExport) ? true : false;
 		this.allowLocalStorageInput.checked = (config.allowLocalStorage) ? true : false;
 		this.localStorageKeyInput.value = (config.localStorageKey) ? config.localStorageKey : '';
+		
+		//Text plus FontFamily
+		this._setTextPlusFontFamilyTable(config);
+      },
+	  
+	  _setTextPlusFontFamilyTable:function(config){
+        var options = 
+			(config.drawPlus && config.drawPlus.fontFamilies && config.drawPlus.fontFamilies.length > 0)
+			? config.drawPlus.fontFamilies
+			: [
+				{ "label": "Arial", "value": "Arial" },
+				{ "label": "Helvetica", "value": "Helvetica" },
+				{ "label": "Times New Roman", "value": "Times New Roman" },
+				{ "label": "Courier New", "value": "Courier New" }
+			];
+		
+		this.textPlusFontFamilyTable.clear();
+		for(var i in options)
+			this.textPlusFontFamilyTable.addRow(options[i]);
       },
 	  
       _setDistanceTable:function(distanceUnits){
@@ -197,8 +223,19 @@ define([
 		config.allowLocalStorage = this.allowLocalStorageInput.checked;
 		var key = this.localStorageKeyInput.value.trim();
 		config.localStorageKey = (key=="") ? false : key;
-       
-	   return config;
+        
+		if(!config["drawPlus"])
+			config["drawPlus"] = {};
+		var FontFamilyOptions = array.map(this.textPlusFontFamilyTable.getRows(),lang.hitch(this,function(tr){
+			var data = this.textPlusFontFamilyTable.getRowData(tr);
+			return {
+				"value":data.value,
+				"label":data.label		  
+			}
+        }));
+		config["drawPlus"]["fontFamilies"] = FontFamilyOptions;
+	    
+		return config;
       },
 
       _getDistanceConfig:function(){
@@ -265,7 +302,15 @@ define([
         }
         return result;
       },
-
+	  
+	  _addFontFamily:function(){
+	    console.log("Add font family");
+		var data = {"label": "New font family", "value": "New font family" };
+		var result = this.textPlusFontFamilyTable.addRow(data);
+		if(result)
+			this.textPlusFontFamilyTable.editRow(result.tr, data);
+	  },
+	  
       _addDistance:function(){
         var notUsedValues = this._getNotUsedDistanceUnitValues();
         if(notUsedValues.length === 0){

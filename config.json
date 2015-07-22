@@ -1,11 +1,11 @@
 {
-	"exportFileName" : "myDrawings.json",
+	"exportFileName" : "myDrawing.json",
 	"confirmOnDelete" : true,
 	"allowImportExport" : true,
 	"allowLocalStorage" : true,
 	"localStorageKey" : false,
 	"drawPlus" : {
-		"polices" : [
+		"fontFamilies" : [
 			{ "label": "Arial", "value": "Arial" },
 			{ "label": "Helvetica", "value": "Helvetica" },
 			{ "label": "Times New Roman", "value": "Times New Roman" },
@@ -21,6 +21,9 @@
 		}, {
 			"unit" : "METERS",
 			"abbr" : "m"
+		},{
+			"unit" : "NAUTICAL_MILES",
+			"abbr" : "nm"
 		}, {
 			"unit" : "FEET",
 			"abbr" : "ft"

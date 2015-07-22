@@ -30,6 +30,7 @@ define({
     kilometers: "Kilometers",
     miles: "Miles",
     meters: "Meters",
+    nauticals: "Nautical miles",
     feet: "Feet",
     yards: "Yards",
     squareKilometers: "Square kilometers",

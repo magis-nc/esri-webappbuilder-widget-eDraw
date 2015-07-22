@@ -2,7 +2,9 @@ define({
   root: ({
     addDistance: "Add Length Unit",
     addArea: "Add Area Unit",
+	addFontFamily: "Add a font family",
     label: "Label",
+    value: "Value",
     abbr: "Abbreviation",
     conversion: "Conversion",
     actions: "Actions",
@@ -11,6 +13,7 @@ define({
     kilometers: "Kilometers",
     miles: "Miles",
     meters: "Meters",
+    nauticals: "Nautical miles",
     feet: "Feet",
     yards: "Yards",
     squareKilometers: "Square kilometers",
@@ -27,7 +30,8 @@ define({
 	allowLocalStorageLabel:"Use local storage ?",
 	localStorageKeyLabel:"Local storage key",
 	localStorageKeyInfo:"If not empty, applications with same key (and same server) will share the same storage. If empty, all will share same storage.",
-	exportFileName:"myDrawings.json"
+	exportFileName:"Export file name",
+	exportFileNameValue:"myDrawing.json"
   }),
   "ar": 1,
   "cs": 1,

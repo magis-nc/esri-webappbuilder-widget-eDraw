@@ -2,7 +2,9 @@
    ({
     addDistance: "Ajouter une unité de longueur",
     addArea: "Ajouter une unité de surface",
+    addFontFamily: "Ajouter une police de caractères",
     label: "Etiquette",
+    value: "Valeur",
     abbr: "Abréviation",
     conversion: "Conversion",
     actions: "Actions",
@@ -11,6 +13,8 @@
     kilometers: "Kilomètres",
     miles: "Miles",
     meters: "Mètres",
+    meters: "Mètres",
+	nauticals: "Milles marins",
     feet: "Pieds",
     yards: "Yards",
     squareKilometers: "Kilomètres carrés",
@@ -27,6 +31,7 @@
 	allowLocalStorageLabel:"Utiliser local storage",
 	localStorageKeyLabel:"Clé Local storage",
 	localStorageKeyInfo:"Si vide, toutes les applications partageront le même storage. Sinon, les applications avec la même clé partageront le même storage.",
-	exportFileName:"mesDessins.json",
+	exportFileName:"Nom du fichier exporté",
+	exportFileNameValue:"mesDessins.json"
   })
 );
