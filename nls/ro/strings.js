@@ -1,4 +1,4 @@
-﻿define(
+define(
    ({
     _widgetLabel: "Trasare",
     selectDrawMode: "Selectare mod de trasare",

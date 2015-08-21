@@ -1,4 +1,4 @@
-﻿define(
+define(
     ({
         addDistance: "Ajouter une unité de longueur",
         addArea: "Ajouter une unité de surface",
@@ -32,6 +32,21 @@
         localStorageKeyLabel: "Clé Local storage",
         localStorageKeyInfo: "Si vide, toutes les applications partageront le même storage. Sinon, les applications avec la même clé partageront le même storage.",
         exportFileName: "Nom du fichier exporté",
-        exportFileNameValue: "mesDessins.json"
+        exportFileNameValue: "mesDessins.json",
+		kilometersAbbreviation : "km",
+		milesAbbreviation : "mi",
+		metersAbbreviation : "m",
+		nauticalsAbbreviation : "NM",
+		feetAbbreviation : "ft",
+		yardsAbbreviation : "yd",
+		squareKilometersAbbreviation : "km²",
+		squareMilesAbbreviation : "mi²",
+		acresAbbreviation : "ac",
+		hectaresAbbreviation : "ha",
+		squareMetersAbbreviation : "m²",
+		squareFeetAbbreviation : "ft²",
+		squareYardsAbbreviation : "yd²",
+		defineUnits : "Définir l'unité de mesure.",
+		operationalLayer : "Ajouter le dessin comme couche opérationnelle de la carte."
     })
 );

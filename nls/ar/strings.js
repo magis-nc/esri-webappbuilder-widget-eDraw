@@ -1,4 +1,4 @@
-﻿define(
+define(
    ({
     _widgetLabel: "رسم",
     selectDrawMode: "تحديد وضع الرسم",

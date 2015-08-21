@@ -21,6 +21,20 @@
     squareFeet: "平方英尺",
     squareYards: "平方码",
     distance: "距离",
-    area: "面积"
+    area: "面积",
+    kilometersAbbreviation: "km",
+    milesAbbreviation: "mi",
+    metersAbbreviation: "m",
+    feetAbbreviation: "ft",
+    yardsAbbreviation: "yd",
+    squareKilometersAbbreviation: "sq km",
+    squareMilesAbbreviation: "sq mi",
+    acresAbbreviation: "ac",
+    hectaresAbbreviation: "ha",
+    squareMetersAbbreviation: "sq m",
+    squareFeetAbbreviation: "sq ft",
+    squareYardsAbbreviation: "sq yd",
+    defineUnits: "定义测量单位。",
+    operationalLayer: "将绘制添加为地图的业务图层。"
   })
 );

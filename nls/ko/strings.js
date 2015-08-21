@@ -1,4 +1,4 @@
-﻿define(
+define(
    ({
     _widgetLabel: "그리기",
     selectDrawMode: "그리기 모드 선택",

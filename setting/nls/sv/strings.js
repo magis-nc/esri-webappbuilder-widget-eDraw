@@ -21,6 +21,20 @@
     squareFeet: "Square feet",
     squareYards: "Square yards",
     distance: "Distanser",
-    area: "Ytor"
+    area: "Ytor",
+    kilometersAbbreviation: "km",
+    milesAbbreviation: "mi",
+    metersAbbreviation: "m",
+    feetAbbreviation: "ft",
+    yardsAbbreviation: "yd",
+    squareKilometersAbbreviation: "kv.km",
+    squareMilesAbbreviation: "eng. kv.m",
+    acresAbbreviation: "ac",
+    hectaresAbbreviation: "ha",
+    squareMetersAbbreviation: "kv.m",
+    squareFeetAbbreviation: "kv.fot",
+    squareYardsAbbreviation: "kv.yd",
+    defineUnits: "Definiera måttenheterna.",
+    operationalLayer: "Lägg till ritningen som ett funktionslager i kartan."
   })
 );

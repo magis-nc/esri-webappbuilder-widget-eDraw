@@ -1,4 +1,4 @@
-﻿define(
+define(
    ({
     _widgetLabel: "Piešti",
     selectDrawMode: "Pasirinkite piešimo režimą",

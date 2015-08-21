@@ -21,6 +21,20 @@
     squareFeet: "Kvadratfot",
     squareYards: "Kvadratyard",
     distance: "Avstander",
-    area: "Areas"
+    area: "Areas",
+    kilometersAbbreviation: "km",
+    milesAbbreviation: "mil",
+    metersAbbreviation: "m",
+    feetAbbreviation: "ft",
+    yardsAbbreviation: "yd",
+    squareKilometersAbbreviation: "km²",
+    squareMilesAbbreviation: "mi²",
+    acresAbbreviation: "ac",
+    hectaresAbbreviation: "ha",
+    squareMetersAbbreviation: "m²",
+    squareFeetAbbreviation: "ft²",
+    squareYardsAbbreviation: "yd²",
+    defineUnits: "Definer måleenhetene.",
+    operationalLayer: "Legg til tegningen som et operativt lag i kartet."
   })
 );

@@ -1,4 +1,4 @@
-﻿define(
+define(
    ({
     _widgetLabel: "Zeichnen",
     selectDrawMode: "Zeichenmodus auswählen",

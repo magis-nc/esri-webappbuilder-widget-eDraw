@@ -21,6 +21,20 @@
     squareFeet: "Pies cuadrados",
     squareYards: "Yardas cuadradas",
     distance: "Distancias",
-    area: "Áreas"
+    area: "Áreas",
+    kilometersAbbreviation: "km",
+    milesAbbreviation: "mi",
+    metersAbbreviation: "m",
+    feetAbbreviation: "ft",
+    yardsAbbreviation: "yd",
+    squareKilometersAbbreviation: "km²",
+    squareMilesAbbreviation: "mi²",
+    acresAbbreviation: "ac",
+    hectaresAbbreviation: "ha",
+    squareMetersAbbreviation: "m²",
+    squareFeetAbbreviation: "ft²",
+    squareYardsAbbreviation: "yd²",
+    defineUnits: "Define las unidades de medida.",
+    operationalLayer: "Agrega el dibujo como capa operativa del mapa."
   })
 );

@@ -1,4 +1,4 @@
-﻿define(
+define(
    ({
     _widgetLabel: "Piirrä",
     selectDrawMode: "Valitse piirustustapa",

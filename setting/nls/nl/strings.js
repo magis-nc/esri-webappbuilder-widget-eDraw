@@ -21,6 +21,20 @@
     squareFeet: "Vierkante voet",
     squareYards: "Vierkante yard",
     distance: "Afstanden",
-    area: "Gebieden"
+    area: "Gebieden",
+    kilometersAbbreviation: "km",
+    milesAbbreviation: "mi",
+    metersAbbreviation: "m",
+    feetAbbreviation: "ft",
+    yardsAbbreviation: "yd",
+    squareKilometersAbbreviation: "sq km",
+    squareMilesAbbreviation: "sq mi",
+    acresAbbreviation: "ac",
+    hectaresAbbreviation: "ha",
+    squareMetersAbbreviation: "sq m",
+    squareFeetAbbreviation: "sq ft",
+    squareYardsAbbreviation: "yd²",
+    defineUnits: "Bepaal de maateenheden.",
+    operationalLayer: "Voeg de tekening toe als een operationele laag van de kaart."
   })
 );

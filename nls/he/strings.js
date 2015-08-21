@@ -1,4 +1,4 @@
-﻿define(
+define(
    ({
     _widgetLabel: "שרטוט",
     selectDrawMode: "בחר מצב שרטוט",

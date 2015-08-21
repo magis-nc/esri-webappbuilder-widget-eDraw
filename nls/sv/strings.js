@@ -1,4 +1,4 @@
-﻿define(
+define(
    ({
     _widgetLabel: "Rita",
     selectDrawMode: "Välj ritläge",

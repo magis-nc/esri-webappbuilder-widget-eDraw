@@ -1,4 +1,4 @@
-﻿define(
+define(
    ({
     _widgetLabel: "Vẽ",
     selectDrawMode: "Chọn chế độ vẽ",

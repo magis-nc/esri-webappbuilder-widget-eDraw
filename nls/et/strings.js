@@ -1,4 +1,4 @@
-﻿define(
+define(
    ({
     _widgetLabel: "Joonistamine",
     selectDrawMode: "Vali joonistamise režiim",

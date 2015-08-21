@@ -21,6 +21,20 @@
     squareFeet: "Kvadratinė pėda",
     squareYards: "Kvadratiniai jardai",
     distance: "Atstumai",
-    area: "Plotai"
+    area: "Plotai",
+    kilometersAbbreviation: "km",
+    milesAbbreviation: "myl.",
+    metersAbbreviation: "m",
+    feetAbbreviation: "pėd.",
+    yardsAbbreviation: "jard.",
+    squareKilometersAbbreviation: "kv. km.",
+    squareMilesAbbreviation: "kv. mi.",
+    acresAbbreviation: "akr.",
+    hectaresAbbreviation: "ha",
+    squareMetersAbbreviation: "kv. m.",
+    squareFeetAbbreviation: "kv. pėd.",
+    squareYardsAbbreviation: "kv. jard.",
+    defineUnits: "Nurodykite matavimo vienetus.",
+    operationalLayer: "Pridėkite piešinį kaip žemėlapio darbinį sluoksnį."
   })
 );

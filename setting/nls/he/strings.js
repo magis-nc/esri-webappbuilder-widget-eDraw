@@ -21,6 +21,20 @@
     squareFeet: "רגל מרובע",
     squareYards: "יארדים מרובעים",
     distance: "מרחקים",
-    area: "שטחים"
+    area: "שטחים",
+    kilometersAbbreviation: "קילומטר",
+    milesAbbreviation: "מייל",
+    metersAbbreviation: "מטר",
+    feetAbbreviation: "רגל",
+    yardsAbbreviation: "יארד",
+    squareKilometersAbbreviation: "קילומטר רבוע",
+    squareMilesAbbreviation: "מייל רבוע",
+    acresAbbreviation: "אקר",
+    hectaresAbbreviation: "האקטר‬",
+    squareMetersAbbreviation: "מטר רבוע",
+    squareFeetAbbreviation: "‏‫רגל רבוע",
+    squareYardsAbbreviation: "יארד רבוע",
+    defineUnits: "הגדר את יחידות המדידה.",
+    operationalLayer: "הוסף את השרטוט כשכבה תפעולית במפה."
   })
 );

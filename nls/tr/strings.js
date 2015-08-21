@@ -1,4 +1,4 @@
-﻿define(
+define(
    ({
     _widgetLabel: "Çiz",
     selectDrawMode: "Çizim modu seç",
