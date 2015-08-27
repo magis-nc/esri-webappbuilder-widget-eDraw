@@ -4,6 +4,8 @@
     min-height: 192px;
     min-width: 270px;
     width: 100%;
+    color: black;
+    background-color: white;
 }
 .jimu-widget-edraw .full-width {
     width: 100% !important;
@@ -121,7 +123,7 @@
 .jimu-widget-edraw .list-draw-actions {
     height: 100%;
     vertical-align: middle;
-    width: 201px;
+    width: 192px;
 }
 .jimu-widget-edraw .list-draw-actions span {
     border-radius: 5px;
@@ -131,7 +133,7 @@
     font-size: 1.5em;
     font-weight: bold;
     height: 30px;
-    margin: 3px;
+    margin: 4px 0px 4px 2px;
     min-height: 30px;
     text-align: center;
     vertical-align: middle;
