@@ -298,7 +298,9 @@ define([
 
 			//Table
 			this.drawsTableBody.innerHTML = "";
-
+			
+			var name_max_len = (this.config.listShowUpAndDownButtons) ? 8 : 16;
+			
 			for (var i = nb_graphics - 1; i >= 0; i--) {
 				var graphic = graphics[i];
 				var num = i + 1;
@@ -320,28 +322,77 @@ define([
 					var symbolHtml = symbolNode.innerHTML;
 				}
 				var name = (graphic.attributes && graphic.attributes['name']) ? graphic.attributes['name'] : '';
-				name = (name.length > 8) ? '<span title="' + name.replace('"', '&#34;') + '">' + name.substr(0, 8) + "...</span>" : name;
-
-				var html = '<td>' + name + '</td>' + '<td class="td-center" id="draw-symbol--' + i + '">' + symbolHtml + '</td>' + '<td class="list-draw-actions">' + '<span class="edit blue-button" id="draw-action-edit--' + i + '" title="' + this.nls.editLabel + '">&nbsp;</span>' + '<span class="clear red-button" id="draw-action-delete--' + i + '" title="' + this.nls.deleteLabel + '">&nbsp;</span>' + '&nbsp;&nbsp;' + '<span class="up grey-button" id="draw-action-up--' + i + '" title="' + this.nls.upLabel + '">&nbsp;</span>' + '<span class="down grey-button" id="draw-action-down--' + i + '" title="' + this.nls.downLabel + '">&nbsp;</span>' + '&nbsp;&nbsp;' + '<span class="zoom grey-button" id="draw-action-zoom--' + i + '" title="' + this.nls.zoomLabel + '">&nbsp;</span>' + '</td>';
-
+				name = (name.length > name_max_len) ? '<span title="' + name.replace('"', '&#34;') + '">' + name.substr(0, name_max_len) + "...</span>" : name;
+				
+				var actions = '<span class="edit blue-button" id="draw-action-edit--' + i + '" title="' + this.nls.editLabel + '">&nbsp;</span>'
+					+ '<span class="clear red-button" id="draw-action-delete--' + i + '" title="' + this.nls.deleteLabel + '">&nbsp;</span>';
+				var actions_class = "list-draw-actions light";
+				if(this.config.listShowUpAndDownButtons){
+					actions += '<span class="up grey-button" id="draw-action-up--' + i + '" title="' + this.nls.upLabel + '">&nbsp;</span>'
+						+ '<span class="down grey-button" id="draw-action-down--' + i + '" title="' + this.nls.downLabel + '">&nbsp;</span>';
+					actions_class = "list-draw-actions";
+				}
+				actions += '<span class="zoom grey-button" id="draw-action-zoom--' + i + '" title="' + this.nls.zoomLabel + '">&nbsp;</span>';
+				
+				var html = '<td>' + name + '</td>'
+					+ '<td class="td-center" id="draw-symbol--' + i + '">' + symbolHtml + '</td>' 
+					+ '<td class="' + actions_class + '">' + actions + '</td>';
 				var tr = domConstruct.create(
 						"tr", {
 						id : 'draw-tr--' + i,
 						innerHTML : html,
-						className : (selected) ? 'selected' : ''
+						className : (selected) ? 'selected' : '',
+						draggable:"true"
 					},
-						this.drawsTableBody);
+					this.drawsTableBody
+				);
 
 				//Bind actions
 				on(dom.byId('draw-action-edit--' + i), "click", this.listOnActionClick);
-				on(dom.byId('draw-action-up--' + i), "click", this.listOnActionClick);
-				on(dom.byId('draw-action-down--' + i), "click", this.listOnActionClick);
 				on(dom.byId('draw-action-delete--' + i), "click", this.listOnActionClick);
 				on(dom.byId('draw-action-zoom--' + i), "click", this.listOnActionClick);
+				if(this.config.listShowUpAndDownButtons){
+					on(dom.byId('draw-action-up--' + i), "click", this.listOnActionClick);
+					on(dom.byId('draw-action-down--' + i), "click", this.listOnActionClick);
+				}
+				
+				on(tr, "dragstart", this._listOnDragStart);
 			}
 			this.saveInLocalStorage();
 		},
-
+		
+		_listOnDrop:function(evt){
+			evt.preventDefault();
+			var tr_id = evt.dataTransfer.getData("edraw-list-tr-id");
+			
+			var target = (evt.target) ? evt.target : evt.originalTarget;
+			var target_tr = this._UTIL__getParentByTag(target, "tr");
+			
+			//If dropped on same tr, exit !
+			if(!target_tr || target_tr.id == tr_id){
+				return false;
+			}
+			
+			
+			//get positions from id
+			var from_i = tr_id.split("--")[tr_id.split("--").length - 1];
+			var to_i = target_tr.id.split("--")[target_tr.id.split("--").length - 1];
+			
+			//Switch the 2 rows
+			this.switch2DrawingGraphics(from_i, to_i);
+			this.listGenerateDrawTable();
+			
+			// console.log("Drop", tr_id, target_tr.id);
+		},
+		
+		_listOnDragOver:function(evt){
+			evt.preventDefault();
+		},
+		
+		_listOnDragStart:function(evt){
+			evt.dataTransfer.setData("edraw-list-tr-id", evt.target.id);
+		},
+		
 		switch2DrawingGraphics : function (i1, i2) {
 			var g1 = this.drawBox.drawLayer.graphics[i1];
 			var g2 = this.drawBox.drawLayer.graphics[i2];
@@ -1236,6 +1287,16 @@ define([
 			this.allowPopup(true);
 
 		},
+		
+		_initListDragAndDrop:function(){
+			this._listOnDragOver = lang.hitch(this, this._listOnDragOver);
+			this._listOnDragStart = lang.hitch(this, this._listOnDragStart);
+			this._listOnDrop = lang.hitch(this, this._listOnDrop);
+			
+			//Bind actions
+			on(this.drawsTableBody, "dragover", this._listOnDragOver);
+			on(this.drawsTableBody, "drop", this._listOnDrop);
+		},
 
 		_initUnitSelect : function () {
 			this._initDefaultUnits();
@@ -1370,6 +1431,9 @@ define([
 
 			//Create edit dijit
 			this._editorConfig["editToolbar"] = new Edit(this.map);
+			
+			//Init list Drag & Drop
+			this._initListDragAndDrop();
 		},
 
 		_prepareTextPlus : function () {

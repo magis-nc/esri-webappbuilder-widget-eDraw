@@ -102,11 +102,13 @@
 }
 .jimu-widget-edraw .draw-table tr {
     border: 1px solid white;
+    cursor:move;
 }
 .jimu-widget-edraw .draw-table th {
     background-color: #8d989e;
     font-weight: bold201px;
     text-align: center;
+    cursor:auto;
 }
 .jimu-widget-edraw .draw-table tr:hover th {
     background-color: #8d989e;
@@ -124,6 +126,9 @@
     height: 100%;
     vertical-align: middle;
     width: 192px;
+}
+.jimu-widget-edraw .light {
+    width: 120px !important;
 }
 .jimu-widget-edraw .list-draw-actions span {
     border-radius: 5px;

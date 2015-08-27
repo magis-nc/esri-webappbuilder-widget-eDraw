@@ -27,6 +27,7 @@ define({
 		area : "Areas",
 		confirmOnDeleteLabel : "Ask for confirmation before deleting ?",
 		allowImportExportLabel : "Allow import & export ?",
+		listShowUpAndDownButtons : "Show up & down buttons in list?",
 		allowLocalStorageLabel : "Use local storage ?",
 		localStorageKeyLabel : "Local storage key",
 		localStorageKeyInfo : "If not empty, applications with same key (and same server) will share the same storage. If empty, all will share same storage.",
