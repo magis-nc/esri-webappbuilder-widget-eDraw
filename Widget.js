@@ -378,11 +378,11 @@ define([
 			var from_i = tr_id.split("--")[tr_id.split("--").length - 1];
 			var to_i = target_tr.id.split("--")[target_tr.id.split("--").length - 1];
 			
-			//Switch the 2 rows
-			this.switch2DrawingGraphics(from_i, to_i);
-			this.listGenerateDrawTable();
+			// @TODO Know if drop in top (down target) or bottom (under target)  of row 
 			
-			// console.log("Drop", tr_id, target_tr.id);
+			//Switch the 2 rows
+			this.moveDrawingGraphic(from_i, to_i);
+			this.listGenerateDrawTable();
 		},
 		
 		_listOnDragOver:function(evt){
@@ -405,19 +405,54 @@ define([
 			this.drawBox.drawLayer.graphics[i2] = g1;
 
 			//Redraw in good order
+			var start_i = (i1 < i2) ? i1 : i2;
+			this._redrawGraphics(start_i);
+			return true;
+		},
+		
+		moveDrawingGraphic:function(from_i, to_i){
+			from_i = parseInt(from_i);
+			to_i = parseInt(to_i);
+			
+			if(from_i == to_i)
+				return;
+			
+			//get from graphic
+			var from_graphic = this.drawBox.drawLayer.graphics[from_i];
+			
+			//Move graphics up or down
+			if(from_i < to_i){
+				for(var i=from_i, nb=this.drawBox.drawLayer.graphics.length; i < to_i && i < nb; i++)
+					this.drawBox.drawLayer.graphics[i] = this.drawBox.drawLayer.graphics[i+1];
+			}
+			else{
+				for(var i=from_i, nb=this.drawBox.drawLayer.graphics.length; i > to_i && i > 0; i--)
+					this.drawBox.drawLayer.graphics[i] = this.drawBox.drawLayer.graphics[i-1];
+			}
+			
+			//Copy from graphic in destination
+			this.drawBox.drawLayer.graphics[to_i] = from_graphic;
+			
+			//Redraw in good order
+			var start_i = (from_i < to_i) ? from_i : to_i;
+			this._redrawGraphics(start_i);
+			return true;
+		},
+		
+		_redrawGraphics:function(start_i){
+			if(!start_i)
+				start_i = 0;
 			var nb = this.drawBox.drawLayer.graphics.length;
 			for (var i = 0; i < nb; i++) {
-				var g = this.drawBox.drawLayer.graphics[i];
-
-				if (i >= i1 || i >= i2) {
+				if (i >= start_i) {
+					var g = this.drawBox.drawLayer.graphics[i];
 					var shape = g.getShape();
 					if (shape)
 						shape.moveToFront();
 				}
 			}
-			return true;
+			
 		},
-
 		listOnActionClick : function (evt) {
 			if (!evt.target || !evt.target.id)
 				return;
