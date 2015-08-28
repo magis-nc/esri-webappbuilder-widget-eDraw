@@ -116,6 +116,9 @@
 .jimu-widget-edraw .draw-table .td-center {
     text-align: center;
 }
+.jimu-widget-edraw .draw-table .td-checkbox {
+    width:30px;
+}
 .jimu-widget-edraw .draw-table .selected td {
     background-color: rgba(15, 108, 159, 0.2);
 }
@@ -150,6 +153,9 @@
     font-size: 1em;
     position: relative;
     width: auto;
+}
+.jimu-widget-edraw .list-draw-actions span.text input {
+    margin-top:10px;
 }
 .jimu-widget-edraw .list-draw-actions span.text:hover {
     border: medium none;
