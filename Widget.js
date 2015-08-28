@@ -981,9 +981,9 @@ define([
 		editorEnableMapPreview : function (bool) {
 			//if deactivate
 			if (!bool) {
-				//Hide point
-				if (this._editorConfig["phantom"]["point"])
-					this._editorConfig["phantom"]["point"].hide();
+				//Hide layer
+				if (this._editorConfig["phantom"]["layer"])
+					this._editorConfig["phantom"]["layer"].setVisibility(false);
 
 				this._editorConfig["phantom"]["symbol"] = false;
 
@@ -1008,13 +1008,14 @@ define([
 
 				this.map.addLayer(this._editorConfig["phantom"]["layer"]);
 			} else {
+				this._editorConfig["phantom"]["layer"].setVisibility(true);
 				this._editorConfig["phantom"]["point"].setSymbol(this._editorConfig["phantom"]["symbol"]);
 			}
 
 			//Track mouse on map
 			if (!this._editorConfig["phantom"]["handle"]) {
 				this._editorConfig["phantom"]["handle"] = on(this.map, 'mouse-move, mouse-out, mouse-over', lang.hitch(this, function (evt) {
-							if (this.state === 'opened') {
+							if (this.state === 'opened' || this.state === 'active') {
 								switch (evt.type) {
 								case 'mousemove':
 									if (this._editorConfig["phantom"]["point"]) {
