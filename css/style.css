@@ -4,6 +4,8 @@
     min-height: 192px;
     min-width: 270px;
     width: 100%;
+    color: black;
+    background-color: white;
 }
 .jimu-widget-edraw .full-width {
     width: 100% !important;
@@ -100,17 +102,22 @@
 }
 .jimu-widget-edraw .draw-table tr {
     border: 1px solid white;
+    cursor:move;
 }
 .jimu-widget-edraw .draw-table th {
     background-color: #8d989e;
     font-weight: bold201px;
     text-align: center;
+    cursor:auto;
 }
 .jimu-widget-edraw .draw-table tr:hover th {
     background-color: #8d989e;
 }
 .jimu-widget-edraw .draw-table .td-center {
     text-align: center;
+}
+.jimu-widget-edraw .draw-table .td-checkbox {
+    width:30px;
 }
 .jimu-widget-edraw .draw-table .selected td {
     background-color: rgba(15, 108, 159, 0.2);
@@ -121,7 +128,10 @@
 .jimu-widget-edraw .list-draw-actions {
     height: 100%;
     vertical-align: middle;
-    width: 201px;
+    width: 192px;
+}
+.jimu-widget-edraw .light {
+    width: 120px !important;
 }
 .jimu-widget-edraw .list-draw-actions span {
     border-radius: 5px;
@@ -131,7 +141,7 @@
     font-size: 1.5em;
     font-weight: bold;
     height: 30px;
-    margin: 3px;
+    margin: 4px 0px 4px 2px;
     min-height: 30px;
     text-align: center;
     vertical-align: middle;
@@ -143,6 +153,9 @@
     font-size: 1em;
     position: relative;
     width: auto;
+}
+.jimu-widget-edraw .list-draw-actions span.text input {
+    margin-top:10px;
 }
 .jimu-widget-edraw .list-draw-actions span.text:hover {
     border: medium none;

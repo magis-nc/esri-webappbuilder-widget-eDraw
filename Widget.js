@@ -223,30 +223,53 @@ define([
 
 			localStore.set(this._localStorageKey, this.drawingsGetJson());
 		},
-
+		
+		getCheckedGraphics:function(returnAllIfNoneChecked){
+			var graphics = [];
+			for(var i=0, nb = this.drawBox.drawLayer.graphics.length; i < nb; i++)
+				if(this.drawBox.drawLayer.graphics[i].checked)
+					graphics.push(this.drawBox.drawLayer.graphics[i]);
+					
+			if(returnAllIfNoneChecked && graphics.length==0)
+				return this.drawBox.drawLayer.graphics;
+			return graphics;
+		},
+		
 		zoomAll : function () {
-			var graphics = this.drawBox.drawLayer.graphics;
+			var graphics = this.getCheckedGraphics(true);
 			var nb_graphics = graphics.length;
 
 			if (nb_graphics < 1)
 				return;
 
-			var ext = graphicsUtils.graphicsExtent(this.drawBox.drawLayer.graphics);
+			var ext = graphicsUtils.graphicsExtent(graphics);
 
 			this.map.setExtent(ext, true);
 			return true;
 		},
 
 		clear : function () {
+			var graphics = this.getCheckedGraphics(false);
+			var nb = graphics.length;
+			
+			if(nb==0){
+				this.showMessage(this.nls.noSelection, 'error');
+				return false;
+			}
+			
 			if (!this.config.confirmOnDelete || confirm(this.nls.clear)) {
-				this.drawBox.drawLayer.clear();
+				// this.drawBox.drawLayer.clear();
+				for(var i = 0; i < nb; i++)
+					this.drawBox.drawLayer.remove(graphics[i]);
 				this.setInfoWindow(false);
 				this.setMode("list");
 			}
 		},
 
-		drawingsGetJson : function (asString) {
-			if (this.drawBox.drawLayer.graphics.length < 1)
+		drawingsGetJson : function (asString, onlyChecked) {
+			var graphics = (onlyChecked) ? this.getCheckedGraphics(false) : this.drawBox.drawLayer.graphics;
+			
+			if (graphics.length < 1)
 				return (asString) ? '' : false;
 
 			var content = {
@@ -257,8 +280,8 @@ define([
 				"fields" : []
 			};
 
-			for (var i in this.drawBox.drawLayer.graphics)
-				content["features"].push(this.drawBox.drawLayer.graphics[i].toJson());
+			for (var i in graphics)
+				content["features"].push(graphics[i].toJson());
 
 			if (asString) {
 				content = JSON.stringify(content);
@@ -298,7 +321,9 @@ define([
 
 			//Table
 			this.drawsTableBody.innerHTML = "";
-
+			
+			var name_max_len = (this.config.listShowUpAndDownButtons) ? 8 : 16;
+			
 			for (var i = nb_graphics - 1; i >= 0; i--) {
 				var graphic = graphics[i];
 				var num = i + 1;
@@ -320,28 +345,81 @@ define([
 					var symbolHtml = symbolNode.innerHTML;
 				}
 				var name = (graphic.attributes && graphic.attributes['name']) ? graphic.attributes['name'] : '';
-				name = (name.length > 8) ? '<span title="' + name.replace('"', '&#34;') + '">' + name.substr(0, 8) + "...</span>" : name;
-
-				var html = '<td>' + name + '</td>' + '<td class="td-center" id="draw-symbol--' + i + '">' + symbolHtml + '</td>' + '<td class="list-draw-actions">' + '<span class="edit blue-button" id="draw-action-edit--' + i + '" title="' + this.nls.editLabel + '">&nbsp;</span>' + '<span class="clear red-button" id="draw-action-delete--' + i + '" title="' + this.nls.deleteLabel + '">&nbsp;</span>' + '&nbsp;&nbsp;' + '<span class="up grey-button" id="draw-action-up--' + i + '" title="' + this.nls.upLabel + '">&nbsp;</span>' + '<span class="down grey-button" id="draw-action-down--' + i + '" title="' + this.nls.downLabel + '">&nbsp;</span>' + '&nbsp;&nbsp;' + '<span class="zoom grey-button" id="draw-action-zoom--' + i + '" title="' + this.nls.zoomLabel + '">&nbsp;</span>' + '</td>';
-
+				name = (name.length > name_max_len) ? '<span title="' + name.replace('"', '&#34;') + '">' + name.substr(0, name_max_len) + "...</span>" : name;
+				
+				var actions = '<span class="edit blue-button" id="draw-action-edit--' + i + '" title="' + this.nls.editLabel + '">&nbsp;</span>'
+					+ '<span class="clear red-button" id="draw-action-delete--' + i + '" title="' + this.nls.deleteLabel + '">&nbsp;</span>';
+				var actions_class = "list-draw-actions light";
+				if(this.config.listShowUpAndDownButtons){
+					actions += '<span class="up grey-button" id="draw-action-up--' + i + '" title="' + this.nls.upLabel + '">&nbsp;</span>'
+						+ '<span class="down grey-button" id="draw-action-down--' + i + '" title="' + this.nls.downLabel + '">&nbsp;</span>';
+					actions_class = "list-draw-actions";
+				}
+				actions += '<span class="zoom grey-button" id="draw-action-zoom--' + i + '" title="' + this.nls.zoomLabel + '">&nbsp;</span>';
+				
+				var checked = (graphic.checked) ? ' checked="checked"' : '';
+				
+				var html = '<td><input type="checkbox" class="td-checkbox" id="draw-action-checkclick--' + i + '" '+checked+'/></td>'
+					+ '<td>' + name + '</td>'
+					+ '<td class="td-center" id="draw-symbol--' + i + '">' + symbolHtml + '</td>' 
+					+ '<td class="' + actions_class + '">' + actions + '</td>';
 				var tr = domConstruct.create(
 						"tr", {
 						id : 'draw-tr--' + i,
 						innerHTML : html,
-						className : (selected) ? 'selected' : ''
+						className : (selected) ? 'selected' : '',
+						draggable:"true"
 					},
-						this.drawsTableBody);
+					this.drawsTableBody
+				);
 
 				//Bind actions
 				on(dom.byId('draw-action-edit--' + i), "click", this.listOnActionClick);
-				on(dom.byId('draw-action-up--' + i), "click", this.listOnActionClick);
-				on(dom.byId('draw-action-down--' + i), "click", this.listOnActionClick);
 				on(dom.byId('draw-action-delete--' + i), "click", this.listOnActionClick);
 				on(dom.byId('draw-action-zoom--' + i), "click", this.listOnActionClick);
+				if(this.config.listShowUpAndDownButtons){
+					on(dom.byId('draw-action-up--' + i), "click", this.listOnActionClick);
+					on(dom.byId('draw-action-down--' + i), "click", this.listOnActionClick);
+				}
+				on(dom.byId('draw-action-checkclick--' + i), "click", this.listOnActionClick);
+				on(tr, "dragstart", this._listOnDragStart);
 			}
 			this.saveInLocalStorage();
+			this.listUpdateAllCheckbox();
 		},
-
+		
+		_listOnDrop:function(evt){
+			evt.preventDefault();
+			var tr_id = evt.dataTransfer.getData("edraw-list-tr-id");
+			
+			var target = (evt.target) ? evt.target : evt.originalTarget;
+			var target_tr = this._UTIL__getParentByTag(target, "tr");
+			
+			//If dropped on same tr, exit !
+			if(!target_tr || target_tr.id == tr_id){
+				return false;
+			}
+			
+			
+			//get positions from id
+			var from_i = tr_id.split("--")[tr_id.split("--").length - 1];
+			var to_i = target_tr.id.split("--")[target_tr.id.split("--").length - 1];
+			
+			// @TODO Know if drop in top (down target) or bottom (under target)  of row 
+			
+			//Switch the 2 rows
+			this.moveDrawingGraphic(from_i, to_i);
+			this.listGenerateDrawTable();
+		},
+		
+		_listOnDragOver:function(evt){
+			evt.preventDefault();
+		},
+		
+		_listOnDragStart:function(evt){
+			evt.dataTransfer.setData("edraw-list-tr-id", evt.target.id);
+		},
+		
 		switch2DrawingGraphics : function (i1, i2) {
 			var g1 = this.drawBox.drawLayer.graphics[i1];
 			var g2 = this.drawBox.drawLayer.graphics[i2];
@@ -354,19 +432,103 @@ define([
 			this.drawBox.drawLayer.graphics[i2] = g1;
 
 			//Redraw in good order
+			var start_i = (i1 < i2) ? i1 : i2;
+			this._redrawGraphics(start_i);
+			return true;
+		},
+		
+		moveDrawingGraphic:function(from_i, to_i){
+			from_i = parseInt(from_i);
+			to_i = parseInt(to_i);
+			
+			if(from_i == to_i)
+				return;
+			
+			//get from graphic
+			var from_graphic = this.drawBox.drawLayer.graphics[from_i];
+			
+			//Move graphics up or down
+			if(from_i < to_i){
+				for(var i=from_i, nb=this.drawBox.drawLayer.graphics.length; i < to_i && i < nb; i++)
+					this.drawBox.drawLayer.graphics[i] = this.drawBox.drawLayer.graphics[i+1];
+			}
+			else{
+				for(var i=from_i, nb=this.drawBox.drawLayer.graphics.length; i > to_i && i > 0; i--)
+					this.drawBox.drawLayer.graphics[i] = this.drawBox.drawLayer.graphics[i-1];
+			}
+			
+			//Copy from graphic in destination
+			this.drawBox.drawLayer.graphics[to_i] = from_graphic;
+			
+			//Redraw in good order
+			var start_i = (from_i < to_i) ? from_i : to_i;
+			this._redrawGraphics(start_i);
+			return true;
+		},
+		
+		_redrawGraphics:function(start_i){
+			if(!start_i)
+				start_i = 0;
 			var nb = this.drawBox.drawLayer.graphics.length;
 			for (var i = 0; i < nb; i++) {
-				var g = this.drawBox.drawLayer.graphics[i];
-
-				if (i >= i1 || i >= i2) {
+				if (i >= start_i) {
+					var g = this.drawBox.drawLayer.graphics[i];
 					var shape = g.getShape();
 					if (shape)
 						shape.moveToFront();
 				}
 			}
-			return true;
+			
 		},
-
+		
+		listUpdateAllCheckbox:function(evt){
+			//Not called by event !
+			if(evt===undefined){
+				var all_checked = true;
+				var all_unchecked = true;
+				
+				for(var i=0, nb = this.drawBox.drawLayer.graphics.length; i < nb; i++){
+					if(this.drawBox.drawLayer.graphics[i].checked)
+						all_unchecked = false;
+					else
+						all_checked = false;
+				}
+				
+				if(all_checked){
+					this.listCheckboxAll.checked = true;
+					this.listCheckboxAll.indeterminate  = false;
+					this.listCheckboxAll2.checked = true;
+					this.listCheckboxAll2.indeterminate  = false;
+				}
+				else if(all_unchecked){
+					this.listCheckboxAll.checked = false;
+					this.listCheckboxAll.indeterminate  = false;
+					this.listCheckboxAll2.checked = false;
+					this.listCheckboxAll2.indeterminate  = false;
+				}
+				else{
+					this.listCheckboxAll.checked = true;
+					this.listCheckboxAll.indeterminate  = true;
+					this.listCheckboxAll2.checked = true;
+					this.listCheckboxAll2.indeterminate  = true;
+				}
+				return
+			}
+			
+			//Event click on checkbox!
+			var cb = evt.target;
+			var check = evt.target.checked;
+			
+			for(var i=0, nb = this.drawBox.drawLayer.graphics.length; i < nb; i++){
+				this.drawBox.drawLayer.graphics[i].checked = check;
+				dom.byId('draw-action-checkclick--' + i).checked = check;
+			}
+			this.listCheckboxAll.checked = check;
+			this.listCheckboxAll.indeterminate = false;
+			this.listCheckboxAll2.checked = check;
+			this.listCheckboxAll2.indeterminate = false;
+		},
+		
 		listOnActionClick : function (evt) {
 			if (!evt.target || !evt.target.id)
 				return;
@@ -404,6 +566,10 @@ define([
 				this.map.setExtent(extent, true);
 				this.listGenerateDrawTable();
 
+				break;
+			case 'draw-action-checkclick':
+				g.checked = evt.target.checked;
+				this.listUpdateAllCheckbox();
 				break;
 			}
 		},
@@ -714,13 +880,23 @@ define([
 			this.importFileInput.files[0] = "";
 		},
 
-		exportFile : function () {
+		exportInFile : function () {
+			this.launchExport(this.exportButton, false);
+		},
+		
+		exportSelectionInFile : function () {
+			this.launchExport(this.exportSelectionButton, true);
+		},
+		
+		launchExport:function(link, only_graphics_checked){
 			// Be sure the link will not open if not asked :
-			this.exportButton.href = "#";
-			this.exportButton.target = "_self";
-
+			link.href = "#";
+			link.target = "_self";
+			
+			var drawing_json = this.drawingsGetJson(true, only_graphics_checked);
+			
 			// Control if there are drawings
-			if (this.drawBox.drawLayer.graphics.length < 1) {
+			if (drawing_json=='') {
 				this.showMessage(this.nls.importWarningNoExport0Draw, 'warning');
 				return false;
 			}
@@ -729,7 +905,7 @@ define([
 
 			//  Case IE with blob support (IE >= 10) : use MS save blob
 			if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-				var fileData = [this.drawingsGetJson(true)];
+				var fileData = [drawing_json];
 				blobObject = new Blob(fileData, {
 						type : 'application/octet-stream'
 					});
@@ -740,7 +916,7 @@ define([
 			//  Case IE without blob support : write in tab. Doesn't allways work....
 			if (has("ie")) {
 				var exportWin = window.top.open("about:blank", "_blank");
-				exportWin.document.write(this.drawingsGetJson(true));
+				exportWin.document.write(drawing_json);
 				exportWin.document.close();
 				exportWin.focus();
 				exportWin.document.execCommand('SaveAs', true, export_name);
@@ -749,9 +925,9 @@ define([
 			}
 
 			//  Case HTML5 (Firefox > 25, Chrome > 30....) : use data link with download attribute
-			this.exportButton.href = 'data:application/octet-stream;charset=utf-8,' + this.drawingsGetJson(true);
-			this.exportButton.target = "_blank";
-			this.exportButton.download = export_name;
+			link.href = 'data:application/octet-stream;charset=utf-8,' + drawing_json;
+			link.target = "_blank";
+			link.download = export_name;
 			return true;
 		},
 
@@ -895,9 +1071,9 @@ define([
 		editorEnableMapPreview : function (bool) {
 			//if deactivate
 			if (!bool) {
-				//Hide point
-				if (this._editorConfig["phantom"]["point"])
-					this._editorConfig["phantom"]["point"].hide();
+				//Hide layer
+				if (this._editorConfig["phantom"]["layer"])
+					this._editorConfig["phantom"]["layer"].setVisibility(false);
 
 				this._editorConfig["phantom"]["symbol"] = false;
 
@@ -922,13 +1098,14 @@ define([
 
 				this.map.addLayer(this._editorConfig["phantom"]["layer"]);
 			} else {
+				this._editorConfig["phantom"]["layer"].setVisibility(true);
 				this._editorConfig["phantom"]["point"].setSymbol(this._editorConfig["phantom"]["symbol"]);
 			}
 
 			//Track mouse on map
 			if (!this._editorConfig["phantom"]["handle"]) {
 				this._editorConfig["phantom"]["handle"] = on(this.map, 'mouse-move, mouse-out, mouse-over', lang.hitch(this, function (evt) {
-							if (this.state === 'opened') {
+							if (this.state === 'opened' || this.state === 'active') {
 								switch (evt.type) {
 								case 'mousemove':
 									if (this._editorConfig["phantom"]["point"]) {
@@ -1236,6 +1413,16 @@ define([
 			this.allowPopup(true);
 
 		},
+		
+		_initListDragAndDrop:function(){
+			this._listOnDragOver = lang.hitch(this, this._listOnDragOver);
+			this._listOnDragStart = lang.hitch(this, this._listOnDragStart);
+			this._listOnDrop = lang.hitch(this, this._listOnDrop);
+			
+			//Bind actions
+			on(this.drawsTableBody, "dragover", this._listOnDragOver);
+			on(this.drawsTableBody, "drop", this._listOnDrop);
+		},
 
 		_initUnitSelect : function () {
 			this._initDefaultUnits();
@@ -1370,6 +1557,9 @@ define([
 
 			//Create edit dijit
 			this._editorConfig["editToolbar"] = new Edit(this.map);
+			
+			//Init list Drag & Drop
+			this._initListDragAndDrop();
 		},
 
 		_prepareTextPlus : function () {

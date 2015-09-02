@@ -203,6 +203,7 @@ define([
 			this.exportFileNameInput.value = (config.exportFileName) ? config.exportFileName : this.nls.exportFileName;
 			this.confirmOnDeleteInput.checked = (config.confirmOnDelete) ? true : false;
 			this.allowImportExportInput.checked = (config.allowImportExport) ? true : false;
+			this.listShowUpAndDownButtons.checked = (config.listShowUpAndDownButtons) ? true : false;
 			this.allowLocalStorageInput.checked = (config.allowLocalStorage) ? true : false;
 			this.localStorageKeyInput.value = (config.localStorageKey) ? config.localStorageKey : '';
 
@@ -269,6 +270,7 @@ define([
 			config.exportFileName = (this.exportFileNameInput.value.trim() != "") ? this.exportFileNameInput.value.trim() : this.nls.exportFileName;
 			config.confirmOnDelete = this.confirmOnDeleteInput.checked;
 			config.allowImportExport = this.allowImportExportInput.checked;
+			config.listShowUpAndDownButtons = this.listShowUpAndDownButtons.checked;
 			config.allowLocalStorage = this.allowLocalStorageInput.checked;
 			var key = this.localStorageKeyInput.value.trim();
 			config.localStorageKey = (key == "") ? false : key;

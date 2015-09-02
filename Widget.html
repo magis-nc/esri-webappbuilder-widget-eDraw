@@ -120,7 +120,7 @@
                 <table class="jimu-table draw-table">
                     <thead>
                         <tr>
-                            <!--<th></th>-->
+                            <th><input type="checkbox" data-dojo-attach-event="ondijitclick:listUpdateAllCheckbox" data-dojo-attach-point="listCheckboxAll" /></th>
                             <th>${nls.nameField}</th>
                             <th>${nls.symbolField}</th>
                             <th data-dojo-attach-point="tableTH"></th>
@@ -132,9 +132,13 @@
             <div class="footer">
                 <div data-dojo-attach-point="allActionsNode">
                     <div class="list-draw-actions">
-                        <span class="text">${nls.all} :</span>
-                        <span title="${nls.clear}" class="clear red-button" data-dojo-attach-event="ondijitclick:clear">&nbsp;</span>
+                        <!--<span class="text">${nls.all} :</span>-->
+                        <span class="text"><input type="checkbox" data-dojo-attach-event="ondijitclick:listUpdateAllCheckbox" data-dojo-attach-point="listCheckboxAll2" /></span>
                         <span title="${nls.zoomAllLabel}" class="zoom blue-button" data-dojo-attach-event="ondijitclick:zoomAll">&nbsp;</span>
+                        <a data-dojo-attach-point="exportSelectionButton" data-dojo-attach-event="ondijitclick:exportSelectionInFile">
+                            <span title="${nls.exportLabel}" class="export blue-button" >&nbsp;</span>
+                        </a>
+                        <span title="${nls.deleteAllLabel}" class="clear red-button" data-dojo-attach-event="ondijitclick:clear">&nbsp;</span>
                     </div>
                 </div>
             </div>
@@ -147,7 +151,7 @@
                     <td>
                         <h4 class="title">${nls.exportTitle}</h4>
                         <div class="list-draw-actions">
-                            <a data-dojo-attach-point="exportButton" target="_BLANK" data-dojo-attach-event="ondijitclick:exportFile" download="myDraw.json" href="#"><span class="export blue-button"></span></a>
+                            <a data-dojo-attach-point="exportButton" target="_BLANK" data-dojo-attach-event="ondijitclick:exportInFile" download="myDraw.json" href="#"><span class="export blue-button"></span></a>
                         </div>
                     </td>
                 </tr>
