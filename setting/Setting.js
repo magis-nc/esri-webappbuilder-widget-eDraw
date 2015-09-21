@@ -209,6 +209,10 @@ define([
 
 			//Text plus FontFamily
 			this._setTextPlusFontFamilyTable(config);
+			
+			//Measure Geometry engine or service
+			this.useGeometryEngineInput.checked = (config.useGeometryEngine);
+			this.geometryServiceInput.value = (config.geometryService && config.geometryService.trim() != "") ? config.geometryService.trim() : "";
 		},
 
 		_setTextPlusFontFamilyTable : function (config) {
@@ -285,7 +289,11 @@ define([
 						}
 					}));
 			config["drawPlus"]["fontFamilies"] = FontFamilyOptions;
-
+			
+			//Measure Geometry engine or service
+			config.useGeometryEngine = this.useGeometryEngineInput.checked;
+			config.geometryService = (this.geometryServiceInput.value && this.geometryServiceInput.value.trim() != "") ? this.geometryServiceInput.value.trim() : false;
+			
 			return config;
 		},
 

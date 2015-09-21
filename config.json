@@ -62,5 +62,7 @@
 			"unit" : "SQUARE_YARDS",
 			"abbr" : "sq yd"
 		}
-	]
+	],
+	"useGeometryEngine":true,
+	"geometryService":"//tasks.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer"
 }
