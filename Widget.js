@@ -1175,14 +1175,15 @@ define([
 			var esriAreaUnit = esriUnits[areaUnit];
 			var lengthUnit = this.distanceUnitSelect.value;
 			var esriLengthUnit = esriUnits[lengthUnit];
-			if (this.config.useGeometryEngine) {
-				defResult = this._getLengthAndAreaGeometryEngine(geometry, isPolygon, areaUnit, lengthUnit, wkid);
+			
+			if (wkid === 4326) {
+				defResult = this._getLengthAndArea4326(geometry, isPolygon, esriAreaUnit, esriLengthUnit);
 				def.resolve(defResult);
-			} else if (wkidUtils.isWebMercator(wkid)) {
+			}else if (wkidUtils.isWebMercator(wkid)) {
 				defResult = this._getLengthAndArea3857(geometry, isPolygon, esriAreaUnit, esriLengthUnit);
 				def.resolve(defResult);
-			} else if (wkid === 4326) {
-				defResult = this._getLengthAndArea4326(geometry, isPolygon, esriAreaUnit, esriLengthUnit);
+			} else if (this.config.useGeometryEngine) {
+				defResult = this._getLengthAndAreaGeometryEngine(geometry, isPolygon, areaUnit, lengthUnit, wkid);
 				def.resolve(defResult);
 			} else {
 				def = this._getLengthAndAreaByGS(geometry, isPolygon, esriAreaUnit, esriLengthUnit);
