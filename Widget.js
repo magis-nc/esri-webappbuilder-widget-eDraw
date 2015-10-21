@@ -1072,7 +1072,7 @@ define([
 			}
 
 			//  Case HTML5 (Firefox > 25, Chrome > 30....) : use data link with download attribute
-			link.href = 'data:application/octet-stream;charset=utf-8,' + drawing_json;
+			link.href = 'data:application/octet-stream;charset=utf-8,' + encodeURIComponent(drawing_json);
 			link.target = "_blank";
 			link.download = export_name;
 			return true;
