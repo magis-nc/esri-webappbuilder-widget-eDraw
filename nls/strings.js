@@ -1,6 +1,9 @@
 define({
 	root : ({
 		_widgetLabel : "Draw",
+		yes:"Yes",
+		yes:"Yes",
+		no:"No",
 		selectDrawMode : "Select drawing mode",
 		clear : "Clear",
 		point : "Point",
@@ -40,7 +43,8 @@ define({
 		squareMeters : "Square meters",
 		squareFeet : "Square feet",
 		squareYards : "Square yards",
-		confirmDrawDelete : "This drawing will be deleted",
+		confirmDrawDelete : "Delete this drawing ?",
+		confirmDrawCheckedDelete : "Delete checked drawing ?",
 		all : "All",
 		draws : 'drawings',
 		addDrawTitle : 'Add a drawing',

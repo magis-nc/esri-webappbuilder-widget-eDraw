@@ -271,20 +271,80 @@ define([
 				this.showMessage(this.nls.noSelection, 'error');
 				return false;
 			}
-
-			if (!this.config.confirmOnDelete || confirm(this.nls.clear)) {
-				// this.drawBox.drawLayer.clear();
-				for (var i = 0; i < nb; i++)
-					this.drawBox.drawLayer.remove(graphics[i]);
-				this.setInfoWindow(false);
-				this.setMode("list");
+			
+			if(this.config.confirmOnDelete){		
+				this._confirmDeleteMessage  = new Message({
+					message : '<i class="message-warning-icon"></i>&nbsp;' + this.nls.confirmDrawCheckedDelete,
+					buttons:[
+						{
+							label:this.nls.yes,
+							onClick:this._removeGraphics
+						},{
+							label:this.nls.no
+						}
+					]
+				});
 			}
+			else{
+				this._removeGraphics(graphics);
+			}
+		},
+		
+		_removeClickedGraphic:function(){
+			if(!this._clickedGraphic)
+				return false;
+			
+			this._removeGraphic(this._clickedGraphic);
+			this._editorConfig["graphicCurrent"] = false;
+			this.listGenerateDrawTable();			
+			
+			this._clickedGraphic = false;
+			
+			if(this._confirmDeleteMessage && this._confirmDeleteMessage.close){
+				this._confirmDeleteMessage.close();
+				this._confirmDeleteMessage = false;
+			}
+		},
+		
+		_removeGraphics:function(graphicsOrEvent){
+			if(graphicsOrEvent.target)
+				graphics = this.getCheckedGraphics(false);
+			else
+				graphics = graphicsOrEvent;
+				
+			
+
+			var nb = graphics.length;
+			console.log(graphics);
+			for (var i = 0; i < nb; i++) {
+				this._removeGraphic(graphics[i]);
+			}
+			
+			if(this._confirmDeleteMessage && this._confirmDeleteMessage.close){
+				this._confirmDeleteMessage.close();
+				this._confirmDeleteMessage = false;
+			}
+			
+			this.setInfoWindow(false);
+			this.setMode("list");
+		},
+
+		_removeGraphic : function (graphic) {
+			if (graphic.measure && graphic.measure.graphic) {
+				// graphic.measure.graphic.measureParent = false; //Remove link between graphic and it's measure label
+				this.drawBox.drawLayer.remove(graphic.measure.graphic); //Delete measure label
+			} else if (graphic.measureParent) {
+				graphic.measureParent.measure = false;
+			}
+			this.drawBox.drawLayer.remove(graphic);
 		},
 
 		drawingsGetJson : function (asString, onlyChecked) {
 			var graphics = (onlyChecked) ? this.getCheckedGraphics(false) : this.drawBox.drawLayer.graphics;
-
-			if (graphics.length < 1)
+			
+			var nb_graphics = graphics.length;
+			
+			if (nb_graphics < 1)
 				return (asString) ? '' : false;
 
 			var content = {
@@ -582,10 +642,22 @@ define([
 				this.listGenerateDrawTable();
 				break;
 			case 'draw-action-delete':
-				if (!this.config.confirmOnDelete || confirm(this.nls.confirmDrawDelete + ".")) {
-					g.getLayer().remove(g);
-					this._editorConfig["graphicCurrent"] = false;
-					this.listGenerateDrawTable();
+				this._clickedGraphic = g;
+				if(this.config.confirmOnDelete){		
+					this._confirmDeleteMessage  = new Message({
+						message : '<i class="message-warning-icon"></i>&nbsp;' + this.nls.confirmDrawDelete,
+						buttons:[
+							{
+								label:this.nls.yes,
+								onClick:this._removeClickedGraphic
+							},{
+								label:this.nls.no
+							}
+						]
+					});
+				}
+				else{
+					this._removeClickedGraphic();
 				}
 				break;
 			case 'draw-action-edit':

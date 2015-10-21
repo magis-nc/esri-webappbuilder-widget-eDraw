@@ -1,6 +1,8 @@
 define(
 	({
 		_widgetLabel : "Dessin",
+		yes:"Oui",
+		no:"Non",
 		selectDrawMode : "Sélectionner le mode de dessin",
 		clear : "Effacer",
 		point : "Point",
@@ -40,7 +42,8 @@ define(
 		squareMeters : "Mètres carrés",
 		squareFeet : "Pieds carrés",
 		squareYards : "Yards carrés",
-		confirmDrawDelete : "Ce dessin va être supprimé",
+		confirmDrawDelete : "Supprimer ce dessin ?",
+		confirmDrawCheckedDelete : "Supprimer les dessins sélectionnés ?",
 		all : "Tous",
 		draws : 'dessins',
 		addDrawTitle : 'Ajouter un dessin',
