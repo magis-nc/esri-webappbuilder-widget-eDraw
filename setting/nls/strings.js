@@ -26,7 +26,6 @@ define({
 		distance : "Distances",
 		area : "Areas",
 		confirmOnDeleteLabel : "Ask for confirmation before deleting ?",
-		allowImportExportLabel : "Allow import & export ?",
 		listShowUpAndDownButtons : "Show up & down buttons in list?",
 		allowLocalStorageLabel : "Use local storage ?",
 		localStorageKeyLabel : "Local storage key",

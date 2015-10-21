@@ -240,6 +240,25 @@
     height: 50px;
     width: 100%;
 }
+.jimu-widget-edraw .import-button{
+	border-radius: 5px;
+	color: #FFF;
+	display: block;
+	float: right;
+	font-size: 1.5em;
+	font-weight: bold;
+	height: 30px;
+	min-height: 30px;
+	text-align: center;
+	vertical-align: middle;
+	width: 30px;
+	background-image: url("images/upload.png");
+	margin-top: 4px;
+}
+.jimu-widget-edraw .import-button:hover{
+	cursor:pointer;
+	border:0.5px solid black;
+}
 .jimu-widget-edraw .draw-import .file {
     background-color: rgba(255, 255, 255, 0.5);
     border-radius: 5px;
@@ -439,4 +458,21 @@
     left: 5px;
     text-align: right;
     padding-top: 10px;
+}
+.eDraw-import-message{
+	height:100%;
+	width:100%;
+	min-height:150px;
+	border-radius:10px;
+	padding:10px;
+	border:1px solid black;
+}
+.eDraw-import-message .eDraw-import-draganddrop-message{
+	display:none;
+}
+.eDraw-import-message:hover{
+	background-color:#E2E2E2;
+}
+.eDraw-import-message:hover .eDraw-import-draganddrop-message{
+	display:block;
 }

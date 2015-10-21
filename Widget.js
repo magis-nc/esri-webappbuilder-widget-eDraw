@@ -71,13 +71,12 @@ define([
 
 		//////////////////////////////////////////// GENERAL METHODS //////////////////////////////////////////////////
 		/**
-		 * Set widget mode :add1 (type choice), add2 (symbology and attributes choice), edit, list, importExport
+		 * Set widget mode :add1 (type choice), add2 (symbology and attributes choice), edit, list
 		 * @param name string Mode
 		 *     - add1 : Add drawing (type choice and measure option)
 		 *     - add2 : Add drawing (attributes and symbol chooser)
 		 *     - edit : Edit drawing (geometry, attributes and symbol chooser)
 		 *     - list : List drawings
-		 *     - importExport :
 		 */
 		setMode : function (name) {
 			this.editorEnableMapPreview(false);
@@ -143,18 +142,6 @@ define([
 				this.TabViewStack.switchView(this.listSection);
 
 				break;
-			case 'importExport':
-				this.setMenuState('importExport');
-				this.allowPopup(true);
-
-				//Other params
-				this._editorConfig["graphicCurrent"] = false;
-
-				this.TabViewStack.switchView(this.importExportSection);
-
-				this.setInfoWindow(false);
-
-				break;
 			}
 		},
 
@@ -179,13 +166,13 @@ define([
 
 		setMenuState : function (active, elements_shown) {
 			if (!elements_shown) {
-				elements_shown = ['add', 'list', 'importExport'];
+				elements_shown = ['add', 'list'];
 			} else if (elements_shown.indexOf(active) < 0)
 				elements_shown.push(active);
 
 			for (var button_name in this._menuButtons) {
 				var menu_class = (button_name == active) ? 'menu-item-active' : 'menu-item';
-				if (elements_shown.indexOf(button_name) < 0 || (button_name == "importExport" && !this.config.allowImportExport))
+				if (elements_shown.indexOf(button_name) < 0)
 					menu_class = "hidden";
 				if (this._menuButtons[button_name])
 					this._menuButtons[button_name].className = menu_class;
@@ -229,7 +216,6 @@ define([
 		saveInLocalStorage : function () {
 			if (!this.config.allowLocalStorage)
 				return;
-
 			localStore.set(this._localStorageKey, this.drawingsGetJson());
 		},
 
@@ -351,9 +337,6 @@ define([
 		},
 		menuOnClickList : function () {
 			this.setMode("list");
-		},
-		menuOnClickImportExport : function () {
-			this.setMode("importExport");
 		},
 
 		onHideCheckboxClick : function () {
@@ -903,21 +886,75 @@ define([
 		},
 
 		///////////////////////// IMPORT/EXPORT METHODS ///////////////////////////////////////////////////////////
-		importFile : function () {
+		importMessage:false,
+		importInput:false,
+		launchImportFile:function(){
 			if (!window.FileReader) {
 				this.showMessage(this.nls.importErrorMessageNavigator, 'error');
 				return false;
 			}
-
-			var input = this.importFileInput.files[0];
-
-			if (!input) {
+			
+			// var dragAndDropSupport = ()
+			
+			var content = '<div class="eDraw-import-message" id="'+this.id+'___div_import_message">'
+				+ '<input class="file" type="file" id="'+this.id+'___input_file_import"/>'
+				+ '<div class="eDraw-import-draganddrop-message">'+this.nls.importDragAndDropMessage+'</div>'
+				+ '</div>';			
+			this.importMessage = new Message({
+				message : content,
+				titleLabel:this.nls.importTitle,
+				buttons:[{
+					label:this.nls.importCloseButton
+				}]
+			});
+			this.importInput = dojo.byId(this.id+'___input_file_import');
+			
+			//Init file's choice up watching
+			on(this.importInput, "change", this.importFile);
+			
+			//Init drag & drop
+			var div_message = dojo.byId(this.id+'___div_import_message');
+			on(div_message, "dragover", function(e){
+				e.stopPropagation();
+				e.preventDefault();
+				e.dataTransfer.dropEffect = 'copy';
+				console.log("over !");
+			});
+			on(div_message, "drop", lang.hitch(this, function(e){
+				e.stopPropagation();
+				e.preventDefault();
+				var files = e.dataTransfer.files;
+				
+				if(!files[0])
+					return;
+				var reader = new FileReader();
+				reader.onload = this.importOnFileLoad;
+				var txt = reader.readAsText(files[0]);
+			}));
+		},
+		
+		importFile : function () {
+			if(!this.importInput){
+				this.showMessage(this.nls.importErrorWarningSelectFile, 'warning');
+				if(this.importMessage)
+					this.importMessage.close();
+				return false;
+			}
+			
+			var input_file = this.importInput.files[0];
+			if (!input_file) {
 				this.showMessage(this.nls.importErrorWarningSelectFile, 'warning');
 				return false;
 			}
 			var reader = new FileReader();
 			reader.onload = this.importOnFileLoad;
-			var txt = reader.readAsText(input);
+			var txt = reader.readAsText(input_file);
+		},
+		
+		importOnFileLoad : function (evt) {
+			var content = evt.target.result;
+			this.importJsonContent(content);
+			this.importMessage.close();
 		},
 
 		importJsonContent : function (json, nameField, descriptionField) {
@@ -948,7 +985,21 @@ define([
 						}
 					}
 				}
+				if (!descriptionField) {
+					var g = json.features[0];
+					var fields_possible = ["description", "descript", "desc","comment","comm"];
+					if (g.attributes) {
+						for (var i in fields_possible) {
+							if (g.attributes[fields_possible[i]]) {
+								descriptionField = fields_possible[i];
+								break;
+							}
+						}
+					}
+				}
 
+				var measure_features_i = [];
+				var graphics = [];
 				for (var i in json.features) {
 					var json_feat = json.features[i];
 
@@ -965,9 +1016,7 @@ define([
 						g.attributes["name"] = g.symbol.text;
 					g.attributes["description"] = (!descriptionField || !g.attributes[descriptionField]) ? '' : g.attributes[descriptionField];
 
-					if (g.symbol) {
-						this.drawBox.drawLayer.add(g);
-					} else {
+					if (!g.symbol) {
 						var symbol = false;
 						switch (g.geometry.type) {
 						case 'point':
@@ -1019,12 +1068,6 @@ define([
 				this.showMessage(this.nls.importErrorFileStructure, 'error');
 				return false;
 			}
-		},
-
-		importOnFileLoad : function (evt) {
-			var content = evt.target.result;
-			this.importJsonContent(content);
-			this.importFileInput.files[0] = "";
 		},
 
 		exportInFile : function () {
@@ -1642,7 +1685,7 @@ define([
 			//Bind symbol chooser change
 			this.own(on(this.editorSymbolChooser, 'change', lang.hitch(this, function () {
 						this.editorSetDefaultSymbols();
-
+						
 						//If text plus
 						if (this.editorSymbolChooser.type == "text") {
 							this.editorUpdateTextPlus();
@@ -1663,7 +1706,12 @@ define([
 			//hitch list event
 			this.listOnActionClick = lang.hitch(this, this.listOnActionClick);
 			//hitch import file loading
+			this.importFile = lang.hitch(this, this.importFile);
 			this.importOnFileLoad = lang.hitch(this, this.importOnFileLoad);
+			
+			//Bind delete method
+			this._removeGraphics = lang.hitch(this, this._removeGraphics);
+			this._removeClickedGraphic = lang.hitch(this, this._removeClickedGraphic);
 
 			//Bind draw plus event
 			this.editorUpdateTextPlus = lang.hitch(this, this.editorUpdateTextPlus);
@@ -1731,12 +1779,6 @@ define([
 			};
 
 			var views = [this.addSection, this.editorSection, this.listSection];
-
-			if (this.config.allowImportExport) {
-				views.push(this.importExportSection);
-			} else {
-				this.menuListImportExport.style.display = 'none';
-			}
 
 			this.TabViewStack = new ViewStack({
 					viewType : 'dom',

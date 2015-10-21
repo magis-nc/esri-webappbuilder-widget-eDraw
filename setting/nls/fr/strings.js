@@ -27,7 +27,6 @@ define(
         distance: "Distances",
         area: "Surfaces",
         confirmOnDeleteLabel: "Demander confirmation à l'utilisateur avant une suppression",
-        allowImportExportLabel: "Activer l'import et l'export",
         listShowUpAndDownButtons : "Montrer les bouttons haut/bas dans la liste ?",
         allowLocalStorageLabel: "Utiliser local storage",
         localStorageKeyLabel: "Clé Local storage",
