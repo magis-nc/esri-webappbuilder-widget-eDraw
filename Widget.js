@@ -1148,19 +1148,32 @@ define([
 			if (!symbol) {
 				switch (commontype) {
 				case "point":
-					symbol = new SimpleMarkerSymbol();
+					var options =
+                        (this.config.defaultSymbols && this.config.defaultSymbols.SimpleMarkerSymbol)
+                        ? this.config.defaultSymbols.SimpleMarkerSymbol
+                        : null;
+					symbol = new SimpleMarkerSymbol(options);
 					break;
 				case "polyline":
-					symbol = new SimpleLineSymbol();
+					var options =
+                        (this.config.defaultSymbols && this.config.defaultSymbols.SimpleLineSymbol)
+                        ? this.config.defaultSymbols.SimpleLineSymbol
+                        : null;
+					symbol = new SimpleLineSymbol(options);
 					break;
 				case "polygon":
-					symbol = new SimpleFillSymbol();
+					var options =
+                        (this.config.defaultSymbols && this.config.defaultSymbols.SimpleFillSymbol)
+                        ? this.config.defaultSymbols.SimpleFillSymbol
+                        : null;
+					symbol = new SimpleFillSymbol(options);
 					break;
 				case "text":
-					symbol = new TextSymbol({
-							"verticalAlignment" : "middle",
-							"horizontalAlignment" : "center"
-						});
+					var options =
+                        (this.config.defaultSymbols && this.config.defaultSymbols.TextSymbol)
+                        ? this.config.defaultSymbols.TextSymbol
+                        : {"verticalAlignment": "middle", "horizontalAlignment": "center"};
+					symbol = new TextSymbol(options);
 					break;
 				}
 			}
