@@ -84,5 +84,6 @@ define(
 		editMessage : 'NB : vous pouvez modifier/déplacer la géométrie sur la carte',
 		snappingMessage : 'NB : l\'accrochage est possible (utiliser la touche CTRL)',
 		hideOption : 'Cacher les dessins',
-		textPlacement : 'Placement'
+		textPlacement : 'Placement',
+		isMeasureMessage:'Cette étiquette est une mesure'
 	}));

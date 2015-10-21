@@ -67,15 +67,33 @@
 	<ul class="settings">
         <li>
             <span class="input">
+                <input class="jimu-input" type="checkbox" checked="cheked" data-dojo-attach-point="useGeometryEngineInput" />
+            </span>
+            <span class="label">Use Geometry Engine ? (if yes, the Geometry Service will not be used !)</span>
+        </li>
+		<li>
+            <span class="input">
                 <input class="jimu-input" type="text" data-dojo-attach-point="geometryServiceInput" value="" />
             </span>
             <span class="label">Geometry Service</span>
         </li>
 		<li>
             <span class="input">
-                <input class="jimu-input" type="checkbox" checked="cheked" data-dojo-attach-point="useGeometryEngineInput" />
+                <input class="jimu-input" type="checkbox" data-dojo-attach-point="measureEnabledByDefaultInput" />
             </span>
-            <span class="label">Use Geometry Engine ?</span>
+            <span class="label">Enable measure by default ? (when adding, the measure checkbox will be checked by default)</span>
+        </li>
+		<li>
+            <span class="input">
+                <input class="jimu-input" type="text" data-dojo-attach-point="measurePolylineLabelInput" value="" />
+            </span>
+            <span class="label">Measure label for polyline</span>
+        </li>
+		<li>
+            <span class="input">
+                <input class="jimu-input" type="text" data-dojo-attach-point="measurePolygonLabelInput" value="" />
+            </span>
+            <span class="label">Measure label for polygon</span>
         </li>
 	</ul>
 	

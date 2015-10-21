@@ -17,34 +17,22 @@
             <div class="bloc">
                 <label>${nls.selectDrawMode}</label>
                 <div data-dojo-attach-point="drawBox" data-dojo-type="jimu/dijit/DrawBox" data-dojo-props='types:["point","polyline","polygon","text"],showClear:false' style="margin-top:5px;"></div>
-
-                <div data-dojo-attach-point="measureSection" class="measure-section">
-                    <div style="margin-bottom:7px;">
-                        <input data-dojo-attach-point="showMeasure" type="checkbox" />
-                        <label data-dojo-attach-point="showMeasureLabel">${nls.showMeasurements}</label>
-                    </div>
-                    <div data-dojo-attach-point="areaMeasure" style="display:none;height:30px;margin-bottom:7px;">
-                        <div class="area-units-tip  jimu-float-leading">${nls.areaUnits}</div>
-                        <select data-dojo-attach-point="areaUnitSelect" data-dojo-type="dijit/form/Select" class=" jimu-float-trailing" style="width:50%;height:30px;"></select>
-                    </div>
-                    <div data-dojo-attach-point="distanceMeasure" style="display:none;height:30px;">
-                        <div class="distance-units-tip jimu-float-leading">${nls.distanceUnits}</div>
-                        <select data-dojo-attach-point="distanceUnitSelect" data-dojo-type="dijit/form/Select" class=" jimu-float-trailing" style="width:50%;height:30px;"></select>
-                    </div>
-                </div>
             </div>
         </div>
 
         <div data-dojo-attach-point="editorSection">
             <h2 data-dojo-attach-point="editorTitle">${nls.addDrawTitle}</h2>
             <div class="content">
-                <label>${nls.nameField}:</label>
-                <br />
-                <input id="nameField" type="text" data-dojo-attach-point="nameField" value="${nls.nameFieldDefaultValue}" class="jimu-input" data-dojo-attach-event="onchange:editorUpdateTextPlus" />
-                <br />
-                <label>${nls.descriptionField}:</label>
-                <br />
-                <textarea id="descriptionField" data-dojo-attach-point="descriptionField" class="jimu-input" rows="3"></textarea>
+				<div data-dojo-attach-point="fieldsDiv">
+					<label>${nls.nameField}:</label>
+					<br />
+					<input id="nameField" type="text" data-dojo-attach-point="nameField" value="${nls.nameFieldDefaultValue}" class="jimu-input" data-dojo-attach-event="onchange:editorUpdateTextPlus" />
+					<br />
+					<label>${nls.descriptionField}:</label>
+					<br />
+					<textarea id="descriptionField" data-dojo-attach-point="descriptionField" class="jimu-input" rows="3"></textarea>
+				</div>
+				<span class="is-measure" data-dojo-attach-point="isMeasureSpan" style="display:none;"><hr />${nls.isMeasureMessage}</span>
                 <hr />
                 <div data-dojo-attach-point="editorSymbolChooserDiv" class="full-width"></div>
                 <table class="symbol-set-table" cellspading="0" data-dojo-attach-point="editorSymbolTextPlusNode">
@@ -96,8 +84,22 @@
                         </tr>
                     </tbody>
                 </table>
-
-                <br />
+				<hr />
+				<div data-dojo-attach-point="measureSection" class="measure-section">
+                    <div style="margin-bottom:7px;">
+                        <input data-dojo-attach-point="showMeasure" type="checkbox" />
+                        <label data-dojo-attach-point="showMeasureLabel">${nls.showMeasurements}</label>
+                    </div>
+                    <div data-dojo-attach-point="areaMeasure" style="display:none;height:30px;margin-bottom:7px;">
+                        <div class="area-units-tip  jimu-float-leading">${nls.areaUnits}</div>
+                        <select data-dojo-attach-point="areaUnitSelect" data-dojo-type="dijit/form/Select" class=" jimu-float-trailing" style="width:50%;height:30px;"></select>
+                    </div>
+                    <div data-dojo-attach-point="distanceMeasure" style="display:none;height:30px;">
+                        <div class="distance-units-tip jimu-float-leading">${nls.distanceUnits}</div>
+                        <select data-dojo-attach-point="distanceUnitSelect" data-dojo-type="dijit/form/Select" class=" jimu-float-trailing" style="width:50%;height:30px;"></select>
+                    </div>
+                </div>
+                <hr />
                 <p class="editor-add-message" data-dojo-attach-point="editorAddMessage" style="display:none;">${nls.addMessage}.</p>
                 <p class="editor-add-message" data-dojo-attach-point="editorEditMessage" style="display:none;">${nls.editMessage}.</p>
                 <p class="editor-add-message" data-dojo-attach-point="editorSnappingMessage">${nls.snappingMessage}.</p>

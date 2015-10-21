@@ -81,10 +81,11 @@ define({
 		underlineTitle : 'Underline',
 		underlineCharacter : 'U',
 		addMessage : 'You can now make your drawing on map',
-		editMessage : 'NB : you can modify/moove geometry on map',
+		editMessage : 'NB : you can modify/move geometry on map',
 		snappingMessage : 'NB : snapping is allowed (use CTRL)',
 		hideOption : 'Hide drawings',
-		textPlacement : 'Placement'
+		textPlacement : 'Placement',
+		isMeasureMessage:'This label is a measure'
 	}),
 	"ar" : 1,
 	"cs" : 1,

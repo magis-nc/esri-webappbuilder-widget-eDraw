@@ -58,9 +58,8 @@ define([
 		'esri/layers/GraphicsLayer'
 	],
 	function (declare, _WidgetsInTemplateMixin, BaseWidget, esriConfig, Deferred, Graphic, SimpleMarkerSymbol, Polyline, SimpleLineSymbol, Polygon, graphicsUtils, SimpleFillSymbol,
-		TextSymbol, Font, esriUnits, Edit, webMercatorUtils, GeometryService, AreasAndLengthsParameters, LengthsParameters, wkidUtils, geodesicUtils, geometryEngine, lang, on, html, has,
-		Color, array, domConstruct, dom, Select, NumberSpinner, ViewStack, SymbolChooser,
-		DrawBox, Message, jimuUtils, jimuSymbolUtils, localStore, InfoTemplate, GraphicsLayer) {
+		TextSymbol, Font, esriUnits, Edit, webMercatorUtils, GeometryService, AreasAndLengthsParameters, LengthsParameters, wkidUtils, geodesicUtils, geometryEngine, lang, on,
+		html, has, Color, array, domConstruct, dom, Select, NumberSpinner, ViewStack, SymbolChooser, DrawBox, Message, jimuUtils, jimuSymbolUtils, localStore, InfoTemplate, GraphicsLayer) {
 
 	/*jshint unused: false*/
 	return declare([BaseWidget, _WidgetsInTemplateMixin], {
@@ -290,8 +289,35 @@ define([
 				"fields" : []
 			};
 
-			for (var i in graphics)
-				content["features"].push(graphics[i].toJson());
+			var features_with_measure = [];
+			var nb_graphics_ok = 0;
+			for (var i = 0; i < nb_graphics; i++) {
+				var g = graphics[i];
+				if(g){
+					var json = g.toJson();
+					//If with measure
+					if (g.measure && g.measure.graphic) {
+						features_with_measure.push(nb_graphics_ok);
+					}
+					content["features"].push(json);
+					nb_graphics_ok++;
+				}
+			}
+
+			//Replace references for measure's graphic by index
+			for (var k = 0, nb = features_with_measure.length; k < nb; k++) {
+				var i = features_with_measure[k];
+				for (var l = 0, nb_g = graphics.length; l < nb_g; l++) {
+					if (graphics[l] == graphics[i].measure.graphic) {
+						content["features"][i]["measure"] = {
+							"areaUnit" : graphics[i].measure.areaUnit,
+							"lengthUnit" : graphics[i].measure.lengthUnit,
+							"graphic" : l
+						};
+						break;
+					}
+				}
+			}
 
 			if (asString) {
 				content = JSON.stringify(content);
@@ -599,6 +625,8 @@ define([
 		},
 
 		editorPrepareForAdd : function (symbol) {
+			this._editorConfig["graphicCurrent"] = false;
+
 			this.editorSymbolChooserConfigure(symbol);
 
 			this.nameField.value = this.nls.nameFieldDefaultValue;
@@ -622,9 +650,14 @@ define([
 				this.editorUpdateTextPlus();
 
 			this.editorActivateSnapping(true);
+
+			//Prepare measure section
+			this.editorMeasureConfigure(false, commontype);
 		},
 
 		editorPrepareForEdit : function (graphic) {
+			this._editorConfig["graphicCurrent"] = graphic;
+
 			this.nameField.value = graphic.attributes["name"];
 			this.descriptionField.value = graphic.attributes["description"];
 
@@ -641,6 +674,8 @@ define([
 
 			this.editorEnableMapPreview(false);
 			this.editorActivateSnapping(true);
+
+			this.editorMeasureConfigure(graphic, false);
 		},
 
 		editorSymbolChooserConfigure : function (symbol) {
@@ -649,6 +684,7 @@ define([
 
 			//Set this symbol in symbol chooser
 			this.editorSymbolChooser.showBySymbol(symbol);
+			this._editorConfig['symboltype'] = this.editorSymbolChooser.type;
 
 			var type = symbol.type;
 			//Draw plus and specific comportment when text symbol.
@@ -758,6 +794,63 @@ define([
 			}
 		},
 
+		editorMeasureConfigure : function (graphicIfUpdate, commonTypeIfAdd) {
+			this.measureSection.style.display = 'block';
+
+			//Manage if fields are shown or not
+			if (graphicIfUpdate && graphicIfUpdate.measureParent) {
+				this.fieldsDiv.style.display = 'none';
+				this.isMeasureSpan.style.display = 'block';
+			} else {
+				this.fieldsDiv.style.display = 'block';
+				this.isMeasureSpan.style.display = 'none';
+			}
+
+			//add Mode
+			if (commonTypeIfAdd) {
+				//No measure supported for this types
+				if (commonTypeIfAdd == "text" || commonTypeIfAdd == "point") {
+					this.measureSection.style.display = 'none';
+					return;
+				}
+
+				this.distanceUnitSelect.set('value', this.configDistanceUnits[0]['unit']);
+				this.areaUnitSelect.set('value', this.configAreaUnits[0]['unit']);
+
+				this.showMeasure.checked = (this.config.measureEnabledByDefault);
+				this._setMeasureVisibility();
+
+				return;
+			}
+
+			//edit mode
+			if (!graphicIfUpdate) {
+				this.measureSection.style.display = 'none';
+				return;
+			}
+
+			var geom_type = graphicIfUpdate.geometry.type;
+
+			//If no measure for this type of graphic
+			if (geom_type == "point") {
+				this.measureSection.style.display = 'none';
+				return;
+			}
+
+			var checked = (graphicIfUpdate.measure);
+
+			var lengthUnit = (graphicIfUpdate.measure && graphicIfUpdate.measure.lengthUnit) ? graphicIfUpdate.measure.lengthUnit : this.configDistanceUnits[0]['unit'];
+			this.distanceUnitSelect.set('value', lengthUnit);
+
+			if (geom_type == "polygon") {
+				var areaUnit = (graphicIfUpdate.measure && graphicIfUpdate.measure.areaUnit) ? graphicIfUpdate.measure.areaUnit : this.configAreaUnits[0]['unit'];
+				this.areaUnitSelect.set('value', areaUnit);
+			}
+
+			this.showMeasure.checked = checked;
+			this._setMeasureVisibility();
+		},
+
 		editorSetDefaultSymbols : function () {
 			var symbol = this.editorSymbolChooser.getSymbol();
 			switch (symbol.type.toLowerCase()) {
@@ -865,11 +958,38 @@ define([
 						}
 						if (symbol) {
 							g.setSymbol(symbol);
-							this.drawBox.drawLayer.add(g);
 						}
+					}
+
+					//If is with measure
+					if (json_feat.measure) {
+						g.measure = json_feat.measure;
+						measure_features_i.push(i);
+					}
+					graphics.push(g);
+				}
+
+				//Treat measures
+				for (var k in measure_features_i) {
+					var i = measure_features_i[k]; //Indice to treat
+					var label_graphic = (graphics[i].measure && graphics[i].measure.graphic && graphics[graphics[i].measure.graphic])
+					 ? graphics[graphics[i].measure.graphic] :
+					false;
+					if (label_graphic) {
+						graphics[i].measure.graphic = label_graphic
+							label_graphic.measureParent = graphics[i];
+					} else {
+						graphics[i].measure = false;
 					}
 				}
 
+				//Add graphics
+				for (var i=0, nb = graphics.length; i < nb; i++){
+					if(graphics[i])
+						this.drawBox.drawLayer.add(graphics[i]);
+				}
+
+				//Show list
 				this.setMode("list");
 			} catch (e) {
 				this.showMessage(this.nls.importErrorFileStructure, 'error');
@@ -942,6 +1062,14 @@ define([
 
 			this._editorConfig["graphicCurrent"].attributes["name"] = this.nameField.value;
 			this._editorConfig["graphicCurrent"].attributes["description"] = this.descriptionField.value;
+
+			var geom = this._editorConfig["graphicCurrent"].geometry;
+			if (geom.type == "polyline" || geom.type == "polygon") {
+				if (geom.type == "polyline")
+					this._addLineMeasure(geom, this._editorConfig["graphicCurrent"]);
+				else
+					this._addPolygonMeasure(geom, this._editorConfig["graphicCurrent"]);
+			}
 
 			this.setMode("list");
 		},
@@ -1043,6 +1171,7 @@ define([
 				geometry = polygon;
 
 				graphic.setGeometry(polygon);
+
 				var layer = graphic.getLayer();
 				layer.remove(graphic);
 				layer.add(graphic);
@@ -1175,11 +1304,11 @@ define([
 			var esriAreaUnit = esriUnits[areaUnit];
 			var lengthUnit = this.distanceUnitSelect.value;
 			var esriLengthUnit = esriUnits[lengthUnit];
-			
+
 			if (wkid === 4326) {
 				defResult = this._getLengthAndArea4326(geometry, isPolygon, esriAreaUnit, esriLengthUnit);
 				def.resolve(defResult);
-			}else if (wkidUtils.isWebMercator(wkid)) {
+			} else if (wkidUtils.isWebMercator(wkid)) {
 				defResult = this._getLengthAndArea3857(geometry, isPolygon, esriAreaUnit, esriLengthUnit);
 				def.resolve(defResult);
 			} else if (this.config.useGeometryEngine) {
@@ -1192,9 +1321,9 @@ define([
 		},
 
 		_getLengthAndAreaGeometryEngine : function (geometry, isPolygon, areaUnit, lengthUnit, wkid) {
-			areaUnit = areaUnit.toLowerCase().replace("_","-");
-			lengthUnit = lengthUnit.toLowerCase().replace("_","-");
-			
+			areaUnit = areaUnit.toLowerCase().replace("_", "-");
+			lengthUnit = lengthUnit.toLowerCase().replace("_", "-");
+
 			var result = {
 				area : null,
 				length : null
@@ -1207,7 +1336,7 @@ define([
 			} else {
 				result.length = (wkid == 4326 || wkid == 3857) ? geometryEngine.geodesicLength(geometry, lengthUnit) : geometryEngine.planarLength(geometry, lengthUnit);
 			}
-			
+
 			return result;
 		},
 
@@ -1239,6 +1368,7 @@ define([
 					isPolygon,
 					esriAreaUnit,
 					esriLengthUnit);
+
 			return result;
 		},
 
@@ -1290,7 +1420,6 @@ define([
 						def.reject(err);
 					}));
 			}
-
 			return def;
 		},
 

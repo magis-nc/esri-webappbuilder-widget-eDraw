@@ -64,5 +64,8 @@
 		}
 	],
 	"useGeometryEngine":true,
-	"geometryService":"//tasks.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer"
+	"geometryService":"//tasks.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer",
+	"measureEnabledByDefault" : false,
+	"measurePolygonLabel" : "{{area}} {{areaUnit}}    {{length}} {{lengthUnit}}",
+	"measurePolylineLabel" : "{{length}} {{lengthUnit}}",
 }
