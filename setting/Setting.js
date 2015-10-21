@@ -202,13 +202,19 @@ define([
 
 			this.exportFileNameInput.value = (config.exportFileName) ? config.exportFileName : this.nls.exportFileName;
 			this.confirmOnDeleteInput.checked = (config.confirmOnDelete) ? true : false;
-			this.allowImportExportInput.checked = (config.allowImportExport) ? true : false;
 			this.listShowUpAndDownButtons.checked = (config.listShowUpAndDownButtons) ? true : false;
 			this.allowLocalStorageInput.checked = (config.allowLocalStorage) ? true : false;
 			this.localStorageKeyInput.value = (config.localStorageKey) ? config.localStorageKey : '';
 
 			//Text plus FontFamily
 			this._setTextPlusFontFamilyTable(config);
+			
+			//Measure Geometry engine or service
+			this.measureEnabledByDefaultInput.checked = (config.measureEnabledByDefault);
+			this.useGeometryEngineInput.checked = (config.useGeometryEngine);
+			this.geometryServiceInput.value = (config.geometryService && config.geometryService.trim() != "") ? config.geometryService.trim() : "";
+			this.measurePolylineLabelInput.value = (config.measurePolylineLabel && config.measurePolylineLabel.trim() != "") ? config.measurePolylineLabel.trim() : "{{length}} {{lengthUnit}}";
+			this.measurePolygonLabelInput.value = (config.measurePolygonLabel && config.measurePolygonLabel.trim() != "") ? config.measurePolygonLabel.trim() : "{{area}} {{areaUnit}}    {{length}} {{lengthUnit}}";
 		},
 
 		_setTextPlusFontFamilyTable : function (config) {
@@ -269,7 +275,6 @@ define([
 
 			config.exportFileName = (this.exportFileNameInput.value.trim() != "") ? this.exportFileNameInput.value.trim() : this.nls.exportFileName;
 			config.confirmOnDelete = this.confirmOnDeleteInput.checked;
-			config.allowImportExport = this.allowImportExportInput.checked;
 			config.listShowUpAndDownButtons = this.listShowUpAndDownButtons.checked;
 			config.allowLocalStorage = this.allowLocalStorageInput.checked;
 			var key = this.localStorageKeyInput.value.trim();
@@ -285,7 +290,14 @@ define([
 						}
 					}));
 			config["drawPlus"]["fontFamilies"] = FontFamilyOptions;
-
+			
+			//Measure Geometry engine or service
+			config.measureEnabledByDefault = this.measureEnabledByDefaultInput.checked;
+			config.useGeometryEngine = this.useGeometryEngineInput.checked;
+			config.geometryService = (this.geometryServiceInput.value && this.geometryServiceInput.value.trim() != "") ? this.geometryServiceInput.value.trim() : false;
+			config.measurePolylineLabel = (this.measurePolylineLabelInput.value && this.measurePolylineLabelInput.value.trim() != "") ? this.measurePolylineLabelInput.value : false;
+			config.measurePolygonLabel = (this.measurePolygonLabelInput.value && this.measurePolygonLabelInput.value.trim() != "") ? this.measurePolygonLabelInput.value : false;
+	
 			return config;
 		},
 

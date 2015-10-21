@@ -1,7 +1,6 @@
 {
 	"exportFileName" : "myDrawing.json",
 	"confirmOnDelete" : true,
-	"allowImportExport" : true,
 	"allowLocalStorage" : true,
 	"localStorageKey" : false,
 	"drawPlus" : {
@@ -62,5 +61,16 @@
 			"unit" : "SQUARE_YARDS",
 			"abbr" : "sq yd"
 		}
-	]
+	],
+	"useGeometryEngine":true,
+	"geometryService":"//tasks.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer",
+	"measureEnabledByDefault" : false,
+	"measurePolygonLabel" : "{{area}} {{areaUnit}}    {{length}} {{lengthUnit}}",
+	"measurePolylineLabel" : "{{length}} {{lengthUnit}}",
+	"defaultSymbols":{
+		"SimpleMarkerSymbol":{"color":[255,199,198,148],"size":15,"angle":0,"xoffset":0,"yoffset":0,"type":"esriSMS","style":"esriSMSCircle","outline":{"color":[207,101,99,255],"width":0.75,"type":"esriSLS","style":"esriSLSSolid"}},
+		"SimpleLineSymbol": {"color":[207,101,99,255],"width":1.5,"type":"esriSLS","style":"esriSLSSolid"},
+		"SimpleFillSymbol": {"color":[255,199,198,148],"outline":{"color":[207,101,99,255],"width":0.75,"type":"esriSLS","style":"esriSLSSolid"},"type":"esriSFS","style":"esriSFSSolid"},
+		"TextSymbol":false
+	}
 }

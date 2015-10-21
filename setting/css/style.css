@@ -33,6 +33,7 @@
 .jimu-widget-draw-setting .settings {
     list-style-type: none;
     display: table;
+	width: 98%;
 }
 .jimu-widget-draw-setting .settings li {
     display: table-row;
@@ -47,4 +48,7 @@
     width: 49%;
     text-align: left;
     padding-left: 10px;
+}
+.jimu-widget-draw-setting .settings .jimu-input{
+	width:100%;
 }

@@ -1,6 +1,8 @@
 define(
 	({
 		_widgetLabel : "Dessin",
+		yes:"Oui",
+		no:"Non",
 		selectDrawMode : "Sélectionner le mode de dessin",
 		clear : "Effacer",
 		point : "Point",
@@ -40,7 +42,8 @@ define(
 		squareMeters : "Mètres carrés",
 		squareFeet : "Pieds carrés",
 		squareYards : "Yards carrés",
-		confirmDrawDelete : "Ce dessin va être supprimé",
+		confirmDrawDelete : "Supprimer ce dessin ?",
+		confirmDrawCheckedDelete : "Supprimer les dessins sélectionnés ?",
 		all : "Tous",
 		draws : 'dessins',
 		addDrawTitle : 'Ajouter un dessin',
@@ -51,9 +54,11 @@ define(
 		importTitle : "Importer des dessins",
 		importErrorMessageNavigator : "Votre navigateur ne supporte pas cette fonctionnalité.",
 		importErrorWarningSelectFile : "Merci de sélectionner un fichier.",
+		importDragAndDropMessage : "Sélectionnez un fichier ou glissez/déplacez en un dans cette zone.",
 		importWarningNoDrawings : "Pas de dessins à charger",
 		importErrorFileStructure : "Impossible d'importer les dessins, la structure du fichier n'est pas bonne.",
 		importWarningNoExport0Draw : "Pas d'export (aucun dessin à exporter).",
+		importCloseButton:"Fermer",
 		nameField : "Nom",
 		symbolField : "Symbol",
 		nameFieldDefaultValue : "Mon dessin",
@@ -65,6 +70,8 @@ define(
 		downLabel : "Descendre ce dessin",
 		zoomLabel : "Zoomer sur ce dessin",
 		zoomAllLabel : "Zoomer sur les dessins sélectionnés",
+		copyLabel : "Copier les dessins sélectionnés",
+		copySuffix : " (copie)",
 		deleteAllLabel : "Supprimer les dessins sélectionnés",
 		exportLabel : "Exporter les dessins sélectionnés",
 		noSelection : "Aucun dessin sélectionné",
@@ -84,5 +91,6 @@ define(
 		editMessage : 'NB : vous pouvez modifier/déplacer la géométrie sur la carte',
 		snappingMessage : 'NB : l\'accrochage est possible (utiliser la touche CTRL)',
 		hideOption : 'Cacher les dessins',
-		textPlacement : 'Placement'
+		textPlacement : 'Placement',
+		isMeasureMessage:'Cette étiquette est une mesure'
 	}));

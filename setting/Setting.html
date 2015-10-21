@@ -14,12 +14,6 @@
         </li>
         <li>
             <span class="input">
-                <input  class="jimu-input" type="checkbox" checked="checked" data-dojo-attach-point="allowImportExportInput" />
-            </span>
-            <span class="label">${nls.allowImportExportLabel}</span>
-        </li>
-        <li>
-            <span class="input">
                 <input  class="jimu-input" type="checkbox" data-dojo-attach-point="listShowUpAndDownButtons" />
             </span>
             <span class="label">${nls.listShowUpAndDownButtons}</span>
@@ -64,5 +58,38 @@
 			<div data-dojo-attach-point="areaTable" data-dojo-type="jimu/dijit/SimpleTable" data-dojo-props='fields:[{name:"label",title:"${nls.label}","class":"label",type:"empty"},{name:"abbr",title:"${nls.abbr}","class":"abbr",type:"text",editable:false},{name:"conversion",title:"${nls.conversion}","class":"conversion",type:"text",editable:false},{name:"actions",title:"${nls.actions}","class":"actions",type:"actions",actions:["up","down","delete"]}]'></div>
 		</div>
 	</div>
+	<ul class="settings">
+        <li>
+            <span class="input">
+                <input class="jimu-input" type="checkbox" checked="cheked" data-dojo-attach-point="useGeometryEngineInput" />
+            </span>
+            <span class="label">Use Geometry Engine ? (if yes, the Geometry Service will not be used !)</span>
+        </li>
+		<li>
+            <span class="input">
+                <input class="jimu-input" type="text" data-dojo-attach-point="geometryServiceInput" value="" />
+            </span>
+            <span class="label">Geometry Service</span>
+        </li>
+		<li>
+            <span class="input">
+                <input class="jimu-input" type="checkbox" data-dojo-attach-point="measureEnabledByDefaultInput" />
+            </span>
+            <span class="label">Enable measure by default ? (when adding, the measure checkbox will be checked by default)</span>
+        </li>
+		<li>
+            <span class="input">
+                <input class="jimu-input" type="text" data-dojo-attach-point="measurePolylineLabelInput" value="" />
+            </span>
+            <span class="label">Measure label for polyline</span>
+        </li>
+		<li>
+            <span class="input">
+                <input class="jimu-input" type="text" data-dojo-attach-point="measurePolygonLabelInput" value="" />
+            </span>
+            <span class="label">Measure label for polygon</span>
+        </li>
+	</ul>
+	
 	<hr />
 </div>

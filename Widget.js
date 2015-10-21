@@ -17,6 +17,8 @@ define([
 		'dojo/_base/declare',
 		'dijit/_WidgetsInTemplateMixin',
 		'jimu/BaseWidget',
+		'esri/config',
+		'dojo/Deferred',
 		'esri/graphic',
 		'esri/symbols/SimpleMarkerSymbol',
 		'esri/geometry/Polyline',
@@ -29,7 +31,12 @@ define([
 		'esri/units',
 		"esri/toolbars/edit",
 		'esri/geometry/webMercatorUtils',
+		'esri/tasks/GeometryService',
+		'esri/tasks/AreasAndLengthsParameters',
+		'esri/tasks/LengthsParameters',
+		'jimu/SpatialReference/wkidUtils',
 		'esri/geometry/geodesicUtils',
+		'esri/geometry/geometryEngine',
 		'dojo/_base/lang',
 		'dojo/on',
 		'dojo/_base/html',
@@ -50,25 +57,26 @@ define([
 		'esri/InfoTemplate',
 		'esri/layers/GraphicsLayer'
 	],
-	function (declare, _WidgetsInTemplateMixin, BaseWidget, Graphic, SimpleMarkerSymbol, Polyline, SimpleLineSymbol, Polygon, graphicsUtils, SimpleFillSymbol,
-		TextSymbol, Font, esriUnits, Edit, webMercatorUtils, geodesicUtils, lang, on, html, has,
-		Color, array, domConstruct, dom, Select, NumberSpinner, ViewStack, SymbolChooser,
-		DrawBox, Message, jimuUtils, jimuSymbolUtils, localStore, InfoTemplate, GraphicsLayer) {
+	function (declare, _WidgetsInTemplateMixin, BaseWidget, esriConfig, Deferred, Graphic, SimpleMarkerSymbol, Polyline, SimpleLineSymbol, Polygon, graphicsUtils, SimpleFillSymbol,
+		TextSymbol, Font, esriUnits, Edit, webMercatorUtils, GeometryService, AreasAndLengthsParameters, LengthsParameters, wkidUtils, geodesicUtils, geometryEngine, lang, on,
+		html, has, Color, array, domConstruct, dom, Select, NumberSpinner, ViewStack, SymbolChooser, DrawBox, Message, jimuUtils, jimuSymbolUtils, localStore, InfoTemplate, GraphicsLayer) {
 
 	/*jshint unused: false*/
 	return declare([BaseWidget, _WidgetsInTemplateMixin], {
 		name : 'eDraw',
 		baseClass : 'jimu-widget-edraw',
 
+		_gs : null,
+		_defaultGsUrl : '//tasks.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer',
+
 		//////////////////////////////////////////// GENERAL METHODS //////////////////////////////////////////////////
 		/**
-		 * Set widget mode :add1 (type choice), add2 (symbology and attributes choice), edit, list, importExport
+		 * Set widget mode :add1 (type choice), add2 (symbology and attributes choice), edit, list
 		 * @param name string Mode
 		 *     - add1 : Add drawing (type choice and measure option)
 		 *     - add2 : Add drawing (attributes and symbol chooser)
 		 *     - edit : Edit drawing (geometry, attributes and symbol chooser)
 		 *     - list : List drawings
-		 *     - importExport :
 		 */
 		setMode : function (name) {
 			this.editorEnableMapPreview(false);
@@ -134,18 +142,6 @@ define([
 				this.TabViewStack.switchView(this.listSection);
 
 				break;
-			case 'importExport':
-				this.setMenuState('importExport');
-				this.allowPopup(true);
-
-				//Other params
-				this._editorConfig["graphicCurrent"] = false;
-
-				this.TabViewStack.switchView(this.importExportSection);
-
-				this.setInfoWindow(false);
-
-				break;
 			}
 		},
 
@@ -170,13 +166,13 @@ define([
 
 		setMenuState : function (active, elements_shown) {
 			if (!elements_shown) {
-				elements_shown = ['add', 'list', 'importExport'];
+				elements_shown = ['add', 'list'];
 			} else if (elements_shown.indexOf(active) < 0)
 				elements_shown.push(active);
 
 			for (var button_name in this._menuButtons) {
 				var menu_class = (button_name == active) ? 'menu-item-active' : 'menu-item';
-				if (elements_shown.indexOf(button_name) < 0 || (button_name == "importExport" && !this.config.allowImportExport))
+				if (elements_shown.indexOf(button_name) < 0)
 					menu_class = "hidden";
 				if (this._menuButtons[button_name])
 					this._menuButtons[button_name].className = menu_class;
@@ -220,21 +216,20 @@ define([
 		saveInLocalStorage : function () {
 			if (!this.config.allowLocalStorage)
 				return;
-
 			localStore.set(this._localStorageKey, this.drawingsGetJson());
 		},
-		
-		getCheckedGraphics:function(returnAllIfNoneChecked){
+
+		getCheckedGraphics : function (returnAllIfNoneChecked) {
 			var graphics = [];
-			for(var i=0, nb = this.drawBox.drawLayer.graphics.length; i < nb; i++)
-				if(this.drawBox.drawLayer.graphics[i].checked)
+			for (var i = 0, nb = this.drawBox.drawLayer.graphics.length; i < nb; i++)
+				if (this.drawBox.drawLayer.graphics[i].checked)
 					graphics.push(this.drawBox.drawLayer.graphics[i]);
-					
-			if(returnAllIfNoneChecked && graphics.length==0)
+
+			if (returnAllIfNoneChecked && graphics.length == 0)
 				return this.drawBox.drawLayer.graphics;
 			return graphics;
 		},
-		
+
 		zoomAll : function () {
 			var graphics = this.getCheckedGraphics(true);
 			var nb_graphics = graphics.length;
@@ -247,29 +242,109 @@ define([
 			this.map.setExtent(ext, true);
 			return true;
 		},
-
-		clear : function () {
+		
+		copy:function(){
 			var graphics = this.getCheckedGraphics(false);
 			var nb = graphics.length;
-			
-			if(nb==0){
+
+			if (nb == 0) {
 				this.showMessage(this.nls.noSelection, 'error');
 				return false;
 			}
 			
-			if (!this.config.confirmOnDelete || confirm(this.nls.clear)) {
-				// this.drawBox.drawLayer.clear();
-				for(var i = 0; i < nb; i++)
-					this.drawBox.drawLayer.remove(graphics[i]);
-				this.setInfoWindow(false);
-				this.setMode("list");
+			for(var i=0;i<nb;i++){				
+				var g = new Graphic(graphics[i].toJson()); //Get graphic clone
+				g.attributes.name += this.nls.copySuffix; //Suffix name
+				this.drawBox.drawLayer.add(g);
+				if(graphics[i].measure && graphics[i].measure.graphic){
+					(g.geometry.type=='polygon') ? this._addPolygonMeasure(g.geometry, g) : this._addLineMeasure(g.geometry, g);			
+				}
 			}
+			this.setMode("list");
+		},
+		
+		clear : function () {
+			var graphics = this.getCheckedGraphics(false);
+			var nb = graphics.length;
+
+			if (nb == 0) {
+				this.showMessage(this.nls.noSelection, 'error');
+				return false;
+			}
+			
+			if(this.config.confirmOnDelete){		
+				this._confirmDeleteMessage  = new Message({
+					message : '<i class="message-warning-icon"></i>&nbsp;' + this.nls.confirmDrawCheckedDelete,
+					buttons:[
+						{
+							label:this.nls.yes,
+							onClick:this._removeGraphics
+						},{
+							label:this.nls.no
+						}
+					]
+				});
+			}
+			else{
+				this._removeGraphics(graphics);
+			}
+		},
+		
+		_removeClickedGraphic:function(){
+			if(!this._clickedGraphic)
+				return false;
+			
+			this._removeGraphic(this._clickedGraphic);
+			this._editorConfig["graphicCurrent"] = false;
+			this.listGenerateDrawTable();			
+			
+			this._clickedGraphic = false;
+			
+			if(this._confirmDeleteMessage && this._confirmDeleteMessage.close){
+				this._confirmDeleteMessage.close();
+				this._confirmDeleteMessage = false;
+			}
+		},
+		
+		_removeGraphics:function(graphicsOrEvent){
+			if(graphicsOrEvent.target)
+				graphics = this.getCheckedGraphics(false);
+			else
+				graphics = graphicsOrEvent;
+				
+			
+
+			var nb = graphics.length;
+			console.log(graphics);
+			for (var i = 0; i < nb; i++) {
+				this._removeGraphic(graphics[i]);
+			}
+			
+			if(this._confirmDeleteMessage && this._confirmDeleteMessage.close){
+				this._confirmDeleteMessage.close();
+				this._confirmDeleteMessage = false;
+			}
+			
+			this.setInfoWindow(false);
+			this.setMode("list");
+		},
+
+		_removeGraphic : function (graphic) {
+			if (graphic.measure && graphic.measure.graphic) {
+				// graphic.measure.graphic.measureParent = false; //Remove link between graphic and it's measure label
+				this.drawBox.drawLayer.remove(graphic.measure.graphic); //Delete measure label
+			} else if (graphic.measureParent) {
+				graphic.measureParent.measure = false;
+			}
+			this.drawBox.drawLayer.remove(graphic);
 		},
 
 		drawingsGetJson : function (asString, onlyChecked) {
 			var graphics = (onlyChecked) ? this.getCheckedGraphics(false) : this.drawBox.drawLayer.graphics;
 			
-			if (graphics.length < 1)
+			var nb_graphics = graphics.length;
+			
+			if (nb_graphics < 1)
 				return (asString) ? '' : false;
 
 			var content = {
@@ -280,8 +355,35 @@ define([
 				"fields" : []
 			};
 
-			for (var i in graphics)
-				content["features"].push(graphics[i].toJson());
+			var features_with_measure = [];
+			var nb_graphics_ok = 0;
+			for (var i = 0; i < nb_graphics; i++) {
+				var g = graphics[i];
+				if(g){
+					var json = g.toJson();
+					//If with measure
+					if (g.measure && g.measure.graphic) {
+						features_with_measure.push(nb_graphics_ok);
+					}
+					content["features"].push(json);
+					nb_graphics_ok++;
+				}
+			}
+
+			//Replace references for measure's graphic by index
+			for (var k = 0, nb = features_with_measure.length; k < nb; k++) {
+				var i = features_with_measure[k];
+				for (var l = 0, nb_g = graphics.length; l < nb_g; l++) {
+					if (graphics[l] == graphics[i].measure.graphic) {
+						content["features"][i]["measure"] = {
+							"areaUnit" : graphics[i].measure.areaUnit,
+							"lengthUnit" : graphics[i].measure.lengthUnit,
+							"graphic" : l
+						};
+						break;
+					}
+				}
+			}
 
 			if (asString) {
 				content = JSON.stringify(content);
@@ -295,9 +397,6 @@ define([
 		},
 		menuOnClickList : function () {
 			this.setMode("list");
-		},
-		menuOnClickImportExport : function () {
-			this.setMode("importExport");
 		},
 
 		onHideCheckboxClick : function () {
@@ -321,9 +420,9 @@ define([
 
 			//Table
 			this.drawsTableBody.innerHTML = "";
-			
+
 			var name_max_len = (this.config.listShowUpAndDownButtons) ? 8 : 16;
-			
+
 			for (var i = nb_graphics - 1; i >= 0; i--) {
 				var graphic = graphics[i];
 				var num = i + 1;
@@ -346,38 +445,37 @@ define([
 				}
 				var name = (graphic.attributes && graphic.attributes['name']) ? graphic.attributes['name'] : '';
 				name = (name.length > name_max_len) ? '<span title="' + name.replace('"', '&#34;') + '">' + name.substr(0, name_max_len) + "...</span>" : name;
-				
+
 				var actions = '<span class="edit blue-button" id="draw-action-edit--' + i + '" title="' + this.nls.editLabel + '">&nbsp;</span>'
-					+ '<span class="clear red-button" id="draw-action-delete--' + i + '" title="' + this.nls.deleteLabel + '">&nbsp;</span>';
+					 + '<span class="clear red-button" id="draw-action-delete--' + i + '" title="' + this.nls.deleteLabel + '">&nbsp;</span>';
 				var actions_class = "list-draw-actions light";
-				if(this.config.listShowUpAndDownButtons){
+				if (this.config.listShowUpAndDownButtons) {
 					actions += '<span class="up grey-button" id="draw-action-up--' + i + '" title="' + this.nls.upLabel + '">&nbsp;</span>'
-						+ '<span class="down grey-button" id="draw-action-down--' + i + '" title="' + this.nls.downLabel + '">&nbsp;</span>';
+					 + '<span class="down grey-button" id="draw-action-down--' + i + '" title="' + this.nls.downLabel + '">&nbsp;</span>';
 					actions_class = "list-draw-actions";
 				}
 				actions += '<span class="zoom grey-button" id="draw-action-zoom--' + i + '" title="' + this.nls.zoomLabel + '">&nbsp;</span>';
-				
+
 				var checked = (graphic.checked) ? ' checked="checked"' : '';
-				
-				var html = '<td><input type="checkbox" class="td-checkbox" id="draw-action-checkclick--' + i + '" '+checked+'/></td>'
-					+ '<td>' + name + '</td>'
-					+ '<td class="td-center" id="draw-symbol--' + i + '">' + symbolHtml + '</td>' 
-					+ '<td class="' + actions_class + '">' + actions + '</td>';
+
+				var html = '<td><input type="checkbox" class="td-checkbox" id="draw-action-checkclick--' + i + '" ' + checked + '/></td>'
+					 + '<td>' + name + '</td>'
+					 + '<td class="td-center" id="draw-symbol--' + i + '">' + symbolHtml + '</td>'
+					 + '<td class="' + actions_class + '">' + actions + '</td>';
 				var tr = domConstruct.create(
 						"tr", {
 						id : 'draw-tr--' + i,
 						innerHTML : html,
 						className : (selected) ? 'selected' : '',
-						draggable:"true"
+						draggable : "true"
 					},
-					this.drawsTableBody
-				);
+						this.drawsTableBody);
 
 				//Bind actions
 				on(dom.byId('draw-action-edit--' + i), "click", this.listOnActionClick);
 				on(dom.byId('draw-action-delete--' + i), "click", this.listOnActionClick);
 				on(dom.byId('draw-action-zoom--' + i), "click", this.listOnActionClick);
-				if(this.config.listShowUpAndDownButtons){
+				if (this.config.listShowUpAndDownButtons) {
 					on(dom.byId('draw-action-up--' + i), "click", this.listOnActionClick);
 					on(dom.byId('draw-action-down--' + i), "click", this.listOnActionClick);
 				}
@@ -387,39 +485,36 @@ define([
 			this.saveInLocalStorage();
 			this.listUpdateAllCheckbox();
 		},
-		
-		_listOnDrop:function(evt){
+
+		_listOnDrop : function (evt) {
 			evt.preventDefault();
 			var tr_id = evt.dataTransfer.getData("edraw-list-tr-id");
-			
+
 			var target = (evt.target) ? evt.target : evt.originalTarget;
 			var target_tr = this._UTIL__getParentByTag(target, "tr");
-			
+
 			//If dropped on same tr, exit !
-			if(!target_tr || target_tr.id == tr_id){
+			if (!target_tr || target_tr.id == tr_id) {
 				return false;
 			}
-			
-			
+
 			//get positions from id
 			var from_i = tr_id.split("--")[tr_id.split("--").length - 1];
 			var to_i = target_tr.id.split("--")[target_tr.id.split("--").length - 1];
-			
-			// @TODO Know if drop in top (down target) or bottom (under target)  of row 
-			
+
 			//Switch the 2 rows
 			this.moveDrawingGraphic(from_i, to_i);
 			this.listGenerateDrawTable();
 		},
-		
-		_listOnDragOver:function(evt){
+
+		_listOnDragOver : function (evt) {
 			evt.preventDefault();
 		},
-		
-		_listOnDragStart:function(evt){
+
+		_listOnDragStart : function (evt) {
 			evt.dataTransfer.setData("edraw-list-tr-id", evt.target.id);
 		},
-		
+
 		switch2DrawingGraphics : function (i1, i2) {
 			var g1 = this.drawBox.drawLayer.graphics[i1];
 			var g2 = this.drawBox.drawLayer.graphics[i2];
@@ -436,38 +531,37 @@ define([
 			this._redrawGraphics(start_i);
 			return true;
 		},
-		
-		moveDrawingGraphic:function(from_i, to_i){
+
+		moveDrawingGraphic : function (from_i, to_i) {
 			from_i = parseInt(from_i);
 			to_i = parseInt(to_i);
-			
-			if(from_i == to_i)
+
+			if (from_i == to_i)
 				return;
-			
+
 			//get from graphic
 			var from_graphic = this.drawBox.drawLayer.graphics[from_i];
-			
+
 			//Move graphics up or down
-			if(from_i < to_i){
-				for(var i=from_i, nb=this.drawBox.drawLayer.graphics.length; i < to_i && i < nb; i++)
-					this.drawBox.drawLayer.graphics[i] = this.drawBox.drawLayer.graphics[i+1];
+			if (from_i < to_i) {
+				for (var i = from_i, nb = this.drawBox.drawLayer.graphics.length; i < to_i && i < nb; i++)
+					this.drawBox.drawLayer.graphics[i] = this.drawBox.drawLayer.graphics[i + 1];
+			} else {
+				for (var i = from_i, nb = this.drawBox.drawLayer.graphics.length; i > to_i && i > 0; i--)
+					this.drawBox.drawLayer.graphics[i] = this.drawBox.drawLayer.graphics[i - 1];
 			}
-			else{
-				for(var i=from_i, nb=this.drawBox.drawLayer.graphics.length; i > to_i && i > 0; i--)
-					this.drawBox.drawLayer.graphics[i] = this.drawBox.drawLayer.graphics[i-1];
-			}
-			
+
 			//Copy from graphic in destination
 			this.drawBox.drawLayer.graphics[to_i] = from_graphic;
-			
+
 			//Redraw in good order
 			var start_i = (from_i < to_i) ? from_i : to_i;
 			this._redrawGraphics(start_i);
 			return true;
 		},
-		
-		_redrawGraphics:function(start_i){
-			if(!start_i)
+
+		_redrawGraphics : function (start_i) {
+			if (!start_i)
 				start_i = 0;
 			var nb = this.drawBox.drawLayer.graphics.length;
 			for (var i = 0; i < nb; i++) {
@@ -478,48 +572,46 @@ define([
 						shape.moveToFront();
 				}
 			}
-			
+
 		},
-		
-		listUpdateAllCheckbox:function(evt){
+
+		listUpdateAllCheckbox : function (evt) {
 			//Not called by event !
-			if(evt===undefined){
+			if (evt === undefined) {
 				var all_checked = true;
 				var all_unchecked = true;
-				
-				for(var i=0, nb = this.drawBox.drawLayer.graphics.length; i < nb; i++){
-					if(this.drawBox.drawLayer.graphics[i].checked)
+
+				for (var i = 0, nb = this.drawBox.drawLayer.graphics.length; i < nb; i++) {
+					if (this.drawBox.drawLayer.graphics[i].checked)
 						all_unchecked = false;
 					else
 						all_checked = false;
 				}
-				
-				if(all_checked){
+
+				if (all_checked) {
 					this.listCheckboxAll.checked = true;
-					this.listCheckboxAll.indeterminate  = false;
+					this.listCheckboxAll.indeterminate = false;
 					this.listCheckboxAll2.checked = true;
-					this.listCheckboxAll2.indeterminate  = false;
-				}
-				else if(all_unchecked){
+					this.listCheckboxAll2.indeterminate = false;
+				} else if (all_unchecked) {
 					this.listCheckboxAll.checked = false;
-					this.listCheckboxAll.indeterminate  = false;
+					this.listCheckboxAll.indeterminate = false;
 					this.listCheckboxAll2.checked = false;
-					this.listCheckboxAll2.indeterminate  = false;
-				}
-				else{
+					this.listCheckboxAll2.indeterminate = false;
+				} else {
 					this.listCheckboxAll.checked = true;
-					this.listCheckboxAll.indeterminate  = true;
+					this.listCheckboxAll.indeterminate = true;
 					this.listCheckboxAll2.checked = true;
-					this.listCheckboxAll2.indeterminate  = true;
+					this.listCheckboxAll2.indeterminate = true;
 				}
 				return
 			}
-			
+
 			//Event click on checkbox!
 			var cb = evt.target;
 			var check = evt.target.checked;
-			
-			for(var i=0, nb = this.drawBox.drawLayer.graphics.length; i < nb; i++){
+
+			for (var i = 0, nb = this.drawBox.drawLayer.graphics.length; i < nb; i++) {
 				this.drawBox.drawLayer.graphics[i].checked = check;
 				dom.byId('draw-action-checkclick--' + i).checked = check;
 			}
@@ -528,7 +620,7 @@ define([
 			this.listCheckboxAll2.checked = check;
 			this.listCheckboxAll2.indeterminate = false;
 		},
-		
+
 		listOnActionClick : function (evt) {
 			if (!evt.target || !evt.target.id)
 				return;
@@ -550,10 +642,22 @@ define([
 				this.listGenerateDrawTable();
 				break;
 			case 'draw-action-delete':
-				if (!this.config.confirmOnDelete || confirm(this.nls.confirmDrawDelete + ".")) {
-					g.getLayer().remove(g);
-					this._editorConfig["graphicCurrent"] = false;
-					this.listGenerateDrawTable();
+				this._clickedGraphic = g;
+				if(this.config.confirmOnDelete){		
+					this._confirmDeleteMessage  = new Message({
+						message : '<i class="message-warning-icon"></i>&nbsp;' + this.nls.confirmDrawDelete,
+						buttons:[
+							{
+								label:this.nls.yes,
+								onClick:this._removeClickedGraphic
+							},{
+								label:this.nls.no
+							}
+						]
+					});
+				}
+				else{
+					this._removeClickedGraphic();
 				}
 				break;
 			case 'draw-action-edit':
@@ -596,6 +700,8 @@ define([
 		},
 
 		editorPrepareForAdd : function (symbol) {
+			this._editorConfig["graphicCurrent"] = false;
+
 			this.editorSymbolChooserConfigure(symbol);
 
 			this.nameField.value = this.nls.nameFieldDefaultValue;
@@ -619,9 +725,14 @@ define([
 				this.editorUpdateTextPlus();
 
 			this.editorActivateSnapping(true);
+
+			//Prepare measure section
+			this.editorMeasureConfigure(false, commontype);
 		},
 
 		editorPrepareForEdit : function (graphic) {
+			this._editorConfig["graphicCurrent"] = graphic;
+
 			this.nameField.value = graphic.attributes["name"];
 			this.descriptionField.value = graphic.attributes["description"];
 
@@ -638,6 +749,8 @@ define([
 
 			this.editorEnableMapPreview(false);
 			this.editorActivateSnapping(true);
+
+			this.editorMeasureConfigure(graphic, false);
 		},
 
 		editorSymbolChooserConfigure : function (symbol) {
@@ -646,6 +759,7 @@ define([
 
 			//Set this symbol in symbol chooser
 			this.editorSymbolChooser.showBySymbol(symbol);
+			this._editorConfig['symboltype'] = this.editorSymbolChooser.type;
 
 			var type = symbol.type;
 			//Draw plus and specific comportment when text symbol.
@@ -665,8 +779,8 @@ define([
 				this._editorConfig["drawPlus"]["bold"] = (symbol.font.weight == esri.symbol.Font.WEIGHT_BOLD);
 				this._editorConfig["drawPlus"]["italic"] = (symbol.font.style == esri.symbol.Font.STYLE_ITALIC);
 				this._editorConfig["drawPlus"]["underline"] = (symbol.font.decoration == 'underline');
-				this._editorConfig["drawPlus"]["placement"]["horizontal"] = symbol.horizontalAlignment;
-				this._editorConfig["drawPlus"]["placement"]["vertical"] = symbol.verticalAlignment;
+				this._editorConfig["drawPlus"]["placement"]["horizontal"] = (symbol.horizontalAlignment) ? symbol.horizontalAlignment : "center";
+				this._editorConfig["drawPlus"]["placement"]["vertical"] = (symbol.verticalAlignment) ? symbol.verticalAlignment : "middle";
 				this.editorTextPlusFontFamilyNode.set("value", symbol.font.family);
 				this.editorTextPlusAngleNode.set("value", symbol.angle);
 				this._UTIL__enableClass(this.editorTextPlusBoldNode, 'selected', this._editorConfig["drawPlus"]["bold"]);
@@ -674,7 +788,11 @@ define([
 				this._UTIL__enableClass(this.editorTextPlusUnderlineNode, 'selected', this._editorConfig["drawPlus"]["underline"]);
 				for (var i in this._editorTextPlusPlacements) {
 					var title_tab = this._editorTextPlusPlacements[i].title.split(" ");
-					var selected = (title_tab[0] == symbol.verticalAlignment && title_tab[1] == symbol.horizontalAlignment);
+					var selected = 
+						(
+							title_tab[0] == this._editorConfig["drawPlus"]["placement"]["vertical"] 
+							&& title_tab[1] == this._editorConfig["drawPlus"]["placement"]["horizontal"]
+						);
 					this._UTIL__enableClass(this._editorTextPlusPlacements[i], 'selected', selected);
 				}
 			} else {
@@ -755,6 +873,63 @@ define([
 			}
 		},
 
+		editorMeasureConfigure : function (graphicIfUpdate, commonTypeIfAdd) {
+			this.measureSection.style.display = 'block';
+
+			//Manage if fields are shown or not
+			if (graphicIfUpdate && graphicIfUpdate.measureParent) {
+				this.fieldsDiv.style.display = 'none';
+				this.isMeasureSpan.style.display = 'block';
+			} else {
+				this.fieldsDiv.style.display = 'block';
+				this.isMeasureSpan.style.display = 'none';
+			}
+
+			//add Mode
+			if (commonTypeIfAdd) {
+				//No measure supported for this types
+				if (commonTypeIfAdd == "text" || commonTypeIfAdd == "point") {
+					this.measureSection.style.display = 'none';
+					return;
+				}
+
+				this.distanceUnitSelect.set('value', this.configDistanceUnits[0]['unit']);
+				this.areaUnitSelect.set('value', this.configAreaUnits[0]['unit']);
+
+				this.showMeasure.checked = (this.config.measureEnabledByDefault);
+				this._setMeasureVisibility();
+
+				return;
+			}
+
+			//edit mode
+			if (!graphicIfUpdate) {
+				this.measureSection.style.display = 'none';
+				return;
+			}
+
+			var geom_type = graphicIfUpdate.geometry.type;
+
+			//If no measure for this type of graphic
+			if (geom_type == "point") {
+				this.measureSection.style.display = 'none';
+				return;
+			}
+
+			var checked = (graphicIfUpdate.measure);
+
+			var lengthUnit = (graphicIfUpdate.measure && graphicIfUpdate.measure.lengthUnit) ? graphicIfUpdate.measure.lengthUnit : this.configDistanceUnits[0]['unit'];
+			this.distanceUnitSelect.set('value', lengthUnit);
+
+			if (geom_type == "polygon") {
+				var areaUnit = (graphicIfUpdate.measure && graphicIfUpdate.measure.areaUnit) ? graphicIfUpdate.measure.areaUnit : this.configAreaUnits[0]['unit'];
+				this.areaUnitSelect.set('value', areaUnit);
+			}
+
+			this.showMeasure.checked = checked;
+			this._setMeasureVisibility();
+		},
+
 		editorSetDefaultSymbols : function () {
 			var symbol = this.editorSymbolChooser.getSymbol();
 			switch (symbol.type.toLowerCase()) {
@@ -783,21 +958,75 @@ define([
 		},
 
 		///////////////////////// IMPORT/EXPORT METHODS ///////////////////////////////////////////////////////////
-		importFile : function () {
+		importMessage:false,
+		importInput:false,
+		launchImportFile:function(){
 			if (!window.FileReader) {
 				this.showMessage(this.nls.importErrorMessageNavigator, 'error');
 				return false;
 			}
-
-			var input = this.importFileInput.files[0];
-
-			if (!input) {
+			
+			// var dragAndDropSupport = ()
+			
+			var content = '<div class="eDraw-import-message" id="'+this.id+'___div_import_message">'
+				+ '<input class="file" type="file" id="'+this.id+'___input_file_import"/>'
+				+ '<div class="eDraw-import-draganddrop-message">'+this.nls.importDragAndDropMessage+'</div>'
+				+ '</div>';			
+			this.importMessage = new Message({
+				message : content,
+				titleLabel:this.nls.importTitle,
+				buttons:[{
+					label:this.nls.importCloseButton
+				}]
+			});
+			this.importInput = dojo.byId(this.id+'___input_file_import');
+			
+			//Init file's choice up watching
+			on(this.importInput, "change", this.importFile);
+			
+			//Init drag & drop
+			var div_message = dojo.byId(this.id+'___div_import_message');
+			on(div_message, "dragover", function(e){
+				e.stopPropagation();
+				e.preventDefault();
+				e.dataTransfer.dropEffect = 'copy';
+				console.log("over !");
+			});
+			on(div_message, "drop", lang.hitch(this, function(e){
+				e.stopPropagation();
+				e.preventDefault();
+				var files = e.dataTransfer.files;
+				
+				if(!files[0])
+					return;
+				var reader = new FileReader();
+				reader.onload = this.importOnFileLoad;
+				var txt = reader.readAsText(files[0]);
+			}));
+		},
+		
+		importFile : function () {
+			if(!this.importInput){
+				this.showMessage(this.nls.importErrorWarningSelectFile, 'warning');
+				if(this.importMessage)
+					this.importMessage.close();
+				return false;
+			}
+			
+			var input_file = this.importInput.files[0];
+			if (!input_file) {
 				this.showMessage(this.nls.importErrorWarningSelectFile, 'warning');
 				return false;
 			}
 			var reader = new FileReader();
 			reader.onload = this.importOnFileLoad;
-			var txt = reader.readAsText(input);
+			var txt = reader.readAsText(input_file);
+		},
+		
+		importOnFileLoad : function (evt) {
+			var content = evt.target.result;
+			this.importJsonContent(content);
+			this.importMessage.close();
 		},
 
 		importJsonContent : function (json, nameField, descriptionField) {
@@ -828,7 +1057,21 @@ define([
 						}
 					}
 				}
+				if (!descriptionField) {
+					var g = json.features[0];
+					var fields_possible = ["description", "descript", "desc","comment","comm"];
+					if (g.attributes) {
+						for (var i in fields_possible) {
+							if (g.attributes[fields_possible[i]]) {
+								descriptionField = fields_possible[i];
+								break;
+							}
+						}
+					}
+				}
 
+				var measure_features_i = [];
+				var graphics = [];
 				for (var i in json.features) {
 					var json_feat = json.features[i];
 
@@ -845,9 +1088,7 @@ define([
 						g.attributes["name"] = g.symbol.text;
 					g.attributes["description"] = (!descriptionField || !g.attributes[descriptionField]) ? '' : g.attributes[descriptionField];
 
-					if (g.symbol) {
-						this.drawBox.drawLayer.add(g);
-					} else {
+					if (!g.symbol) {
 						var symbol = false;
 						switch (g.geometry.type) {
 						case 'point':
@@ -862,11 +1103,38 @@ define([
 						}
 						if (symbol) {
 							g.setSymbol(symbol);
-							this.drawBox.drawLayer.add(g);
 						}
+					}
+
+					//If is with measure
+					if (json_feat.measure) {
+						g.measure = json_feat.measure;
+						measure_features_i.push(i);
+					}
+					graphics.push(g);
+				}
+
+				//Treat measures
+				for (var k in measure_features_i) {
+					var i = measure_features_i[k]; //Indice to treat
+					var label_graphic = (graphics[i].measure && graphics[i].measure.graphic && graphics[graphics[i].measure.graphic])
+					 ? graphics[graphics[i].measure.graphic] :
+					false;
+					if (label_graphic) {
+						graphics[i].measure.graphic = label_graphic
+							label_graphic.measureParent = graphics[i];
+					} else {
+						graphics[i].measure = false;
 					}
 				}
 
+				//Add graphics
+				for (var i=0, nb = graphics.length; i < nb; i++){
+					if(graphics[i])
+						this.drawBox.drawLayer.add(graphics[i]);
+				}
+
+				//Show list
 				this.setMode("list");
 			} catch (e) {
 				this.showMessage(this.nls.importErrorFileStructure, 'error');
@@ -874,29 +1142,23 @@ define([
 			}
 		},
 
-		importOnFileLoad : function (evt) {
-			var content = evt.target.result;
-			this.importJsonContent(content);
-			this.importFileInput.files[0] = "";
-		},
-
 		exportInFile : function () {
 			this.launchExport(this.exportButton, false);
 		},
-		
+
 		exportSelectionInFile : function () {
 			this.launchExport(this.exportSelectionButton, true);
 		},
-		
-		launchExport:function(link, only_graphics_checked){
+
+		launchExport : function (link, only_graphics_checked) {
 			// Be sure the link will not open if not asked :
 			link.href = "#";
 			link.target = "_self";
-			
+
 			var drawing_json = this.drawingsGetJson(true, only_graphics_checked);
-			
+
 			// Control if there are drawings
-			if (drawing_json=='') {
+			if (drawing_json == '') {
 				this.showMessage(this.nls.importWarningNoExport0Draw, 'warning');
 				return false;
 			}
@@ -925,7 +1187,7 @@ define([
 			}
 
 			//  Case HTML5 (Firefox > 25, Chrome > 30....) : use data link with download attribute
-			link.href = 'data:application/octet-stream;charset=utf-8,' + drawing_json;
+			link.href = 'data:application/octet-stream;charset=utf-8,' + encodeURIComponent(drawing_json);
 			link.target = "_blank";
 			link.download = export_name;
 			return true;
@@ -939,6 +1201,14 @@ define([
 
 			this._editorConfig["graphicCurrent"].attributes["name"] = this.nameField.value;
 			this._editorConfig["graphicCurrent"].attributes["description"] = this.descriptionField.value;
+
+			var geom = this._editorConfig["graphicCurrent"].geometry;
+			if (geom.type == "polyline" || geom.type == "polygon") {
+				if (geom.type == "polyline")
+					this._addLineMeasure(geom, this._editorConfig["graphicCurrent"]);
+				else
+					this._addPolygonMeasure(geom, this._editorConfig["graphicCurrent"]);
+			}
 
 			this.setMode("list");
 		},
@@ -993,19 +1263,32 @@ define([
 			if (!symbol) {
 				switch (commontype) {
 				case "point":
-					symbol = new SimpleMarkerSymbol();
+					var options =
+                        (this.config.defaultSymbols && this.config.defaultSymbols.SimpleMarkerSymbol)
+                        ? this.config.defaultSymbols.SimpleMarkerSymbol
+                        : null;
+					symbol = new SimpleMarkerSymbol(options);
 					break;
 				case "polyline":
-					symbol = new SimpleLineSymbol();
+					var options =
+                        (this.config.defaultSymbols && this.config.defaultSymbols.SimpleLineSymbol)
+                        ? this.config.defaultSymbols.SimpleLineSymbol
+                        : null;
+					symbol = new SimpleLineSymbol(options);
 					break;
 				case "polygon":
-					symbol = new SimpleFillSymbol();
+					var options =
+                        (this.config.defaultSymbols && this.config.defaultSymbols.SimpleFillSymbol)
+                        ? this.config.defaultSymbols.SimpleFillSymbol
+                        : null;
+					symbol = new SimpleFillSymbol(options);
 					break;
 				case "text":
-					symbol = new TextSymbol({
-							"verticalAlignment" : "middle",
-							"horizontalAlignment" : "center"
-						});
+					var options =
+                        (this.config.defaultSymbols && this.config.defaultSymbols.TextSymbol)
+                        ? this.config.defaultSymbols.TextSymbol
+                        : {"verticalAlignment": "middle", "horizontalAlignment": "center"};
+					symbol = new TextSymbol(options);
 					break;
 				}
 			}
@@ -1040,6 +1323,7 @@ define([
 				geometry = polygon;
 
 				graphic.setGeometry(polygon);
+
 				var layer = graphic.getLayer();
 				layer.remove(graphic);
 				layer.add(graphic);
@@ -1048,11 +1332,11 @@ define([
 			}
 			if (commontype === 'polyline') {
 				if (this.showMeasure.checked) {
-					this._addLineMeasure(geometry);
+					this._addLineMeasure(geometry, graphic);
 				}
 			} else if (commontype === 'polygon') {
 				if (this.showMeasure.checked) {
-					this._addPolygonMeasure(geometry);
+					this._addPolygonMeasure(geometry, graphic);
 				}
 			} else if (commontype == 'text' && this.editorSymbolChooser.inputText.value.trim() == "") {
 				//Message
@@ -1148,6 +1432,203 @@ define([
 		},
 
 		////////////////////////////////////// Measure methods     //////////////////////////////////////////////
+		_getGeometryService : function () {
+			if (!this._gs || this._gs == null) {
+				if (this.config.geometryService)
+					this._gs = new GeometryService(this.config.geometryService);
+				else if (esriConfig.defaults.geometryService)
+					this._gs = esriConfig.defaults.geometryService;
+				else
+					this._gs = new GeometryService(this._defaultGsUrl);
+			}
+
+			return this._gs;
+		},
+
+		_getLengthAndArea : function (geometry, isPolygon) {
+			var def = new Deferred();
+			var defResult = {
+				length : null,
+				area : null
+			};
+			var wkid = geometry.spatialReference.wkid;
+			var areaUnit = this.areaUnitSelect.value;
+			var esriAreaUnit = esriUnits[areaUnit];
+			var lengthUnit = this.distanceUnitSelect.value;
+			var esriLengthUnit = esriUnits[lengthUnit];
+
+			if (wkid === 4326) {
+				defResult = this._getLengthAndArea4326(geometry, isPolygon, esriAreaUnit, esriLengthUnit);
+				def.resolve(defResult);
+			} else if (wkidUtils.isWebMercator(wkid)) {
+				defResult = this._getLengthAndArea3857(geometry, isPolygon, esriAreaUnit, esriLengthUnit);
+				def.resolve(defResult);
+			} else if (this.config.useGeometryEngine) {
+				defResult = this._getLengthAndAreaGeometryEngine(geometry, isPolygon, areaUnit, lengthUnit, wkid);
+				def.resolve(defResult);
+			} else {
+				def = this._getLengthAndAreaByGS(geometry, isPolygon, esriAreaUnit, esriLengthUnit);
+			}
+			return def;
+		},
+
+		_getLengthAndAreaGeometryEngine : function (geometry, isPolygon, areaUnit, lengthUnit, wkid) {
+			areaUnit = areaUnit.toLowerCase().replace("_", "-");
+			lengthUnit = lengthUnit.toLowerCase().replace("_", "-");
+
+			var result = {
+				area : null,
+				length : null
+			};
+
+			if (isPolygon) {
+				result.area = (wkid == 4326 || wkid == 3857) ? geometryEngine.geodesicArea(geometry, areaUnit) : geometryEngine.planarArea(geometry, areaUnit);
+				var polyline = this._getPolylineOfPolygon(geometry);
+				result.length = (wkid == 4326 || wkid == 3857) ? geometryEngine.geodesicLength(polyline, lengthUnit) : geometryEngine.planarLength(polyline, lengthUnit);
+			} else {
+				result.length = (wkid == 4326 || wkid == 3857) ? geometryEngine.geodesicLength(geometry, lengthUnit) : geometryEngine.planarLength(geometry, lengthUnit);
+			}
+
+			return result;
+		},
+
+		_getLengthAndArea4326 : function (geometry, isPolygon, esriAreaUnit, esriLengthUnit) {
+			var result = {
+				area : null,
+				length : null
+			};
+
+			var lengths = null;
+
+			if (isPolygon) {
+				var areas = geodesicUtils.geodesicAreas([geometry], esriAreaUnit);
+				var polyline = this._getPolylineOfPolygon(geometry);
+				lengths = geodesicUtils.geodesicLengths([polyline], esriLengthUnit);
+				result.area = areas[0];
+				result.length = lengths[0];
+			} else {
+				lengths = geodesicUtils.geodesicLengths([geometry], esriLengthUnit);
+				result.length = lengths[0];
+			}
+
+			return result;
+		},
+
+		_getLengthAndArea3857 : function (geometry3857, isPolygon, esriAreaUnit, esriLengthUnit) {
+			var geometry4326 = webMercatorUtils.webMercatorToGeographic(geometry3857);
+			var result = this._getLengthAndArea4326(geometry4326,
+					isPolygon,
+					esriAreaUnit,
+					esriLengthUnit);
+
+			return result;
+		},
+
+		_getLengthAndAreaByGS : function (geometry, isPolygon, esriAreaUnit, esriLengthUnit) {
+			this._getGeometryService();
+
+			var def = new Deferred();
+			var defResult = {
+				area : null,
+				length : null
+			};
+			var gsAreaUnit = this._getGeometryServiceUnitByEsriUnit(esriAreaUnit);
+			var gsLengthUnit = this._getGeometryServiceUnitByEsriUnit(esriLengthUnit);
+			if (isPolygon) {
+				var areasAndLengthParams = new AreasAndLengthsParameters();
+				areasAndLengthParams.lengthUnit = gsLengthUnit;
+				areasAndLengthParams.areaUnit = gsAreaUnit;
+				this._gs.simplify([geometry]).then(lang.hitch(this, function (simplifiedGeometries) {
+						if (!this.domNode) {
+							return;
+						}
+						areasAndLengthParams.polygons = simplifiedGeometries;
+						this._gs.areasAndLengths(areasAndLengthParams).then(lang.hitch(this, function (result) {
+								if (!this.domNode) {
+									return;
+								}
+								defResult.area = result.areas[0];
+								defResult.length = result.lengths[0];
+								def.resolve(defResult);
+							}), lang.hitch(this, function (err) {
+								def.reject(err);
+							}));
+					}), lang.hitch(this, function (err) {
+						def.reject(err);
+					}));
+			} else {
+				var lengthParams = new LengthsParameters();
+				lengthParams.polylines = [geometry];
+				lengthParams.lengthUnit = gsLengthUnit;
+				lengthParams.geodesic = true;
+				this._gs.lengths(lengthParams).then(lang.hitch(this, function (result) {
+						if (!this.domNode) {
+							return;
+						}
+						defResult.length = result.lengths[0];
+						def.resolve(defResult);
+					}), lang.hitch(this, function (err) {
+						console.error(err);
+						def.reject(err);
+					}));
+			}
+			return def;
+		},
+
+		_getGeometryServiceUnitByEsriUnit : function (unit) {
+			var gsUnit = -1;
+			switch (unit) {
+			case esriUnits.KILOMETERS:
+				gsUnit = GeometryService.UNIT_KILOMETER;
+				break;
+			case esriUnits.MILES:
+				gsUnit = GeometryService.UNIT_STATUTE_MILE;
+				break;
+			case esriUnits.METERS:
+				gsUnit = GeometryService.UNIT_METER;
+				break;
+			case esriUnits.FEET:
+				gsUnit = GeometryService.UNIT_FOOT;
+				break;
+			case esriUnits.YARDS:
+				gsUnit = GeometryService.UNIT_INTERNATIONAL_YARD;
+				break;
+			case esriUnits.SQUARE_KILOMETERS:
+				gsUnit = GeometryService.UNIT_SQUARE_KILOMETERS;
+				break;
+			case esriUnits.SQUARE_MILES:
+				gsUnit = GeometryService.UNIT_SQUARE_MILES;
+				break;
+			case esriUnits.NAUTICAL_MILES:
+				gsUnit = GeometryService.UNIT_NAUTICAL_MILE;
+				break;
+			case esriUnits.ACRES:
+				gsUnit = GeometryService.UNIT_ACRES;
+				break;
+			case esriUnits.HECTARES:
+				gsUnit = GeometryService.UNIT_HECTARES;
+				break;
+			case esriUnits.SQUARE_METERS:
+				gsUnit = GeometryService.UNIT_SQUARE_METERS;
+				break;
+			case esriUnits.SQUARE_FEET:
+				gsUnit = GeometryService.UNIT_SQUARE_FEET;
+				break;
+			case esriUnits.SQUARE_YARDS:
+				gsUnit = GeometryService.UNIT_SQUARE_YARDS;
+				break;
+			}
+			return gsUnit;
+		},
+
+		_getPolylineOfPolygon : function (polygon) {
+			var polyline = new Polyline(polygon.spatialReference);
+			var points = polygon.rings[0];
+			points = points.slice(0, points.length - 1);
+			polyline.addPath(points);
+			return polyline;
+		},
+
 		_resetUnitsArrays : function () {
 			this.defaultDistanceUnits = [];
 			this.defaultAreaUnits = [];
@@ -1198,66 +1679,146 @@ define([
 		},
 
 		_setMeasureVisibility : function () {
-			var display = (this.showMeasure.checked) ? 'block' : 'none';
-			html.setStyle(this.areaMeasure, 'display', display);
-			html.setStyle(this.distanceMeasure, 'display', display);
+			var hideArea = (this._editorConfig["graphicCurrent"] && this._editorConfig["graphicCurrent"].geometry.type == "polyline") || (this._editorConfig['symboltype'] == 'line');
+
+			var display_line = (this.showMeasure.checked) ? 'block' : 'none';
+			var display_area = (this.showMeasure.checked && !hideArea) ? 'block' : 'none';
+
+			html.setStyle(this.distanceMeasure, 'display', display_line);
+			html.setStyle(this.areaMeasure, 'display', display_area);
 		},
 
-		_addLineMeasure : function (geometry) {
-			var a = Font.STYLE_ITALIC;
-			var b = Font.VARIANT_NORMAL;
-			var c = Font.WEIGHT_BOLD;
-			var symbolFont = new Font("16px", a, b, c, "Courier");
-			var fontColor = new Color([0, 0, 0, 1]);
-			var ext = geometry.getExtent();
-			var center = ext.getCenter();
-			var geoLine = webMercatorUtils.webMercatorToGeographic(geometry);
-			var unit = this.distanceUnitSelect.value;
-			var lengths = geodesicUtils.geodesicLengths([geoLine], esriUnits[unit]);
-			var abbr = this._getDistanceUnitInfo(unit).label;
-			var localeLength = jimuUtils.localizeNumber(lengths[0].toFixed(1));
-			var length = localeLength + " " + abbr;
-			var textSymbol = new TextSymbol(length, symbolFont, fontColor);
-			var labelGraphic = new Graphic(center, textSymbol, {
-					"name" : textSymbol.text,
-					"description" : ""
-				}, null);
-			this.drawBox.drawLayer.add(labelGraphic);
+		_getGraphicIndex : function (g) {
+			for (var i = 0, nb = this.drawBox.drawLayer.graphics.length; i < nb; i++) {
+				if (this.drawBox.drawLayer.graphics[i] == g)
+					return parseInt(i);
+			}
+			return false;
 		},
 
-		_addPolygonMeasure : function (geometry) {
-			var a = Font.STYLE_ITALIC;
-			var b = Font.VARIANT_NORMAL;
-			var c = Font.WEIGHT_BOLD;
-			var symbolFont = new Font("16px", a, b, c, "Courier");
-			var fontColor = new Color([0, 0, 0, 1]);
-			var ext = geometry.getExtent();
-			var center = ext.getCenter();
-			var geoPolygon = webMercatorUtils.webMercatorToGeographic(geometry);
-			var areaUnit = this.areaUnitSelect.value;
-			var areaAbbr = this._getAreaUnitInfo(areaUnit).label;
-			var areas = geodesicUtils.geodesicAreas([geoPolygon], esriUnits[areaUnit]);
-			var localeArea = jimuUtils.localizeNumber(areas[0].toFixed(1));
-			var area = localeArea + " " + areaAbbr;
+		_setMeasureTextGraphic : function (graphic, result, existingMeasureGraphic) {
+			var length = result.length;
+			var area = result.area;
 
-			var polyline = new Polyline(geometry.spatialReference);
-			var points = geometry.rings[0];
-			points = points.slice(0, points.length - 1);
-			polyline.addPath(points);
-			var geoPolyline = webMercatorUtils.webMercatorToGeographic(polyline);
+			var geometry = graphic.geometry;
+
+			//If no measure
+			if (!this.showMeasure.checked) {
+				if (graphic.measure && graphic.measure && graphic.measure.graphic) {
+					this.drawBox.drawLayer.remove(graphic.measure.graphic) //Remove measure's label
+				}
+				graphic.measure = false;
+				return false;
+			}
+			
+			var polygonPattern = (this.config.measurePolygonLabel) ? this.config.measurePolygonLabel : "{{area}} {{areaUnit}}    {{length}} {{lengthUnit}}";
+			var polylinePattern = (this.config.measurePolylineLabel) ? this.config.measurePolylineLabel : "{{length}} {{lengthUnit}}";
+			
+			//Prepare text
+			var localeLength = jimuUtils.localizeNumber(length.toFixed(1));
 			var lengthUnit = this.distanceUnitSelect.value;
-			var lengthAbbr = this._getDistanceUnitInfo(lengthUnit).label;
-			var lengths = geodesicUtils.geodesicLengths([geoPolyline], esriUnits[lengthUnit]);
-			var localeLength = jimuUtils.localizeNumber(lengths[0].toFixed(1));
-			var length = localeLength + " " + lengthAbbr;
-			var text = area + "    " + length;
+			var localeLengthUnit = this._getDistanceUnitInfo(lengthUnit).label;
+			if (area) {
+				var areaUnit = this.areaUnitSelect.value;
+				var localeAreaUnit = this._getAreaUnitInfo(areaUnit).label;
+				var localeArea = jimuUtils.localizeNumber(area.toFixed(1));
+				var text = polygonPattern
+					.replace("{{length}}", localeLength).replace("{{lengthUnit}}", localeLengthUnit)
+					.replace("{{area}}", localeArea).replace("{{areaUnit}}", localeAreaUnit);
+			}else{
+				var text = polylinePattern
+					.replace("{{length}}", localeLength).replace("{{lengthUnit}}", localeLengthUnit);
+			}
 
-			var textSymbol = new TextSymbol(text, symbolFont, fontColor);
-			var labelGraphic = new Graphic(center, textSymbol, {
-					"name" : textSymbol.text,
-					"description" : ""
-				}, null);
-			this.drawBox.drawLayer.add(labelGraphic);
+			//Get label point
+			var point = this._getLabelPoint(geometry);
+
+			//Prepare symbol
+			if (existingMeasureGraphic) {
+				var labelGraphic = existingMeasureGraphic;
+				labelGraphic.symbol.setText(text);
+				labelGraphic.attributes["name"] = text;
+				labelGraphic.geometry.update(point.x, point.y);
+				labelGraphic.draw();
+			} else {
+				var a = Font.STYLE_ITALIC;
+				var b = Font.VARIANT_NORMAL;
+				var c = Font.WEIGHT_BOLD;
+				var symbolFont = new Font("16px", a, b, c, "Courier");
+				var fontColor = new Color([0, 0, 0, 1]);
+				var textSymbol = new TextSymbol(text, symbolFont, fontColor);
+
+				var labelGraphic = new Graphic(point, textSymbol, {
+						"name" : text,
+						"description" : ""
+					}, null);
+				this.drawBox.drawLayer.add(labelGraphic);
+
+				//Replace measure label on top of measured graphic
+				var measure_index = this._getGraphicIndex(graphic);
+				var label_index = this.drawBox.drawLayer.graphics.length - 1;
+				if (label_index > (measure_index+1))
+					this.moveDrawingGraphic(label_index, measure_index + 1);
+			}
+
+			//Reference
+			labelGraphic.measureParent = graphic;
+			graphic.measure = {
+				"graphic" : labelGraphic,
+				"lengthUnit" : areaUnit,
+				"areaUnit" : areaUnit
+			};
+			return labelGraphic;
+		},
+
+		_getLabelPoint : function (geometry) {
+			//Point
+			if (geometry.x)
+				return geometry;
+			
+			//Polygon
+			if (geometry.getCendroid)
+				return geometry.getCendroid();
+			
+			//Polyline
+			if (geometry.getExtent) {
+				var extent_center = geometry.getExtent().getCenter();
+				
+				//If geometryEngine, replace point (extent center) on geometry
+				if (this.config.useGeometryEngine) {
+					var res = geometryEngine.nearestCoordinate(geometry, extent_center);
+					if (res && res.coordinate)
+						return res.coordinate;
+				}
+				
+				return extent_center;
+			}
+
+			//Extent
+			if (geometry.getCenter)
+				return geometry.getCenter();
+
+			return false;
+		},
+
+		_addLineMeasure : function (geometry, graphic) {
+			this._getLengthAndArea(geometry, false).then(lang.hitch(this, function (result) {
+					if (!this.domNode) {
+						return;
+					}
+					var existingMeasureGraphic = (graphic.measure && graphic.measure.graphic && graphic.measure.graphic.measureParent) ? graphic.measure.graphic : false;
+					this._setMeasureTextGraphic(graphic, result, existingMeasureGraphic);
+				}));
+		},
+
+		_addPolygonMeasure : function (geometry, graphic) {
+			this._getLengthAndArea(geometry, true).then(lang.hitch(this, function (result) {
+					if (!this.domNode) {
+						return;
+					}
+					var existingMeasureGraphic = (graphic.measure && graphic.measure.graphic) ? graphic.measure.graphic : false;
+					this._setMeasureTextGraphic(graphic, result, existingMeasureGraphic)
+				}));
 		},
 
 		////////    INIT METHODS ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1269,7 +1830,7 @@ define([
 			//Bind symbol chooser change
 			this.own(on(this.editorSymbolChooser, 'change', lang.hitch(this, function () {
 						this.editorSetDefaultSymbols();
-
+						
 						//If text plus
 						if (this.editorSymbolChooser.type == "text") {
 							this.editorUpdateTextPlus();
@@ -1290,7 +1851,12 @@ define([
 			//hitch list event
 			this.listOnActionClick = lang.hitch(this, this.listOnActionClick);
 			//hitch import file loading
+			this.importFile = lang.hitch(this, this.importFile);
 			this.importOnFileLoad = lang.hitch(this, this.importOnFileLoad);
+			
+			//Bind delete method
+			this._removeGraphics = lang.hitch(this, this._removeGraphics);
+			this._removeClickedGraphic = lang.hitch(this, this._removeClickedGraphic);
 
 			//Bind draw plus event
 			this.editorUpdateTextPlus = lang.hitch(this, this.editorUpdateTextPlus);
@@ -1359,12 +1925,6 @@ define([
 
 			var views = [this.addSection, this.editorSection, this.listSection];
 
-			if (this.config.allowImportExport) {
-				views.push(this.importExportSection);
-			} else {
-				this.menuListImportExport.style.display = 'none';
-			}
-
 			this.TabViewStack = new ViewStack({
 					viewType : 'dom',
 					views : views
@@ -1413,12 +1973,12 @@ define([
 			this.allowPopup(true);
 
 		},
-		
-		_initListDragAndDrop:function(){
+
+		_initListDragAndDrop : function () {
 			this._listOnDragOver = lang.hitch(this, this._listOnDragOver);
 			this._listOnDragStart = lang.hitch(this, this._listOnDragStart);
 			this._listOnDrop = lang.hitch(this, this._listOnDrop);
-			
+
 			//Bind actions
 			on(this.drawsTableBody, "dragover", this._listOnDragOver);
 			on(this.drawsTableBody, "drop", this._listOnDrop);
@@ -1557,7 +2117,7 @@ define([
 
 			//Create edit dijit
 			this._editorConfig["editToolbar"] = new Edit(this.map);
-			
+
 			//Init list Drag & Drop
 			this._initListDragAndDrop();
 		},
