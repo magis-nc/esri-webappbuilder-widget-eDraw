@@ -724,8 +724,8 @@ define([
 				this._editorConfig["drawPlus"]["bold"] = (symbol.font.weight == esri.symbol.Font.WEIGHT_BOLD);
 				this._editorConfig["drawPlus"]["italic"] = (symbol.font.style == esri.symbol.Font.STYLE_ITALIC);
 				this._editorConfig["drawPlus"]["underline"] = (symbol.font.decoration == 'underline');
-				this._editorConfig["drawPlus"]["placement"]["horizontal"] = symbol.horizontalAlignment;
-				this._editorConfig["drawPlus"]["placement"]["vertical"] = symbol.verticalAlignment;
+				this._editorConfig["drawPlus"]["placement"]["horizontal"] = (symbol.horizontalAlignment) ? symbol.horizontalAlignment : "center";
+				this._editorConfig["drawPlus"]["placement"]["vertical"] = (symbol.verticalAlignment) ? symbol.verticalAlignment : "middle";
 				this.editorTextPlusFontFamilyNode.set("value", symbol.font.family);
 				this.editorTextPlusAngleNode.set("value", symbol.angle);
 				this._UTIL__enableClass(this.editorTextPlusBoldNode, 'selected', this._editorConfig["drawPlus"]["bold"]);
@@ -733,7 +733,11 @@ define([
 				this._UTIL__enableClass(this.editorTextPlusUnderlineNode, 'selected', this._editorConfig["drawPlus"]["underline"]);
 				for (var i in this._editorTextPlusPlacements) {
 					var title_tab = this._editorTextPlusPlacements[i].title.split(" ");
-					var selected = (title_tab[0] == symbol.verticalAlignment && title_tab[1] == symbol.horizontalAlignment);
+					var selected = 
+						(
+							title_tab[0] == this._editorConfig["drawPlus"]["placement"]["vertical"] 
+							&& title_tab[1] == this._editorConfig["drawPlus"]["placement"]["horizontal"]
+						);
 					this._UTIL__enableClass(this._editorTextPlusPlacements[i], 'selected', selected);
 				}
 			} else {
