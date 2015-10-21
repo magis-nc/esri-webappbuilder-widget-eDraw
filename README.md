@@ -11,11 +11,13 @@ http://doc.arcgis.com/en/web-appbuilder/create-apps/widget-draw.htm
 - on modification : enable geometry update (with snapping if wanted : CTRL) and preview symbology changes on the fly
 - list
     - add list of all drawings
-    - actions on each drawing : modify / delete / up / down / zoom
-    - all drawings : zoom or delete
+    - actions on each drawing : modify / delete / [up / down] / zoom
+    - all drawings : zoom, copy, delete, export
     - on drawing infowindow -> select drawing in list
     - on zoom on a drawing -> select drawing on map (and show infoWindow)
+    - re-order graphics with drag&drop
 - import/export : allow users to export or import drawings (json format)
+    - import can be done with file drag&drop in import popup
 - localStorage
     - dynamic saving on each drawing add/delete/update
     - on widget load : load drawings saved in local Storage
@@ -24,16 +26,23 @@ http://doc.arcgis.com/en/web-appbuilder/create-apps/widget-draw.htm
     - for text, add font choice, font angle, bold, italic, placement and underline options.
 - checkbox to hide drawing's layer (and therefore widget UI)
 - add of Nautical unit
+- measure's refactoring with automatic update on element's update (or delete). Measure's can be indidualy disabled/enabled on any polygon/polyline graphic.
+- defaults symbols can be specified in config's file
 
 ## configuration :
 - export file name.
 - Confirm on delete. A confirm dialog when user delete drawing(s) ?
-- Enable import/export. Let the user import or export drawings ?
+- add up/down buttons in list ? (N.B. : re-ordering can be done with drag&drop)
 - Enable local storage. enable auto-saving in local storage and loading saved drawings on widget load.
     - Local storage key : let empty or set a name :
         - if empty, all apps with eDraw widgets share the same local storage (apps on the same server)
         - if not empty, all apps with the same key share the same local storage (apps on the same server)
-- Choose availables font families in text plus 
+- Choose availables font families in text plus
+- (without UI) set default symbols
+- use geometryEngine for measure ?
+- specify geometryServer for measure (not used if geometryEngine is activated)
+- enable measure by default ? (is measure checkbox checked on polygon/polyline add ?)
+- measure's labels patterns 
         
 ## Installation :
 Add eDraw folder in your webApp Builder client\stemapp\widgets folder.
