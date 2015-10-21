@@ -168,6 +168,9 @@
 .jimu-widget-edraw .list-draw-actions span.edit {
     background-image: url("images/edit.png");
 }
+.jimu-widget-edraw .list-draw-actions span.copy {
+    background-image: url("images/copy.png");
+}
 .jimu-widget-edraw .list-draw-actions span.zoom {
     background-image: url("images/zoom.png");
 }

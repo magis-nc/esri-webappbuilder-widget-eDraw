@@ -65,6 +65,8 @@ define({
 		downLabel : "Move this drawing down",
 		zoomLabel : "Zoom on this drawing",
 		zoomAllLabel : "Zoom on selected drawings",
+		copyLabel : "Copy selected drawings",
+		copySuffix : " (copy)",
 		deleteAllLabel : "Delete selected drawings",
 		exportLabel : "Export selected drawings",
 		noSelection : "No drawings selected",

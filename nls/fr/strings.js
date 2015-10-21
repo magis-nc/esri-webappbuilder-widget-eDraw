@@ -65,6 +65,8 @@ define(
 		downLabel : "Descendre ce dessin",
 		zoomLabel : "Zoomer sur ce dessin",
 		zoomAllLabel : "Zoomer sur les dessins sélectionnés",
+		copyLabel : "Copier les dessins sélectionnés",
+		copySuffix : " (copie)",
 		deleteAllLabel : "Supprimer les dessins sélectionnés",
 		exportLabel : "Exporter les dessins sélectionnés",
 		noSelection : "Aucun dessin sélectionné",

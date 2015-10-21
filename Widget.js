@@ -256,7 +256,27 @@ define([
 			this.map.setExtent(ext, true);
 			return true;
 		},
+		
+		copy:function(){
+			var graphics = this.getCheckedGraphics(false);
+			var nb = graphics.length;
 
+			if (nb == 0) {
+				this.showMessage(this.nls.noSelection, 'error');
+				return false;
+			}
+			
+			for(var i=0;i<nb;i++){				
+				var g = new Graphic(graphics[i].toJson()); //Get graphic clone
+				g.attributes.name += this.nls.copySuffix; //Suffix name
+				this.drawBox.drawLayer.add(g);
+				if(graphics[i].measure && graphics[i].measure.graphic){
+					(g.geometry.type=='polygon') ? this._addPolygonMeasure(g.geometry, g) : this._addLineMeasure(g.geometry, g);			
+				}
+			}
+			this.setMode("list");
+		},
+		
 		clear : function () {
 			var graphics = this.getCheckedGraphics(false);
 			var nb = graphics.length;
