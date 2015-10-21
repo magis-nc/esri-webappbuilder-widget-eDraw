@@ -1679,9 +1679,126 @@ define([
 		},
 
 		_setMeasureVisibility : function () {
-			var display = (this.showMeasure.checked) ? 'block' : 'none';
-			html.setStyle(this.areaMeasure, 'display', display);
-			html.setStyle(this.distanceMeasure, 'display', display);
+			var hideArea = (this._editorConfig["graphicCurrent"] && this._editorConfig["graphicCurrent"].geometry.type == "polyline") || (this._editorConfig['symboltype'] == 'line');
+
+			var display_line = (this.showMeasure.checked) ? 'block' : 'none';
+			var display_area = (this.showMeasure.checked && !hideArea) ? 'block' : 'none';
+
+			html.setStyle(this.distanceMeasure, 'display', display_line);
+			html.setStyle(this.areaMeasure, 'display', display_area);
+		},
+
+		_getGraphicIndex : function (g) {
+			for (var i = 0, nb = this.drawBox.drawLayer.graphics.length; i < nb; i++) {
+				if (this.drawBox.drawLayer.graphics[i] == g)
+					return parseInt(i);
+			}
+			return false;
+		},
+
+		_setMeasureTextGraphic : function (graphic, result, existingMeasureGraphic) {
+			var length = result.length;
+			var area = result.area;
+
+			var geometry = graphic.geometry;
+
+			//If no measure
+			if (!this.showMeasure.checked) {
+				if (graphic.measure && graphic.measure && graphic.measure.graphic) {
+					this.drawBox.drawLayer.remove(graphic.measure.graphic) //Remove measure's label
+				}
+				graphic.measure = false;
+				return false;
+			}
+			
+			var polygonPattern = (this.config.measurePolygonLabel) ? this.config.measurePolygonLabel : "{{area}} {{areaUnit}}    {{length}} {{lengthUnit}}";
+			var polylinePattern = (this.config.measurePolylineLabel) ? this.config.measurePolylineLabel : "{{length}} {{lengthUnit}}";
+			
+			//Prepare text
+			var localeLength = jimuUtils.localizeNumber(length.toFixed(1));
+			var lengthUnit = this.distanceUnitSelect.value;
+			var localeLengthUnit = this._getDistanceUnitInfo(lengthUnit).label;
+			if (area) {
+				var areaUnit = this.areaUnitSelect.value;
+				var localeAreaUnit = this._getAreaUnitInfo(areaUnit).label;
+				var localeArea = jimuUtils.localizeNumber(area.toFixed(1));
+				var text = polygonPattern
+					.replace("{{length}}", localeLength).replace("{{lengthUnit}}", localeLengthUnit)
+					.replace("{{area}}", localeArea).replace("{{areaUnit}}", localeAreaUnit);
+			}else{
+				var text = polylinePattern
+					.replace("{{length}}", localeLength).replace("{{lengthUnit}}", localeLengthUnit);
+			}
+
+			//Get label point
+			var point = this._getLabelPoint(geometry);
+
+			//Prepare symbol
+			if (existingMeasureGraphic) {
+				var labelGraphic = existingMeasureGraphic;
+				labelGraphic.symbol.setText(text);
+				labelGraphic.attributes["name"] = text;
+				labelGraphic.geometry.update(point.x, point.y);
+				labelGraphic.draw();
+			} else {
+				var a = Font.STYLE_ITALIC;
+				var b = Font.VARIANT_NORMAL;
+				var c = Font.WEIGHT_BOLD;
+				var symbolFont = new Font("16px", a, b, c, "Courier");
+				var fontColor = new Color([0, 0, 0, 1]);
+				var textSymbol = new TextSymbol(text, symbolFont, fontColor);
+
+				var labelGraphic = new Graphic(point, textSymbol, {
+						"name" : text,
+						"description" : ""
+					}, null);
+				this.drawBox.drawLayer.add(labelGraphic);
+
+				//Replace measure label on top of measured graphic
+				var measure_index = this._getGraphicIndex(graphic);
+				var label_index = this.drawBox.drawLayer.graphics.length - 1;
+				if (label_index > (measure_index+1))
+					this.moveDrawingGraphic(label_index, measure_index + 1);
+			}
+
+			//Reference
+			labelGraphic.measureParent = graphic;
+			graphic.measure = {
+				"graphic" : labelGraphic,
+				"lengthUnit" : areaUnit,
+				"areaUnit" : areaUnit
+			};
+			return labelGraphic;
+		},
+
+		_getLabelPoint : function (geometry) {
+			//Point
+			if (geometry.x)
+				return geometry;
+			
+			//Polygon
+			if (geometry.getCendroid)
+				return geometry.getCendroid();
+			
+			//Polyline
+			if (geometry.getExtent) {
+				var extent_center = geometry.getExtent().getCenter();
+				
+				//If geometryEngine, replace point (extent center) on geometry
+				if (this.config.useGeometryEngine) {
+					var res = geometryEngine.nearestCoordinate(geometry, extent_center);
+					if (res && res.coordinate)
+						return res.coordinate;
+				}
+				
+				return extent_center;
+			}
+
+			//Extent
+			if (geometry.getCenter)
+				return geometry.getCenter();
+
+			return false;
 		},
 
 		_addLineMeasure : function (geometry, graphic) {
@@ -1689,26 +1806,8 @@ define([
 					if (!this.domNode) {
 						return;
 					}
-					var length = result.length;
-					var a = Font.STYLE_ITALIC;
-					var b = Font.VARIANT_NORMAL;
-					var c = Font.WEIGHT_BOLD;
-					var symbolFont = new Font("16px", a, b, c, "Courier");
-					var fontColor = new Color([0, 0, 0, 1]);
-					var ext = geometry.getExtent();
-					var center = ext.getCenter();
-
-					var unit = this.distanceUnitSelect.value;
-					var abbr = this._getDistanceUnitInfo(unit).label;
-					var localeLength = jimuUtils.localizeNumber(length.toFixed(1));
-					var lengthText = localeLength + " " + abbr;
-
-					var textSymbol = new TextSymbol(lengthText, symbolFont, fontColor);
-					var labelGraphic = new Graphic(center, textSymbol, {
-							"name" : textSymbol.text,
-							"description" : ""
-						}, null);
-					this.drawBox.drawLayer.add(labelGraphic);
+					var existingMeasureGraphic = (graphic.measure && graphic.measure.graphic && graphic.measure.graphic.measureParent) ? graphic.measure.graphic : false;
+					this._setMeasureTextGraphic(graphic, result, existingMeasureGraphic);
 				}));
 		},
 
@@ -1717,34 +1816,8 @@ define([
 					if (!this.domNode) {
 						return;
 					}
-					var length = result.length;
-					var area = result.area;
-
-					var a = Font.STYLE_ITALIC;
-					var b = Font.VARIANT_NORMAL;
-					var c = Font.WEIGHT_BOLD;
-					var symbolFont = new Font("16px", a, b, c, "Courier");
-					var fontColor = new Color([0, 0, 0, 1]);
-					var ext = geometry.getExtent();
-					var center = ext.getCenter();
-
-					var areaUnit = this.areaUnitSelect.value;
-					var areaAbbr = this._getAreaUnitInfo(areaUnit).label;
-					var localeArea = jimuUtils.localizeNumber(area.toFixed(1));
-					var areaText = localeArea + " " + areaAbbr;
-
-					var lengthUnit = this.distanceUnitSelect.value;
-					var lengthAbbr = this._getDistanceUnitInfo(lengthUnit).label;
-					var localeLength = jimuUtils.localizeNumber(length.toFixed(1));
-					var lengthText = localeLength + " " + lengthAbbr;
-
-					var text = areaText + "    " + lengthText;
-					var textSymbol = new TextSymbol(text, symbolFont, fontColor);
-					var labelGraphic = new Graphic(center, textSymbol, {
-							"name" : textSymbol.text,
-							"description" : ""
-						}, null);
-					this.drawBox.drawLayer.add(labelGraphic);
+					var existingMeasureGraphic = (graphic.measure && graphic.measure.graphic) ? graphic.measure.graphic : false;
+					this._setMeasureTextGraphic(graphic, result, existingMeasureGraphic)
 				}));
 		},
 
