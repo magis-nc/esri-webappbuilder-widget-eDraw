@@ -311,12 +311,7 @@ define([
 				graphics = this.getCheckedGraphics(false);
 			else
 				graphics = graphicsOrEvent;
-				
-			
-
-			var nb = graphics.length;
-			console.log(graphics);
-			for (var i = 0; i < nb; i++) {
+			for (var i = 0, nb = graphics.length; i < nb; i++) {
 				this._removeGraphic(graphics[i]);
 			}
 			
@@ -786,7 +781,7 @@ define([
 				this._UTIL__enableClass(this.editorTextPlusBoldNode, 'selected', this._editorConfig["drawPlus"]["bold"]);
 				this._UTIL__enableClass(this.editorTextPlusItalicNode, 'selected', this._editorConfig["drawPlus"]["italic"]);
 				this._UTIL__enableClass(this.editorTextPlusUnderlineNode, 'selected', this._editorConfig["drawPlus"]["underline"]);
-				for (var i in this._editorTextPlusPlacements) {
+				for (var i = 0, len = this._editorTextPlusPlacements.length ; i < len ; i++) {
 					var title_tab = this._editorTextPlusPlacements[i].title.split(" ");
 					var selected = 
 						(
@@ -1049,7 +1044,7 @@ define([
 					var g = json.features[0];
 					var fields_possible = ["name", "title", "label"];
 					if (g.attributes) {
-						for (var i in fields_possible) {
+						for (var i =0, len = fields_possible.length; i< len; i++) {
 							if (g.attributes[fields_possible[i]]) {
 								nameField = fields_possible[i];
 								break;
@@ -1061,7 +1056,7 @@ define([
 					var g = json.features[0];
 					var fields_possible = ["description", "descript", "desc","comment","comm"];
 					if (g.attributes) {
-						for (var i in fields_possible) {
+						for (var i =0, len = fields_possible.length; i< len; i++) {
 							if (g.attributes[fields_possible[i]]) {
 								descriptionField = fields_possible[i];
 								break;
@@ -1072,7 +1067,7 @@ define([
 
 				var measure_features_i = [];
 				var graphics = [];
-				for (var i in json.features) {
+				for (var i = 0, len = json.features.length ; i < len ; i++) {
 					var json_feat = json.features[i];
 
 					var g = new Graphic(json_feat);
@@ -1115,7 +1110,7 @@ define([
 				}
 
 				//Treat measures
-				for (var k in measure_features_i) {
+				for (var k = 0, k_len = measure_features_i.length ; k < k_len ; k++) {
 					var i = measure_features_i[k]; //Indice to treat
 					var label_graphic = (graphics[i].measure && graphics[i].measure.graphic && graphics[graphics[i].measure.graphic])
 					 ? graphics[graphics[i].measure.graphic] :
@@ -1882,7 +1877,7 @@ define([
 						return;
 
 					var selected = false;
-					for (var i in this._editorTextPlusPlacements) {
+					for (var i = 0, len = this._editorTextPlusPlacements.length ; i < len ; i++) {
 						var is_this = (evt.target == this._editorTextPlusPlacements[i]);
 
 						this._UTIL__enableClass(this._editorTextPlusPlacements[i], 'selected', is_this);
@@ -1910,7 +1905,7 @@ define([
 				this.editorTextPlusPlacementBottomCenter,
 				this.editorTextPlusPlacementBottomRight
 			];
-			for (var i in this._editorTextPlusPlacements)
+			for (var i = 0, len = this._editorTextPlusPlacements.length ; i < len ; i++)
 				on(this._editorTextPlusPlacements[i], "click", this.onEditorTextPlusPlacementClick);
 
 		},
