@@ -754,6 +754,7 @@ define([
 
 			//Set this symbol in symbol chooser
 			this.editorSymbolChooser.showBySymbol(symbol);
+			this.editorSymbolChooser.showByType(this.editorSymbolChooser.type);
 			this._editorConfig['symboltype'] = this.editorSymbolChooser.type;
 
 			var type = symbol.type;
@@ -935,7 +936,7 @@ define([
 				this.drawBox.setPointSymbol(symbol);
 				break;
 			case "textsymbol":
-				this.drawBox.setPointSymbol(symbol);
+				this.drawBox.setTextSymbol(symbol);
 				break;
 			case "simplelinesymbol":
 				this.drawBox.setLineSymbol(symbol);
@@ -1383,7 +1384,7 @@ define([
 
 			//Track mouse on map
 			if (!this._editorConfig["phantom"]["handle"]) {
-				this._editorConfig["phantom"]["handle"] = on(this.map, 'mouse-move, mouse-out, mouse-over', lang.hitch(this, function (evt) {
+				this._editorConfig["phantom"]["handle"] = on(this.map, 'mouse-move, mouse-out', lang.hitch(this, function (evt) {
 							if (this.state === 'opened' || this.state === 'active') {
 								switch (evt.type) {
 								case 'mousemove':
