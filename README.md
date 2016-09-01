@@ -4,6 +4,9 @@ Ehanced draw widget for WebApp Builder for Arcgis.
 Fork and modifications of the official widget draw for WebApp Builder for Arcgis :
 http://doc.arcgis.com/en/web-appbuilder/create-apps/widget-draw.htm
 
+The widget use the proj4js library (https://github.com/proj4js/proj4js) for point's lat/lon measure (for non mercator maps) :
+https://github.com/proj4js/proj4js
+
 ## Improvments :
 - add name and description fields on drawings
 - enable infowindow on drawings (selection)
