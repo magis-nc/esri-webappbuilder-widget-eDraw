@@ -34,7 +34,9 @@ define([
 		'esri/tasks/GeometryService',
 		'esri/tasks/AreasAndLengthsParameters',
 		'esri/tasks/LengthsParameters',
+		'esri/tasks/ProjectParameters',
 		'jimu/SpatialReference/wkidUtils',
+		'jimu/SpatialReference/utils',
 		'esri/geometry/geodesicUtils',
 		'esri/geometry/geometryEngine',
 		'dojo/_base/lang',
@@ -55,11 +57,12 @@ define([
 		'jimu/symbolUtils',
 		'libs/storejs/store',
 		'esri/InfoTemplate',
-		'esri/layers/GraphicsLayer'
+		'esri/layers/GraphicsLayer',
+		'./proj4'
 	],
 	function (declare, _WidgetsInTemplateMixin, BaseWidget, esriConfig, Deferred, Graphic, SimpleMarkerSymbol, Polyline, SimpleLineSymbol, Polygon, graphicsUtils, SimpleFillSymbol,
-		TextSymbol, Font, esriUnits, Edit, webMercatorUtils, GeometryService, AreasAndLengthsParameters, LengthsParameters, wkidUtils, geodesicUtils, geometryEngine, lang, on,
-		html, has, Color, array, domConstruct, dom, Select, NumberSpinner, ViewStack, SymbolChooser, DrawBox, Message, jimuUtils, jimuSymbolUtils, localStore, InfoTemplate, GraphicsLayer) {
+		TextSymbol, Font, esriUnits, Edit, webMercatorUtils, GeometryService, AreasAndLengthsParameters, LengthsParameters, ProjectParameters, wkidUtils, SRUtils, geodesicUtils, geometryEngine, lang, on,
+		html, has, Color, array, domConstruct, dom, Select, NumberSpinner, ViewStack, SymbolChooser, DrawBox, Message, jimuUtils, jimuSymbolUtils, localStore, InfoTemplate, GraphicsLayer, proj4js) {
 
 	/*jshint unused: false*/
 	return declare([BaseWidget, _WidgetsInTemplateMixin], {
@@ -107,6 +110,7 @@ define([
 				this.TabViewStack.switchView(this.editorSection);
 
 				this.setInfoWindow(false);
+				this.allowPopup(false);
 
 				break;
 			case 'edit':
@@ -257,7 +261,12 @@ define([
 				g.attributes.name += this.nls.copySuffix; //Suffix name
 				this.drawBox.drawLayer.add(g);
 				if(graphics[i].measure && graphics[i].measure.graphic){
-					(g.geometry.type=='polygon') ? this._addPolygonMeasure(g.geometry, g) : this._addLineMeasure(g.geometry, g);			
+				    if (g.geometry.type=='polygon')
+				        this._addPolygonMeasure(g.geometry, g);
+				    else if (g.geometry.type=='polyline')
+				        this._addLineMeasure(g.geometry, g);
+				    else
+				        this._addPointMeasure(g.geometry, g);
 				}
 			}
 			this.setMode("list");
@@ -311,7 +320,9 @@ define([
 				graphics = this.getCheckedGraphics(false);
 			else
 				graphics = graphicsOrEvent;
-			for (var i = 0, nb = graphics.length; i < nb; i++) {
+
+			var nb = graphics.length;
+			for (var i = 0; i < nb; i++) {
 				this._removeGraphic(graphics[i]);
 			}
 			
@@ -884,13 +895,14 @@ define([
 			//add Mode
 			if (commonTypeIfAdd) {
 				//No measure supported for this types
-				if (commonTypeIfAdd == "text" || commonTypeIfAdd == "point") {
+				if (commonTypeIfAdd == "text") {
 					this.measureSection.style.display = 'none';
 					return;
 				}
 
 				this.distanceUnitSelect.set('value', this.configDistanceUnits[0]['unit']);
 				this.areaUnitSelect.set('value', this.configAreaUnits[0]['unit']);
+				this.pointUnitSelect.set('value', 'map');
 
 				this.showMeasure.checked = (this.config.measureEnabledByDefault);
 				this._setMeasureVisibility();
@@ -907,7 +919,7 @@ define([
 			var geom_type = graphicIfUpdate.geometry.type;
 
 			//If no measure for this type of graphic
-			if (geom_type == "point") {
+			if (geom_type == "point" && graphicIfUpdate.symbol && graphicIfUpdate.symbol.type == 'textsymbol') {
 				this.measureSection.style.display = 'none';
 				return;
 			}
@@ -1142,7 +1154,9 @@ define([
 			this.launchExport(this.exportButton, false);
 		},
 
-		exportSelectionInFile : function () {
+		exportSelectionInFile : function (evt) {
+		    if(evt && evt.preventDefault)
+		        evt.preventDefault();
 			this.launchExport(this.exportSelectionButton, true);
 		},
 
@@ -1198,13 +1212,16 @@ define([
 			this._editorConfig["graphicCurrent"].attributes["name"] = this.nameField.value;
 			this._editorConfig["graphicCurrent"].attributes["description"] = this.descriptionField.value;
 
-			var geom = this._editorConfig["graphicCurrent"].geometry;
-			if (geom.type == "polyline" || geom.type == "polygon") {
-				if (geom.type == "polyline")
-					this._addLineMeasure(geom, this._editorConfig["graphicCurrent"]);
-				else
-					this._addPolygonMeasure(geom, this._editorConfig["graphicCurrent"]);
-			}
+
+            if (this.editorSymbolChooser.type != "text") {
+                var geom = this._editorConfig["graphicCurrent"].geometry;
+                if(geom.type=='point')
+                    this._addPointMeasure(geom, this._editorConfig["graphicCurrent"]);
+                else if(geom.type=='polyline')
+                    this._addLineMeasure(geom, this._editorConfig["graphicCurrent"]);
+                else if(geom.type=='polygon')
+                    this._addPolygonMeasure(geom, this._editorConfig["graphicCurrent"]);
+            }
 
 			this.setMode("list");
 		},
@@ -1326,15 +1343,16 @@ define([
 
 				commontype = 'polygon';
 			}
-			if (commontype === 'polyline') {
-				if (this.showMeasure.checked) {
-					this._addLineMeasure(geometry, graphic);
-				}
-			} else if (commontype === 'polygon') {
-				if (this.showMeasure.checked) {
-					this._addPolygonMeasure(geometry, graphic);
-				}
-			} else if (commontype == 'text' && this.editorSymbolChooser.inputText.value.trim() == "") {
+
+			if (commontype != 'text' && this.showMeasure.checked) {
+			    if(geometry.type=='point')
+                    this._addPointMeasure(geometry, graphic);
+                else if(geometry.type=='polyline')
+                    this._addLineMeasure(geometry, graphic);
+                else if(geometry.type=='polygon')
+                    this._addPolygonMeasure(geometry, graphic);
+            }
+			if (commontype == 'text' && this.editorSymbolChooser.inputText.value.trim() == "") {
 				//Message
 				this.showMessage(this.nls.textWarningMessage, 'warning');
 
@@ -1430,12 +1448,17 @@ define([
 		////////////////////////////////////// Measure methods     //////////////////////////////////////////////
 		_getGeometryService : function () {
 			if (!this._gs || this._gs == null) {
-				if (this.config.geometryService)
+				if (this.config.geometryService){
+				    esri.config.defaults.io.corsEnabledServers.push(this.config.geometryService.split("/")[2]);
 					this._gs = new GeometryService(this.config.geometryService);
+				}
 				else if (esriConfig.defaults.geometryService)
 					this._gs = esriConfig.defaults.geometryService;
-				else
-					this._gs = new GeometryService(this._defaultGsUrl);
+				else{
+				    esri.config.defaults.io.corsEnabledServers.push(this._defaultGsUrl.split("/")[2]);
+				    this._gs = new GeometryService(this._defaultGsUrl);
+				}
+
 			}
 
 			return this._gs;
@@ -1675,11 +1698,38 @@ define([
 		},
 
 		_setMeasureVisibility : function () {
-			var hideArea = (this._editorConfig["graphicCurrent"] && this._editorConfig["graphicCurrent"].geometry.type == "polyline") || (this._editorConfig['symboltype'] == 'line');
 
-			var display_line = (this.showMeasure.checked) ? 'block' : 'none';
-			var display_area = (this.showMeasure.checked && !hideArea) ? 'block' : 'none';
+		    var display_point = 'none';
+		    var display_line = 'none';
+		    var display_area = 'none';
 
+		    if(this._editorConfig['symboltype']){
+		        ////marker,line,fill,text
+		        switch(this._editorConfig['symboltype']){
+		            case 'text':
+		                display_point = 'none';
+		                display_line = 'none';
+		                display_area = 'none';
+		                break;
+                    case 'marker':
+		                display_point = 'block';
+		                display_line = 'none';
+		                display_area = 'none';
+		                break;
+		            case 'line':
+		                display_point = 'none';
+		                display_line = 'block';
+		                display_area = 'none';
+		                break;
+		            case 'fill':
+		                display_point = 'none';
+		                display_line = 'block';
+		                display_area = 'block';
+		                break;
+		        }
+		    }
+
+			html.setStyle(this.pointMeasure, 'display', display_point);
 			html.setStyle(this.distanceMeasure, 'display', display_line);
 			html.setStyle(this.areaMeasure, 'display', display_area);
 		},
@@ -1695,6 +1745,8 @@ define([
 		_setMeasureTextGraphic : function (graphic, result, existingMeasureGraphic) {
 			var length = result.length;
 			var area = result.area;
+			var x = result.x;
+			var y = result.y;
 
 			var geometry = graphic.geometry;
 
@@ -1707,23 +1759,30 @@ define([
 				return false;
 			}
 			
+			var pointPattern = (this.config.measurePointLabel) ? this.config.measurePointLabel : "{{x}} {{y}}";
 			var polygonPattern = (this.config.measurePolygonLabel) ? this.config.measurePolygonLabel : "{{area}} {{areaUnit}}    {{length}} {{lengthUnit}}";
 			var polylinePattern = (this.config.measurePolylineLabel) ? this.config.measurePolylineLabel : "{{length}} {{lengthUnit}}";
-			
-			//Prepare text
-			var localeLength = jimuUtils.localizeNumber(length.toFixed(1));
-			var lengthUnit = this.distanceUnitSelect.value;
-			var localeLengthUnit = this._getDistanceUnitInfo(lengthUnit).label;
-			if (area) {
-				var areaUnit = this.areaUnitSelect.value;
-				var localeAreaUnit = this._getAreaUnitInfo(areaUnit).label;
-				var localeArea = jimuUtils.localizeNumber(area.toFixed(1));
-				var text = polygonPattern
-					.replace("{{length}}", localeLength).replace("{{lengthUnit}}", localeLengthUnit)
-					.replace("{{area}}", localeArea).replace("{{areaUnit}}", localeAreaUnit);
-			}else{
-				var text = polylinePattern
-					.replace("{{length}}", localeLength).replace("{{lengthUnit}}", localeLengthUnit);
+
+            //Prepare text
+			if(x && y){
+			    var text = pointPattern.replace("{{x}}", x).replace("{{y}}", y);
+			    var pointUnit = this.pointUnitSelect.value;
+			}
+			else{
+                var localeLength = jimuUtils.localizeNumber(length.toFixed(1));
+                var lengthUnit = this.distanceUnitSelect.value;
+                var localeLengthUnit = this._getDistanceUnitInfo(lengthUnit).label;
+                if (area) {
+                    var areaUnit = this.areaUnitSelect.value;
+                    var localeAreaUnit = this._getAreaUnitInfo(areaUnit).label;
+                    var localeArea = jimuUtils.localizeNumber(area.toFixed(1));
+                    var text = polygonPattern
+                        .replace("{{length}}", localeLength).replace("{{lengthUnit}}", localeLengthUnit)
+                        .replace("{{area}}", localeArea).replace("{{areaUnit}}", localeAreaUnit);
+                }else{
+                    var text = polylinePattern
+                        .replace("{{length}}", localeLength).replace("{{lengthUnit}}", localeLengthUnit);
+                }
 			}
 
 			//Get label point
@@ -1744,6 +1803,11 @@ define([
 				var fontColor = new Color([0, 0, 0, 1]);
 				var textSymbol = new TextSymbol(text, symbolFont, fontColor);
 
+				//If point measure, put label on top
+				if(x && y){
+				    textSymbol.setVerticalAlignment('bottom');
+				}
+
 				var labelGraphic = new Graphic(point, textSymbol, {
 						"name" : text,
 						"description" : ""
@@ -1761,7 +1825,8 @@ define([
 			labelGraphic.measureParent = graphic;
 			graphic.measure = {
 				"graphic" : labelGraphic,
-				"lengthUnit" : areaUnit,
+				"pointUnit" : pointUnit,
+				"lengthUnit" : lengthUnit,
 				"areaUnit" : areaUnit
 			};
 			return labelGraphic;
@@ -1796,6 +1861,105 @@ define([
 
 			return false;
 		},
+
+        _addPointMeasure : function (geometry, graphic) {
+            //Simple case : just get coordinates
+            if(this.pointUnitSelect.value == "map"){
+                console.log(" -> unite de la carte");
+                var coords = {"x":this._round(geometry.x, 2), "y":this._round(geometry.y, 2)};
+            }
+            else{
+                var wkid = this.map.spatialReference.wkid;
+                console.log(" -> sr : ", wkid);
+                var coords = null;
+                //The map is in WGS84
+                if(wkid == 4326){
+                    console.log(" -> WGS84");
+                    coords = {"x":geometry.x, "y":geometry.y};
+                }
+                //If map in mercator, use jimu built-in utilities
+                else if(wkidUtils.isWebMercator(wkid)){
+                    console.log(" -> WebMercator");
+                    var point_wgs84 = webMercatorUtils.webMercatorToGeographic(geometry);
+                    coords = {"x":point_wgs84.x, "y":point_wgs84.y};
+                }
+                //else if map's spatial reference has a wkt or get wkt by wkid, use proj4js library
+                else if(this.map.spatialReference.wkt || SRUtils.indexOfWkid(wkid)>-1){
+                    var proj_string = (this.map.spatialReference.wkt) ?
+                        this.map.spatialReference.wkt.split("'").join('"') :
+                        SRUtils.getCSStr(wkid).split("'").join('"');
+                    var coords_array = proj4js(proj_string).inverse([geometry.x, geometry.y]);
+                    coords = {"x":coords_array[0], "y":coords_array[1]};
+                }
+
+                if(!coords){
+                    this._getGeometryService();
+                    var params = new ProjectParameters();
+                    params.geometries = [geometry];
+                    params.outSR = {wkid:4326};
+                    this._gs.project(params).then(lang.hitch(function(evt){
+                        var coords = this._prepareLonLat(evt.geometries[0], this.pointUnitSelect.value == "DMS");
+                        var existingMeasureGraphic =
+                                (graphic.measure && graphic.measure.graphic && graphic.measure.graphic.measureParent)
+                                ? graphic.measure.graphic
+                                : false;
+                        this._setMeasureTextGraphic(graphic, coords, existingMeasureGraphic);
+                    }));
+                    return;
+                }
+
+                coords = this._prepareLonLat(coords, this.pointUnitSelect.value == "DMS");
+            }
+            if(!coords)
+                return;
+
+            var existingMeasureGraphic =
+                    (graphic.measure && graphic.measure.graphic && graphic.measure.graphic.measureParent)
+                    ? graphic.measure.graphic
+                    : false;
+            this._setMeasureTextGraphic(graphic, coords, existingMeasureGraphic);
+		},
+
+		_prepareLonLat:function(point, as_dms){
+		    console.log("_prepareLonLat",point, as_dms);
+		    if(!as_dms)
+		        return {x:this._round(point.x, 5),y:this._round(point.y, 5)};
+
+		    var coords = {x:point.x, y:point.y};
+		    if(coords.x<0){
+                coords.x = -coords.x;
+                var cardinal_point = this.nls.west;
+            }
+            else{
+                var cardinal_point = this.nls.east;
+            }
+            var degres = Math.floor(coords.x);
+            var minutes_float = (coords.x - degres) * 60;
+            var minutes = Math.floor(minutes_float);
+            var seconds = (minutes_float - minutes) * 60;
+            coords.x = degres+"°"+minutes+'"'+this._round(seconds, 2)+"'"+cardinal_point;
+
+            if(coords.y<0){
+                coords.y = -coords.y;
+                var cardinal_point = this.nls.south;
+            }
+            else{
+                var cardinal_point = this.nls.north;
+            }
+            var degres = Math.floor(coords.y);
+            var minutes_float = (coords.y - degres) * 60;
+            var minutes = Math.floor(minutes_float);
+            var seconds = (minutes_float - minutes) * 60;
+            coords.y = degres+"°"+minutes+'"'+this._round(seconds, 2)+"'"+cardinal_point;
+		    return coords;
+		},
+
+        _round:function(my_number, decimals){
+            if(!decimals)
+                return Math.round(my_number);
+            else
+                return Math.round(my_number * Math.pow(10,decimals)) / Math.pow(10,decimals);
+        },
 
 		_addLineMeasure : function (geometry, graphic) {
 			this._getLengthAndArea(geometry, false).then(lang.hitch(this, function (result) {
@@ -1838,7 +2002,6 @@ define([
 						//Phantom for marker
 						if (this.editorSymbolChooser.type == "marker")
 							this.editorUpdateMapPreview(this.editorSymbolChooser.getSymbol());
-
 					})));
 
 			//bind unit events
@@ -2116,6 +2279,9 @@ define([
 
 			//Init list Drag & Drop
 			this._initListDragAndDrop();
+
+			//Load SRID ressources
+			SRUtils.loadResource();
 		},
 
 		_prepareTextPlus : function () {

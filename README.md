@@ -21,12 +21,12 @@ http://doc.arcgis.com/en/web-appbuilder/create-apps/widget-draw.htm
 - localStorage
     - dynamic saving on each drawing add/delete/update
     - on widget load : load drawings saved in local Storage
-- draws plus (from Larry Stout https://geonet.esri.com/people/Larry_Stout)
+- draws plus (initially from Larry Stout https://geonet.esri.com/people/Larry_Stout)
     - preview under mouse when adding text or point
     - for text, add font choice, font angle, bold, italic, placement and underline options.
 - checkbox to hide drawing's layer (and therefore widget UI)
 - add of Nautical unit
-- measure's refactoring with automatic update on element's update (or delete). Measure's can be indidualy disabled/enabled on any polygon/polyline graphic.
+- measure's for points/polylines/polygons with automatic update on element's update (or delete). Measure's can be indidualy disabled/enabled on any graphic.
 - defaults symbols can be specified in config's file
 
 ## configuration :
@@ -41,8 +41,8 @@ http://doc.arcgis.com/en/web-appbuilder/create-apps/widget-draw.htm
 - (without UI) set default symbols
 - use geometryEngine for measure ?
 - specify geometryServer for measure (not used if geometryEngine is activated)
-- enable measure by default ? (is measure checkbox checked on polygon/polyline add ?)
-- measure's labels patterns 
+- enable measure by default ? (is measure checkbox checked on polygon/polyline/point add ?)
+- measure's labels patterns
         
 ## Installation :
 Add eDraw folder in your webApp Builder client\stemapp\widgets folder.

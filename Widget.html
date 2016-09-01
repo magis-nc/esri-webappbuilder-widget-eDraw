@@ -97,6 +97,14 @@
                         <div class="distance-units-tip jimu-float-leading">${nls.distanceUnits}</div>
                         <select data-dojo-attach-point="distanceUnitSelect" data-dojo-type="dijit/form/Select" class=" jimu-float-trailing" style="width:50%;height:30px;"></select>
                     </div>
+                    <div data-dojo-attach-point="pointMeasure" style="display:none;height:30px;">
+                        <div class="distance-units-tip jimu-float-leading">${nls.pointUnits}</div>
+                        <select data-dojo-attach-point="pointUnitSelect" data-dojo-type="dijit/form/Select" class=" jimu-float-trailing" style="width:50%;height:30px;">
+                            <option value="map">${nls.unitMap}</option>
+                            <option value="DMS">${nls.unitDMS}</option>
+                            <option value="DD">${nls.unitDD}</option>
+                        </select>
+                    </div>
                 </div>
                 <hr />
                 <p class="editor-add-message" data-dojo-attach-point="editorAddMessage" style="display:none;">${nls.addMessage}.</p>
