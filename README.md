@@ -50,7 +50,7 @@ https://github.com/proj4js/proj4js
 ## Installation :
 Add eDraw folder in your webApp Builder client\stemapp\widgets folder.
 Download Release here : 
-https://github.com/magis-nc/esri-webappbuilder-widget-eDraw/releases/tag/v1.1.3
+https://github.com/magis-nc/esri-webappbuilder-widget-eDraw/releases/latest
 
 ## Demo :
 http://apps.magis.nc/maps/wab-widgets/?extent=17918900%2C-2706198%2C19092972%2C-2154016%2C102100
