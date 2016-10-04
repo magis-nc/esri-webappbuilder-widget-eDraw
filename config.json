@@ -1,5 +1,5 @@
 {
-	"exportFileName" : "myDrawing.json",
+	"exportFileName" : "myDrawing",
 	"confirmOnDelete" : true,
 	"allowLocalStorage" : true,
 	"localStorageKey" : false,

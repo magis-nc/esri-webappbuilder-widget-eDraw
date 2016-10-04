@@ -19,6 +19,7 @@ define([
 		'jimu/BaseWidget',
 		'esri/config',
 		'dojo/Deferred',
+		'jimu/exportUtils',
 		'esri/graphic',
 		'esri/symbols/SimpleMarkerSymbol',
 		'esri/geometry/Polyline',
@@ -60,7 +61,7 @@ define([
 		'esri/layers/GraphicsLayer',
 		'./proj4'
 	],
-	function (declare, _WidgetsInTemplateMixin, BaseWidget, esriConfig, Deferred, Graphic, SimpleMarkerSymbol, Polyline, SimpleLineSymbol, Polygon, graphicsUtils, SimpleFillSymbol,
+	function (declare, _WidgetsInTemplateMixin, BaseWidget, esriConfig, Deferred, exportUtils, Graphic, SimpleMarkerSymbol, Polyline, SimpleLineSymbol, Polygon, graphicsUtils, SimpleFillSymbol,
 		TextSymbol, Font, esriUnits, Edit, webMercatorUtils, GeometryService, AreasAndLengthsParameters, LengthsParameters, ProjectParameters, wkidUtils, SRUtils, geodesicUtils, geometryEngine, lang, on,
 		html, has, Color, array, domConstruct, dom, Select, NumberSpinner, ViewStack, SymbolChooser, DrawBox, Message, jimuUtils, jimuSymbolUtils, localStore, InfoTemplate, GraphicsLayer, proj4js) {
 
@@ -973,9 +974,9 @@ define([
 				this.showMessage(this.nls.importErrorMessageNavigator, 'error');
 				return false;
 			}
-			
+
 			// var dragAndDropSupport = ()
-			
+
 			var content = '<div class="eDraw-import-message" id="'+this.id+'___div_import_message">'
 				+ '<input class="file" type="file" id="'+this.id+'___input_file_import"/>'
 				+ '<div class="eDraw-import-draganddrop-message">'+this.nls.importDragAndDropMessage+'</div>'
@@ -991,7 +992,7 @@ define([
 			
 			//Init file's choice up watching
 			on(this.importInput, "change", this.importFile);
-			
+
 			//Init drag & drop
 			var div_message = dojo.byId(this.id+'___div_import_message');
 			on(div_message, "dragover", function(e){
@@ -1057,7 +1058,7 @@ define([
 					var g = json.features[0];
 					var fields_possible = ["name", "title", "label"];
 					if (g.attributes) {
-						for (var i =0, len = fields_possible.length; i< len; i++) {
+						for (var i in fields_possible) {
 							if (g.attributes[fields_possible[i]]) {
 								nameField = fields_possible[i];
 								break;
@@ -1151,56 +1152,41 @@ define([
 		},
 
 		exportInFile : function () {
-			this.launchExport(this.exportButton, false);
+			this.launchExport(false);
 		},
 
 		exportSelectionInFile : function (evt) {
 		    if(evt && evt.preventDefault)
 		        evt.preventDefault();
-			this.launchExport(this.exportSelectionButton, true);
+			this.launchExport(true);
 		},
 
-		launchExport : function (link, only_graphics_checked) {
-			// Be sure the link will not open if not asked :
-			link.href = "#";
-			link.target = "_self";
-
-			var drawing_json = this.drawingsGetJson(true, only_graphics_checked);
+		launchExport : function (only_graphics_checked) {
+			var drawing_json = this.drawingsGetJson(false, only_graphics_checked);
 
 			// Control if there are drawings
-			if (drawing_json == '') {
+			if (!drawing_json) {
 				this.showMessage(this.nls.importWarningNoExport0Draw, 'warning');
 				return false;
 			}
 
-			var export_name = (this.config.exportFileName) ? (this.config.exportFileName) : 'myDrawings.json';
+            //We could use FeatureSet (which is required) but this workaround keeps symbols !
+            var drawing_seems_featureset = {
+                toJson:function(){
+                    return drawing_json;
+                }
+            };
 
-			//  Case IE with blob support (IE >= 10) : use MS save blob
-			if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-				var fileData = [drawing_json];
-				blobObject = new Blob(fileData, {
-						type : 'application/octet-stream'
-					});
-				window.navigator.msSaveOrOpenBlob(blobObject, export_name);
-				return false;
-			}
+            //Create datasource and download !
+            var ds = exportUtils.createDataSource({
+                "type" : exportUtils.TYPE_FEATURESET,
+                "data": drawing_seems_featureset,
+                "filename" : (this.config.exportFileName) ? (this.config.exportFileName) : 'myDrawings'
+            });
+            ds.setFormat(exportUtils.FORMAT_FEATURESET)
+            ds.download();
 
-			//  Case IE without blob support : write in tab. Doesn't allways work....
-			if (has("ie")) {
-				var exportWin = window.top.open("about:blank", "_blank");
-				exportWin.document.write(drawing_json);
-				exportWin.document.close();
-				exportWin.focus();
-				exportWin.document.execCommand('SaveAs', true, export_name);
-				exportWin.close();
-				return false;
-			}
-
-			//  Case HTML5 (Firefox > 25, Chrome > 30....) : use data link with download attribute
-			link.href = 'data:application/octet-stream;charset=utf-8,' + encodeURIComponent(drawing_json);
-			link.target = "_blank";
-			link.download = export_name;
-			return true;
+            return false;
 		},
 
 		///////////////////////// EDIT METHODS ///////////////////////////////////////////////////////////
@@ -1351,6 +1337,8 @@ define([
                     this._addLineMeasure(geometry, graphic);
                 else if(geometry.type=='polygon')
                     this._addPolygonMeasure(geometry, graphic);
+                else
+                    console.log("Erreur de type : "+geometry.type);
             }
 			if (commontype == 'text' && this.editorSymbolChooser.inputText.value.trim() == "") {
 				//Message
@@ -2280,7 +2268,7 @@ define([
 			//Init list Drag & Drop
 			this._initListDragAndDrop();
 
-			//Load SRID ressources
+			//Load ressources
 			SRUtils.loadResource();
 		},
 
