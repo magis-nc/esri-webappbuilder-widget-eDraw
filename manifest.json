@@ -1,9 +1,9 @@
 {
     "name": "eDraw",
     "platform": "HTML",
-    "version": "2.1.2",
-	"wabVersion": "2.1",
-    "author" : "Esri R&D Center Beijing modified by MAGIS NC",
+    "version": "2.5.1",
+	"wabVersion": "2.5",
+    "author" : "MAGIS NC",
     "description": "Enhanced draw widget for WebApp Builder for Arcgis.",
     "copyright": "",
     "license": "http://www.apache.org/licenses/LICENSE-2.0"

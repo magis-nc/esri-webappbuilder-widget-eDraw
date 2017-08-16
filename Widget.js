@@ -12,6 +12,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+// limitations under the License.
 ///////////////////////////////////////////////////////////////////////////
 define([
 		'dojo/_base/declare',
@@ -247,7 +248,7 @@ define([
 			this.map.setExtent(ext, true);
 			return true;
 		},
-		
+
 		copy:function(){
 			var graphics = this.getCheckedGraphics(false);
 			var nb = graphics.length;
@@ -256,8 +257,8 @@ define([
 				this.showMessage(this.nls.noSelection, 'error');
 				return false;
 			}
-			
-			for(var i=0;i<nb;i++){				
+
+			for(var i=0;i<nb;i++){
 				var g = new Graphic(graphics[i].toJson()); //Get graphic clone
 				g.attributes.name += this.nls.copySuffix; //Suffix name
 				this.drawBox.drawLayer.add(g);
@@ -272,7 +273,7 @@ define([
 			}
 			this.setMode("list");
 		},
-		
+
 		clear : function () {
 			var graphics = this.getCheckedGraphics(false);
 			var nb = graphics.length;
@@ -281,8 +282,8 @@ define([
 				this.showMessage(this.nls.noSelection, 'error');
 				return false;
 			}
-			
-			if(this.config.confirmOnDelete){		
+
+			if(this.config.confirmOnDelete){
 				this._confirmDeleteMessage  = new Message({
 					message : '<i class="message-warning-icon"></i>&nbsp;' + this.nls.confirmDrawCheckedDelete,
 					buttons:[
@@ -299,23 +300,23 @@ define([
 				this._removeGraphics(graphics);
 			}
 		},
-		
+
 		_removeClickedGraphic:function(){
 			if(!this._clickedGraphic)
 				return false;
-			
+
 			this._removeGraphic(this._clickedGraphic);
 			this._editorConfig["graphicCurrent"] = false;
-			this.listGenerateDrawTable();			
-			
+			this.listGenerateDrawTable();
+
 			this._clickedGraphic = false;
-			
+
 			if(this._confirmDeleteMessage && this._confirmDeleteMessage.close){
 				this._confirmDeleteMessage.close();
 				this._confirmDeleteMessage = false;
 			}
 		},
-		
+
 		_removeGraphics:function(graphicsOrEvent){
 			if(graphicsOrEvent.target)
 				graphics = this.getCheckedGraphics(false);
@@ -326,12 +327,12 @@ define([
 			for (var i = 0; i < nb; i++) {
 				this._removeGraphic(graphics[i]);
 			}
-			
+
 			if(this._confirmDeleteMessage && this._confirmDeleteMessage.close){
 				this._confirmDeleteMessage.close();
 				this._confirmDeleteMessage = false;
 			}
-			
+
 			this.setInfoWindow(false);
 			this.setMode("list");
 		},
@@ -348,9 +349,9 @@ define([
 
 		drawingsGetJson : function (asString, onlyChecked) {
 			var graphics = (onlyChecked) ? this.getCheckedGraphics(false) : this.drawBox.drawLayer.graphics;
-			
+
 			var nb_graphics = graphics.length;
-			
+
 			if (nb_graphics < 1)
 				return (asString) ? '' : false;
 
@@ -650,7 +651,7 @@ define([
 				break;
 			case 'draw-action-delete':
 				this._clickedGraphic = g;
-				if(this.config.confirmOnDelete){		
+				if(this.config.confirmOnDelete){
 					this._confirmDeleteMessage  = new Message({
 						message : '<i class="message-warning-icon"></i>&nbsp;' + this.nls.confirmDrawDelete,
 						buttons:[
@@ -796,9 +797,9 @@ define([
 				this._UTIL__enableClass(this.editorTextPlusUnderlineNode, 'selected', this._editorConfig["drawPlus"]["underline"]);
 				for (var i = 0, len = this._editorTextPlusPlacements.length ; i < len ; i++) {
 					var title_tab = this._editorTextPlusPlacements[i].title.split(" ");
-					var selected = 
+					var selected =
 						(
-							title_tab[0] == this._editorConfig["drawPlus"]["placement"]["vertical"] 
+							title_tab[0] == this._editorConfig["drawPlus"]["placement"]["vertical"]
 							&& title_tab[1] == this._editorConfig["drawPlus"]["placement"]["horizontal"]
 						);
 					this._UTIL__enableClass(this._editorTextPlusPlacements[i], 'selected', selected);
@@ -980,7 +981,7 @@ define([
 			var content = '<div class="eDraw-import-message" id="'+this.id+'___div_import_message">'
 				+ '<input class="file" type="file" id="'+this.id+'___input_file_import"/>'
 				+ '<div class="eDraw-import-draganddrop-message">'+this.nls.importDragAndDropMessage+'</div>'
-				+ '</div>';			
+				+ '</div>';
 			this.importMessage = new Message({
 				message : content,
 				titleLabel:this.nls.importTitle,
@@ -989,7 +990,7 @@ define([
 				}]
 			});
 			this.importInput = dojo.byId(this.id+'___input_file_import');
-			
+
 			//Init file's choice up watching
 			on(this.importInput, "change", this.importFile);
 
@@ -1005,7 +1006,7 @@ define([
 				e.stopPropagation();
 				e.preventDefault();
 				var files = e.dataTransfer.files;
-				
+
 				if(!files[0])
 					return;
 				var reader = new FileReader();
@@ -1013,7 +1014,7 @@ define([
 				var txt = reader.readAsText(files[0]);
 			}));
 		},
-		
+
 		importFile : function () {
 			if(!this.importInput){
 				this.showMessage(this.nls.importErrorWarningSelectFile, 'warning');
@@ -1021,7 +1022,7 @@ define([
 					this.importMessage.close();
 				return false;
 			}
-			
+
 			var input_file = this.importInput.files[0];
 			if (!input_file) {
 				this.showMessage(this.nls.importErrorWarningSelectFile, 'warning');
@@ -1031,7 +1032,7 @@ define([
 			reader.onload = this.importOnFileLoad;
 			var txt = reader.readAsText(input_file);
 		},
-		
+
 		importOnFileLoad : function (evt) {
 			var content = evt.target.result;
 			this.importJsonContent(content);
@@ -1746,7 +1747,7 @@ define([
 				graphic.measure = false;
 				return false;
 			}
-			
+
 			var pointPattern = (this.config.measurePointLabel) ? this.config.measurePointLabel : "{{x}} {{y}}";
 			var polygonPattern = (this.config.measurePolygonLabel) ? this.config.measurePolygonLabel : "{{area}} {{areaUnit}}    {{length}} {{lengthUnit}}";
 			var polylinePattern = (this.config.measurePolylineLabel) ? this.config.measurePolylineLabel : "{{length}} {{lengthUnit}}";
@@ -1824,22 +1825,22 @@ define([
 			//Point
 			if (geometry.x)
 				return geometry;
-			
+
 			//Polygon
 			if (geometry.getCendroid)
 				return geometry.getCendroid();
-			
+
 			//Polyline
 			if (geometry.getExtent) {
 				var extent_center = geometry.getExtent().getCenter();
-				
+
 				//If geometryEngine, replace point (extent center) on geometry
 				if (this.config.useGeometryEngine) {
 					var res = geometryEngine.nearestCoordinate(geometry, extent_center);
 					if (res && res.coordinate)
 						return res.coordinate;
 				}
-				
+
 				return extent_center;
 			}
 
@@ -1978,7 +1979,7 @@ define([
 			//Bind symbol chooser change
 			this.own(on(this.editorSymbolChooser, 'change', lang.hitch(this, function () {
 						this.editorSetDefaultSymbols();
-						
+
 						//If text plus
 						if (this.editorSymbolChooser.type == "text") {
 							this.editorUpdateTextPlus();
@@ -2000,7 +2001,7 @@ define([
 			//hitch import file loading
 			this.importFile = lang.hitch(this, this.importFile);
 			this.importOnFileLoad = lang.hitch(this, this.importOnFileLoad);
-			
+
 			//Bind delete method
 			this._removeGraphics = lang.hitch(this, this._removeGraphics);
 			this._removeClickedGraphic = lang.hitch(this, this._removeClickedGraphic);
