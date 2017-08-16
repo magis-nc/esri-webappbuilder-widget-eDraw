@@ -100,6 +100,12 @@
 .jimu-widget-edraw .hidden {
     display: none;
 }
+.jimu-widget-edraw .draw-table{
+	display: inline-block;
+}
+.jimu-widget-edraw .draw-table td, .jimu-widget-edraw .draw-table th{
+	padding:5px;
+}
 .jimu-widget-edraw .draw-table tr {
     border: 1px solid white;
     cursor:move;
