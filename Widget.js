@@ -60,7 +60,7 @@ define([
 		'libs/storejs/store',
 		'esri/InfoTemplate',
 		'esri/layers/GraphicsLayer',
-		'./proj4'
+		'libs/proj4'
 	],
 	function (declare, _WidgetsInTemplateMixin, BaseWidget, esriConfig, Deferred, exportUtils, Graphic, SimpleMarkerSymbol, Polyline, SimpleLineSymbol, Polygon, graphicsUtils, SimpleFillSymbol,
 		TextSymbol, Font, esriUnits, Edit, webMercatorUtils, GeometryService, AreasAndLengthsParameters, LengthsParameters, ProjectParameters, wkidUtils, SRUtils, geodesicUtils, geometryEngine, lang, on,
