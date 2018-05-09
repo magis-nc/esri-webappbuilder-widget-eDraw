@@ -34,6 +34,15 @@
 				<span class="is-measure" data-dojo-attach-point="isMeasureSpan" style="display:none;"><hr />${nls.isMeasureMessage}</span>
                 <hr />
                 <div data-dojo-attach-point="editorSymbolChooserDiv" class="full-width"></div>
+                <div data-dojo-attach-point="editorSymbolLinePlusNode" style="width:100%; height:40px;">
+                    <div class="jimu-float-leading" style="width:40%;height:30px;">${nls.arrow}</div>
+                    <div data-dojo-attach-point="editorLinePlusArrow" data-dojo-type="dijit/form/Select" class="jimu-float-trailing" style="width:57%;height:30px;">
+                        <span value="">${nls.arrowNone}</span>
+                        <span value="end">${nls.arrowEnd}</span>
+                        <span value="begin">${nls.arrowBegin}</span>
+                        <span value="begin-end">${nls.arrowBeginEnd}</span>
+                    </div>
+                </div>
                 <table class="symbol-set-table" cellspading="0" data-dojo-attach-point="editorSymbolTextPlusNode">
                     <tbody>
                         <tr class="draw-plus textFontOptions">

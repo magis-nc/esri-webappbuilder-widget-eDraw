@@ -208,11 +208,9 @@ define([
 
 			//Text plus FontFamily
 			this._setTextPlusFontFamilyTable(config);
-			
-			//Measure Geometry engine or service
+
+			//Measure config
 			this.measureEnabledByDefaultInput.checked = (config.measureEnabledByDefault);
-			this.useGeometryEngineInput.checked = (config.useGeometryEngine);
-			this.geometryServiceInput.value = (config.geometryService && config.geometryService.trim() != "") ? config.geometryService.trim() : "";
 			this.measurePolylineLabelInput.value = (config.measurePolylineLabel && config.measurePolylineLabel.trim() != "") ? config.measurePolylineLabel.trim() : "{{length}} {{lengthUnit}}";
 			this.measurePolygonLabelInput.value = (config.measurePolygonLabel && config.measurePolygonLabel.trim() != "") ? config.measurePolygonLabel.trim() : "{{area}} {{areaUnit}}    {{length}} {{lengthUnit}}";
 		},
@@ -290,14 +288,12 @@ define([
 						}
 					}));
 			config["drawPlus"]["fontFamilies"] = FontFamilyOptions;
-			
-			//Measure Geometry engine or service
+
+			// Measure
 			config.measureEnabledByDefault = this.measureEnabledByDefaultInput.checked;
-			config.useGeometryEngine = this.useGeometryEngineInput.checked;
-			config.geometryService = (this.geometryServiceInput.value && this.geometryServiceInput.value.trim() != "") ? this.geometryServiceInput.value.trim() : false;
 			config.measurePolylineLabel = (this.measurePolylineLabelInput.value && this.measurePolylineLabelInput.value.trim() != "") ? this.measurePolylineLabelInput.value : false;
 			config.measurePolygonLabel = (this.measurePolygonLabelInput.value && this.measurePolygonLabelInput.value.trim() != "") ? this.measurePolygonLabelInput.value : false;
-	
+
 			return config;
 		},
 

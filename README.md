@@ -27,10 +27,13 @@ https://github.com/proj4js/proj4js
 - draws plus (initially from Larry Stout https://geonet.esri.com/people/Larry_Stout)
     - preview under mouse when adding text or point
     - for text, add font choice, font angle, bold, italic, placement and underline options.
+    - add arrow menu for polyline
 - checkbox to hide drawing's layer (and therefore widget UI)
 - add of Nautical unit
 - measure's for points/polylines/polygons with automatic update on element's update (or delete). Measure's can be indidualy disabled/enabled on any graphic.
+- "On the fly" measure when drawing
 - defaults symbols can be specified in config's file
+- use of builtin projection engine (available since esri js api 3.24) instead of proj4js library
 
 ## configuration :
 - export file name.
@@ -42,8 +45,6 @@ https://github.com/proj4js/proj4js
         - if not empty, all apps with the same key share the same local storage (apps on the same server)
 - Choose availables font families in text plus
 - (without UI) set default symbols
-- use geometryEngine for measure ?
-- specify geometryServer for measure (not used if geometryEngine is activated)
 - enable measure by default ? (is measure checkbox checked on polygon/polyline/point add ?)
 - measure's labels patterns
         
