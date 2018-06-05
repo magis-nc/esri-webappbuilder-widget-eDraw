@@ -1786,12 +1786,18 @@ function(
         },
 
         _getTxtGraphic:function(point, text, bottomAlignment){
-            var a = Font.STYLE_ITALIC;
-            var b = Font.VARIANT_NORMAL;
-            var c = Font.WEIGHT_BOLD;
-            var symbolFont = new Font("16px", a, b, c, "Courier");
-            var fontColor = new Color([0, 0, 0, 1]);
-            var textSymbol = new TextSymbol(text, symbolFont, fontColor);
+            if(this.config.defaultSymbols.MeasureSymbol){
+                var textSymbol = new TextSymbol(this.config.defaultSymbols.MeasureSymbol);
+                textSymbol.setText(text);
+            }
+            else{
+                var a = Font.STYLE_ITALIC;
+                var b = Font.VARIANT_NORMAL;
+                var c = Font.WEIGHT_BOLD;
+                var symbolFont = new Font("16px", a, b, c, "Courier");
+                var fontColor = new Color([0, 0, 0, 1]);
+                var textSymbol = new TextSymbol(text, symbolFont, fontColor);
+            }
 
             if (bottomAlignment) {
                 textSymbol.setVerticalAlignment('bottom');
