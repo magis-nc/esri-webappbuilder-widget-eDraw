@@ -1187,6 +1187,26 @@ function(
                 return false;
             }
 
+            // Complete json -> must be a valid ESRI json
+            drawing_json["fields"] = [
+              {
+                "name" : "objectid",
+                "alias" : "objectid",
+                "type" : "esriFieldTypeOID"
+              }, {
+                "name" : "name",
+                "alias" : "name",
+                "type" : "esriFieldTypeString"
+              }, {
+                "name" : "description",
+                "alias" : "description",
+                "type" : "esriFieldTypeString"
+              }
+            ];
+            for(var i=0, nb=drawing_json["features"].length; i<nb ; i++){
+              drawing_json["features"][i]["attributes"]["objectid"] = i + 1;
+            }
+
             //We could use FeatureSet (which is required) but this workaround keeps symbols !
             var drawing_seems_featureset = {
                 toJson: function() {
