@@ -1146,13 +1146,14 @@ function(
                 //Add graphics
                 for (var i = 0, nb = graphics.length; i < nb; i++) {
                     if (graphics[i]){
-                      this.drawBox.drawLayer.add(graphics[i]);
 
                       // Check geometry projection and reproject if necessary
                       var geom = graphics[i].geometry;
                       if(geom.spatialReference.wkid != this.map.spatialReference.wkid){
                         graphics[i].setGeometry(projection.project(geom, this.map.spatialReference));
                       }
+
+                      // Add this graphic
                       this.drawBox.drawLayer.add(graphics[i]);
 
                     }
