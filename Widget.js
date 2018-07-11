@@ -1052,6 +1052,14 @@ function(
                     return false;
                 }
 
+                // if need reprojection and projection module not yet loaded, wait
+                if(!projection.isLoaded() && json.features[0]["geometry"]["spatialReference"] && json.features[0]["geometry"]["spatialReference"]["wkid"] != this.map.spatialReference.wkid){
+                  projection.load().then(lang.hitch(this, function(){
+                    this.importJsonContent(json, nameField, descriptionField);
+                  }));
+                  return;
+                }
+
                 if (!nameField) {
                     var g = json.features[0];
                     var fields_possible = ["name", "title", "label"];
@@ -1137,8 +1145,18 @@ function(
 
                 //Add graphics
                 for (var i = 0, nb = graphics.length; i < nb; i++) {
-                    if (graphics[i])
-                        this.drawBox.drawLayer.add(graphics[i]);
+                    if (graphics[i]){
+                      this.drawBox.drawLayer.add(graphics[i]);
+
+                      // Check geometry projection and reproject if necessary
+                      var geom = graphics[i].geometry;
+                      if(geom.spatialReference.wkid != this.map.spatialReference.wkid){
+                        graphics[i].setGeometry(projection.project(geom, this.map.spatialReference));
+                      }
+                      this.drawBox.drawLayer.add(graphics[i]);
+
+                    }
+
                 }
 
                 //Show list
