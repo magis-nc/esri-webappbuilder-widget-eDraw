@@ -1532,11 +1532,11 @@ function(
             };
 
             if (isPolygon) {
-                result.area = (wkid == 4326 || wkid == 3857) ? geometryEngine.geodesicArea(geometry, areaUnit) : geometryEngine.planarArea(geometry, areaUnit);
+                result.area = (wkid == 4326 || wkid == 3857 || wkid == 102100) ? geometryEngine.geodesicArea(geometry, areaUnit) : geometryEngine.planarArea(geometry, areaUnit);
                 var polyline = this._getPolylineOfPolygon(geometry);
-                result.length = (wkid == 4326 || wkid == 3857) ? geometryEngine.geodesicLength(polyline, lengthUnit) : geometryEngine.planarLength(polyline, lengthUnit);
+                result.length = (wkid == 4326 || wkid == 3857 || wkid == 102100) ? geometryEngine.geodesicLength(polyline, lengthUnit) : geometryEngine.planarLength(polyline, lengthUnit);
             } else {
-                result.length = (wkid == 4326 || wkid == 3857) ? geometryEngine.geodesicLength(geometry, lengthUnit) : geometryEngine.planarLength(geometry, lengthUnit);
+                result.length = (wkid == 4326 || wkid == 3857 || wkid == 102100) ? geometryEngine.geodesicLength(geometry, lengthUnit) : geometryEngine.planarLength(geometry, lengthUnit);
             }
 
             return result;
