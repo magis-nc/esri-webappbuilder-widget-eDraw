@@ -7,7 +7,7 @@ http://doc.arcgis.com/en/web-appbuilder/create-apps/widget-draw.htm
 The widget use the proj4js library (https://github.com/proj4js/proj4js) for point's lat/lon measure (for non mercator maps) :
 https://github.com/proj4js/proj4js
 
-## Improvments :
+## Improvements:
 - add name and description fields on drawings
 - enable infowindow on drawings (selection)
 - on text drawing, no insert if no name.
@@ -30,7 +30,7 @@ https://github.com/proj4js/proj4js
     - add arrow menu for polyline
 - checkbox to hide drawing's layer (and therefore widget UI)
 - add of Nautical unit
-- measure's for points/polylines/polygons with automatic update on element's update (or delete). Measure's can be indidualy disabled/enabled on any graphic.
+- measure's for points/polylines/polygons with automatic update on element's update (or delete). Measure's can be individually disabled/enabled on any graphic.
 - "On the fly" measure when drawing
 - defaults symbols can be specified in config's file
 - use of builtin projection engine (available since esri js api 3.24) instead of proj4js library
