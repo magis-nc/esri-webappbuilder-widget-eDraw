@@ -1825,7 +1825,7 @@ function(
         },
 
         _getTxtGraphic:function(point, text, bottomAlignment){
-            if(this.config.defaultSymbols.MeasureSymbol){
+            if(this.config.defaultSymbols && this.config.defaultSymbols.MeasureSymbol){
                 var textSymbol = new TextSymbol(this.config.defaultSymbols.MeasureSymbol);
                 textSymbol.setText(text);
             }
