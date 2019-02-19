@@ -294,6 +294,39 @@ define([
 			config.measurePolylineLabel = (this.measurePolylineLabelInput.value && this.measurePolylineLabelInput.value.trim() != "") ? this.measurePolylineLabelInput.value : false;
 			config.measurePolygonLabel = (this.measurePolygonLabelInput.value && this.measurePolygonLabelInput.value.trim() != "") ? this.measurePolygonLabelInput.value : false;
 
+      for(var name in this.config){
+        if(!config[name]){
+          config[name] = this.config[name];
+        }
+      }
+      if(!config.defaultSymbols){
+        config["defaultSymbols"] = {
+          "SimpleMarkerSymbol":{"color":[255,199,198,148],"size":15,"angle":0,"xoffset":0,"yoffset":0,"type":"esriSMS","style":"esriSMSCircle","outline":{"color":[207,101,99,255],"width":0.75,"type":"esriSLS","style":"esriSLSSolid"}},
+          "SimpleLineSymbol": {"color":[207,101,99,255],"width":1.5,"type":"esriSLS","style":"esriSLSSolid"},
+          "SimpleFillSymbol": {"color":[255,199,198,148],"outline":{"color":[207,101,99,255],"width":0.75,"type":"esriSLS","style":"esriSLSSolid"},"type":"esriSFS","style":"esriSFSSolid"},
+          "TextSymbol":false,
+          "MeasureSymbol":{
+            "color": [0, 0, 0, 255],
+            "type": "esriTS",
+            "verticalAlignment": "middle",
+            "horizontalAlignment": "center",
+            "angle": 0,
+            "xoffset": 0,
+            "yoffset": 0,
+            "text": "Measure",
+            "rotated": false,
+            "kerning": true,
+            "font": {
+              "size": 12,
+              "style": "italic",
+              "decoration": "none",
+              "weight": "bold",
+              "family": "Courier New"
+            }
+          }
+        }
+      }
+      console.log("eDraw -> new config : ", config);
 			return config;
 		},
 
