@@ -1546,7 +1546,6 @@ function(
         _getPolylineOfPolygon: function(polygon) {
             var polyline = new Polyline(polygon.spatialReference);
             var points = polygon.rings[0];
-            points = points.slice(0, points.length - 1);
             polyline.addPath(points);
             return polyline;
         },
