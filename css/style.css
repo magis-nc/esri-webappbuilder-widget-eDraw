@@ -331,6 +331,15 @@
 .jimu-widget-edraw .grey-button:hover {
     background-color: rgba(153, 153, 153, 1);
 }
+.jimu-widget-edraw .orange-button {
+    background-color: rgba(220, 160, 0, 0.7);
+}
+.jimu-widget-edraw .orange-button:hover {
+    background-color: rgba(220, 160, 0, 1);
+}
+.jimu-widget-edraw span.kml-label {
+    font-size: 8px;
+}
 .jimu-widget-edraw .symbol-set-table {
     width: 100%;
 }
